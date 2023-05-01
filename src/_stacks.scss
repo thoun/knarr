@@ -1,0 +1,11 @@
+#table-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; 
+    border: 2px solid #655291;
+    padding: 5px; 
+    border-radius: 15px;
+    background: #65529166;
+    min-width: 505px;
+}

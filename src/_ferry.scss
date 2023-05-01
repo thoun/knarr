@@ -1,0 +1,80 @@
+.ferry-spot {
+  top: 233px;
+  left: 130px;
+  position: absolute;
+  width: 185px;
+  transform-origin: top center;
+  border-radius: 10px;
+  transition: box-shadow 0.5s, background-color 0.5s, transform 1s ease-in, opacity 1s ease-in;
+
+  &.active {
+    background-color: #FFFFFFBB;
+    animation: 2s ease-in-out infinite alternate glow;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 10px 10px #FFFFFFBB; }
+    to   { box-shadow: 0 0 20px 20px #FFFFFFBB; }
+  }
+
+  .ferry-card {
+    background: url('img/ferry.jpg');
+    width: 179px;
+    height: 128px;
+    cursor: default;
+    margin: 0;
+
+    &.empty {
+      display: none;
+    }
+
+    &.roomates {
+      background: url('img/ferry-roomates.jpg');
+    }
+  }
+
+  .animal-card {
+    transform-origin: top center;
+    position: absolute;
+    left: 25px;
+    width: 128px;
+    height: 179px;
+    background-image: url('img/cards.jpg');
+    border-radius: 10px;
+    //pointer-events: none;
+
+    &.unselectable {
+      filter: contrast(0.6);
+    }
+    &.selectable {
+      //pointer-events: all;
+      cursor: pointer;
+    }
+  }
+}
+
+.remaining-counter.weight-indicator {
+  text-shadow: 0 0 2px #1577c6, 0 0 4px #1577c6, 0 0 6px #1577c6;
+  color: white;
+
+  &[data-position="0"] {
+    top: 322px;
+    right: 444px;
+  }
+  &[data-position="1"] {
+    top: 18px;
+    right: 383px;
+  }
+  &[data-position="2"] {
+    top: -2px;
+    right: 79px;
+  }
+  &[data-position="3"] {
+    bottom: 160px;
+    left: 473px;
+  }
+  &[data-position="4"] {
+    top: 480px;
+    left: 236px;
+  }
+}

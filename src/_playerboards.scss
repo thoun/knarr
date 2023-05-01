@@ -1,0 +1,24 @@
+.counters {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+
+  >div {
+    flex: 1;
+  }
+
+  .icon {
+    margin-right: 5px;
+  }
+}
+
+.player-hand-card {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url('img/cards.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}

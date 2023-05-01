@@ -1,0 +1,64 @@
+.center-spot {
+
+  top: 450px;
+  left: 364px;
+  position: absolute;
+  width: 202px;
+  transform-origin: top center;
+  transform: rotate(var(--angle)) translateY(100px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  /*border-radius: 10px;
+  transition: box-shadow 0.5s, background-color 0.5s, transform 1s ease-in, opacity 1s ease-in;
+
+  &.active {
+    background-color: #FFFFFFBB;
+    animation: 2s ease-in-out infinite alternate glow;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 10px 10px #FFFFFFBB; }
+    to   { box-shadow: 0 0 20px 20px #FFFFFFBB; }
+  }*/
+
+  &[id="center-spot-0"], &[id="center-spot-1"], &[id="center-spot-2"], &[id="center-spot-3"] {
+    .card {
+      transform-origin: center center;
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.center-spot-token {
+  --shadow-color: black;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 50%;
+    background: var(--shadow-color);
+    box-shadow: 0 0 2px 2px var(--shadow-color);
+  }
+}
+
+.center-spot-counter {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  z-index: 1;
+  box-shadow: 0 0 3px 1px black;
+  right: 0;
+  top: -10px;
+  transform-origin: center center;
+  transform: rotate(calc(var(--angle) * -1));
+}

@@ -1,0 +1,132 @@
+@import '../node_modules/bga-zoom/bga-zoom';
+@import '../node_modules/bga-cards/bga-cards';
+@import 'cards';
+@import 'table-center';
+@import 'playerboards';
+@import 'player-table';
+
+/* make space between buttons on touch devices */
+@media (hover: none) {
+  #page-title .action-button.bgabutton, #page-title .bgabutton {
+    margin-bottom: 8px;
+    margin-top: 8px;
+  }
+}
+
+html, .mode_3d #game_play_area_background {
+  background: url('img/background.jpg');
+  background-size: 100% auto;
+  background-repeat: repeat;
+}
+
+#zoom-wrapper {
+  position: relative;
+
+  #zoom-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    button {
+      width: 40px;
+      height: 40px;
+      background: url('img/zoom.svg');
+      background-size: auto 220%;
+
+      &:not(.disabled) {
+        cursor: pointer;
+      }
+
+      &.disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+    }
+
+    #zoom-in {
+      background-position: 6% 94%;
+    }
+    #zoom-out {
+      background-position: 82% 94%;
+    }
+  }
+}
+
+#round-counter-row {
+  display: flex;
+  justify-content: center;
+
+  #round-counter-block {
+    background: #FFFFFF99;
+    font-size: 120%;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 10px;
+    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
+    color: white;
+  }
+}
+
+#tables-and-center {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 20px;
+  flex-direction: column;
+
+  #tables {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 1500px) { 
+  #tables-and-center {
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: start;
+
+    &>div {
+      flex: 1
+    }
+  }
+}
+
+.log, .dijitTooltipContents {
+  [data-color="1"] {
+    color: #f46d33;
+  }
+  [data-color="2"] {
+    color: #ef5c93;
+  }
+  [data-color="3"] {
+    color: #0079bc;
+  }
+  [data-color="4"] {
+    color: #6ab355;
+  }
+  [data-color="5"] {
+    color: #6967af;
+  }
+
+  .points-circle {
+    color: white;
+    border-radius: 50%;
+    background: #ffbb40;
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    text-align: center;
+    font-size: 90%;
+
+    &[data-negative="true"] {
+      background: #e94422;
+    }
+  }
+}
