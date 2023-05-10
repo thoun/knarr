@@ -50,7 +50,7 @@ class Knarr extends Table {
             LAST_TURN => LAST_TURN,
             SELECTED_CARD => SELECTED_CARD,
 
-            CHIEFTAIN_OPTION => CHIEFTAIN_OPTION,
+            VARIANT_OPTION => VARIANT_OPTION,
         ]);   
 		
         $this->cards = $this->getNew("module.common.deck");
@@ -196,7 +196,7 @@ class Knarr extends Table {
         $result['centerTokensCount'] = $centerTokensCount;
         $result['fireToken'] = Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('center')));
         $result['fireTokenCount'] = intval($this->tokens->countCardInLocation('center'));
-        $result['chieftainOption'] = $this->getChieftainOption();
+        $result['chieftainOption'] = $this->getVariantOption();
 
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   

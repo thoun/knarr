@@ -73,7 +73,7 @@ define('SELECTED_CARD', 11);
 /*
  * Options
  */
-define('CHIEFTAIN_OPTION', 100);
+define('VARIANT_OPTION', 100);
 
 /*
  * Global variables

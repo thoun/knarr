@@ -275,7 +275,7 @@ class Knarr implements KnarrGame {
         return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
     }
 
-    public getChieftainOption(): number {
+    public getVariantOption(): number {
         return this.gamedatas.chieftainOption;
     }
 

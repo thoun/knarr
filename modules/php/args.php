@@ -93,7 +93,7 @@ trait ArgsTrait {
     }
 
     function argDiscardTokens() {
-        $number = $this->getMaxKeepResources();
+        $number = 4;
 
         return [
             'number' => $number,

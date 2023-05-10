@@ -66,7 +66,7 @@ interface KnarrGame extends Game {
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
-    getChieftainOption(): number;
+    getVariantOption(): number;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
 

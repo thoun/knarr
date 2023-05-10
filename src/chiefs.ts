@@ -8,7 +8,7 @@ class ChiefsManager extends CardManager<number> {
             },
             setupFrontDiv: (card: number, div: HTMLElement) => { 
                 div.dataset.number = ''+card;
-                div.dataset.level = ''+game.getChieftainOption();
+                div.dataset.level = ''+game.getVariantOption();
             },
         });
     }
@@ -26,7 +26,7 @@ class ChiefsManager extends CardManager<number> {
     }
 
     private getTooltip(number: number): string {
-        const level = this.game.getChieftainOption();
+        const level = this.game.getVariantOption();
         let message = `<strong>${_('Chieftain card')}</strong> ${number} (${level == 2 ? _('Advanced side') : _('Normal side')})<br><br>${_("The chieftain card allow to store ${number} resources between turns.").replace('${number}', `<strong>${5 - level}</strong>`)}`;
         
         if (level == 2) {

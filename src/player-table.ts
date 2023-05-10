@@ -75,9 +75,9 @@ class PlayerTable {
         });
         this.tokensFree.onSelectionChange = (selection: Token[], lastChange: Token) => this.game.onTokenSelectionChange(selection);
         this.tokensChief = new SlotStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
-            gap: `${this.game.getChieftainOption() == 2 ? 15 : 4}px`,
+            gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
             direction: 'column',
-            slotsIds: this.game.getChieftainOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
+            slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
         });
         if (this.playerId == (this.game as any).getActivePlayerId()) {
             this.tokensFree.addCards(player.tokens);

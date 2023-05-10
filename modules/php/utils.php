@@ -198,16 +198,12 @@ trait UtilTrait {
         $this->tokens->shuffle('center'); // to give them a locationArg asc
     }
 
-    function getChieftainOption() {
-        return intval($this->getGameStateValue(CHIEFTAIN_OPTION));
-    }
-
-    function getMaxKeepResources() {
-        return 5 - intval($this->getGameStateValue(CHIEFTAIN_OPTION));
+    function getVariantOption() {
+        return intval($this->getGameStateValue(VARIANT_OPTION));
     }
 
     function getChiefPower(int $playerId) {
-        return $this->getChieftainOption() == 2 ? $this->getPlayer($playerId)->chief : 0;
+        return $this->getVariantOption() == 2 ? $this->getPlayer($playerId)->chief : 0;
     }
 
     function getPlayerResources(int $playerId) {

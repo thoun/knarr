@@ -28,15 +28,19 @@ require_once("modules/php/constants.inc.php");
 
  $game_options = [
 
-    CHIEFTAIN_OPTION => [
-        'name' => totranslate('Chieftain cards'),
+    VARIANT_OPTION => [
+        'name' => totranslate('Artefact variant'),
         'values' => [
             1 => [
-                'name' => totranslate('Normal side'),
+                'name' => totranslate('Disabled'),
             ],
             2 => [
-                'name' => totranslate('Advanced side'),
-                'tmdisplay' => totranslate('Advanced chieftain card side'),
+                'name' => totranslate('Enabled (with [TODO Coupe Hydromel] for 2-players mode)'),
+                'tmdisplay' => totranslate('Artefact variant (with [TODO Coupe Hydromel] for 2-players mode)'),
+            ],
+            3 => [
+                'name' => totranslate('Enabled'),
+                'tmdisplay' => totranslate('Artefact variant'),
             ],
         ],
         'default' => 1,
