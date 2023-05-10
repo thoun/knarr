@@ -6,9 +6,17 @@ const SHADOW_COLORS = [
 ];
 
 class TableCenter {
+    public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
+        ['A', 'B'].forEach(letter => {            
+            this.destinations[letter] = new SlotStock<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}`), {
+                slotsIds: [1, 2, 3],
+                mapCardToSlot: card => card.locationArg,
+            });
+            this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
+        })
 
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],

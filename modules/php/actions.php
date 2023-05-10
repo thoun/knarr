@@ -12,9 +12,9 @@ trait ActionTrait {
     */
 
     private function refillTokenPile(int $pile, int $playerId) {
-        if (intval($this->tokens->countCardInLocation('center')) > 0) {
-            $token = $this->getTokenFromDb($this->tokens->pickCardForLocation('center', 'player', $playerId));
-            $newCount = intval($this->tokens->countCardInLocation('center'));
+        if (intval($this->destinations->countCardInLocation('center')) > 0) {
+            $token = $this->getDestinationFromDb($this->destinations->pickCardForLocation('center', 'player', $playerId));
+            $newCount = intval($this->destinations->countCardInLocation('center'));
 
             self::notifyAllPlayers('takeToken', clienttranslate('${player_name} takes resource ${type} from center table (pile ${emptyPile} was empty). There is ${left} resources remaining on the fire !'), [
                 'playerId' => $playerId,
@@ -23,7 +23,7 @@ trait ActionTrait {
                 'left' => $newCount, // for logs
                 'token' => $token,
                 'pile' => -1,
-                'newToken' => Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('center'))),
+                'newToken' => Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('center'))),
                 'newCount' => $newCount,
                 'type' => $token->type,
             ]);
@@ -46,14 +46,14 @@ trait ActionTrait {
             }
         }
         
-        $this->tokens->pickCardsForLocation(5, 'deck', 'pile'.$pile);
-        $this->tokens->shuffle('pile'.$pile); // to give them a locationArg asc
+        $this->destinations->pickCardsForLocation(5, 'deck', 'pile'.$pile);
+        $this->destinations->shuffle('pile'.$pile); // to give them a locationArg asc
 
         self::notifyAllPlayers('refillTokens', clienttranslate('Pile ${emptyPile} is refilled'), [
             'emptyPile' => $pile, // for logs
             'pile' => $pile,
-            'newToken' => $this->getTokenFromDb($this->tokens->getCardOnTop('pile'.$pile)),
-            'newCount' => intval($this->tokens->countCardInLocation('pile'.$pile)),
+            'newToken' => $this->getDestinationFromDb($this->destinations->getCardOnTop('pile'.$pile)),
+            'newCount' => intval($this->destinations->countCardInLocation('pile'.$pile)),
         ]);
         
         return $token;
@@ -119,15 +119,15 @@ trait ActionTrait {
             }
 
             $tokenPile = ($pile + $i) % 6;
-            $token = $this->getTokenFromDb($this->tokens->pickCardForLocation('pile'.$tokenPile, 'player', $playerId));
+            $token = $this->getDestinationFromDb($this->destinations->pickCardForLocation('pile'.$tokenPile, 'player', $playerId));
 
             self::notifyAllPlayers('takeToken', clienttranslate('${player_name} takes resource ${type}'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
                 'token' => $token,
                 'pile' => $tokenPile,
-                'newToken' => $this->getTokenFromDb($this->tokens->getCardOnTop('pile'.$tokenPile)),
-                'newCount' => intval($this->tokens->countCardInLocation('pile'.$tokenPile)),
+                'newToken' => $this->getDestinationFromDb($this->destinations->getCardOnTop('pile'.$tokenPile)),
+                'newCount' => intval($this->destinations->countCardInLocation('pile'.$tokenPile)),
                 'type' => $token->type,
             ]);
 
@@ -136,7 +136,7 @@ trait ActionTrait {
             $this->incStat(1, 'collectedResources'.$token->type);
             $this->incStat(1, 'collectedResources'.$token->type, $playerId);
 
-            if (intval($this->tokens->countCardInLocation('pile'.$tokenPile)) == 0) {
+            if (intval($this->destinations->countCardInLocation('pile'.$tokenPile)) == 0) {
                 $this->refillTokenPile($tokenPile, $playerId);
                 
                 if ($this->getChiefPower($playerId) == CHIEF_POWER_TAKE_CARD) {
@@ -184,7 +184,7 @@ trait ActionTrait {
             throw new BgaUserException("You can't play this card (not enough tokens)");
         }
 
-        $this->tokens->moveCards(array_map(fn($token) => $token->id, $tokens), 'discard');
+        $this->destinations->moveCards(array_map(fn($token) => $token->id, $tokens), 'discard');
         $message = count($tokens) > 0 ?
             clienttranslate('${player_name} plays a ${card_color} ${card_type} card from their hand (paid ${types})') :
             clienttranslate('${player_name} plays a ${card_color} ${card_type} card from their hand');
@@ -262,7 +262,7 @@ trait ActionTrait {
 
         $args = $this->argDiscardTokens();
         $max = $args['number'];
-        $tokens = $this->getTokensByLocation('player', $playerId);
+        $tokens = $this->getDestinationsByLocation('player', $playerId);
 
         $discard = true;
         if (count($tokens) <= $max) {
@@ -331,7 +331,7 @@ trait ActionTrait {
         self::checkAction('storeToken');
 
         $playerId = intval($this->getActivePlayerId());
-        $playerTokens = $this->getTokensByLocation('player', $playerId);
+        $playerTokens = $this->getDestinationsByLocation('player', $playerId);
         $token = $this->array_find($playerTokens, fn($playerToken) => $playerToken->type == $tokenType);
         $card = $this->getCardFromDb($this->cards->getCard($cardId));        
 
@@ -339,7 +339,7 @@ trait ActionTrait {
             throw new BgaUserException("Invalid action");
         }
 
-        $this->tokens->moveCard($token->id, 'prestore', $cardId);
+        $this->destinations->moveCard($token->id, 'prestore', $cardId);
 
         self::notifyAllPlayers('storedToken', clienttranslate('${player_name} stores ${type} on a storage card'), [
             'playerId' => $playerId,
@@ -358,13 +358,13 @@ trait ActionTrait {
         self::checkAction('unstoreToken');
 
         $playerId = intval($this->getActivePlayerId());
-        $token = $this->getTokenFromDb($this->tokens->getCard($tokenId));
+        $token = $this->getDestinationFromDb($this->destinations->getCard($tokenId));
 
         if ($token->location != 'prestore') {
             throw new BgaUserException("Invalid action");
         }
 
-        $this->tokens->moveCard($tokenId, 'player', $playerId);
+        $this->destinations->moveCard($tokenId, 'player', $playerId);
 
         self::notifyAllPlayers('unstoredToken', clienttranslate('${player_name} removes ${type} from a storage card'), [
             'playerId' => $playerId,
@@ -388,11 +388,11 @@ trait ActionTrait {
             throw new BgaUserException("Invalid selected resource count");
         }
 
-        $tokens = $this->getTokensByLocation('player', $playerId);
+        $tokens = $this->getDestinationsByLocation('player', $playerId);
         $keptTokens = array_values(array_filter($tokens, fn($token) => $this->array_some($ids, fn($id) => $token->id == $id)));
         $discardedTokens = array_values(array_filter($tokens, fn($token) => !$this->array_some($ids, fn($id) => $token->id == $id)));
 
-        $this->tokens->moveCards(array_map(fn($token) => $token->id, $discardedTokens), 'discard');
+        $this->destinations->moveCards(array_map(fn($token) => $token->id, $discardedTokens), 'discard');
 
         self::notifyAllPlayers('discardTokens', clienttranslate('${player_name} discards ${types}'), [
             'playerId' => $playerId,
@@ -416,7 +416,7 @@ trait ActionTrait {
         $undo = $this->getGlobalVariable(UNDO);
 
         $this->cards->moveCards($undo->cardsIds, 'hand', $playerId);
-        $this->tokens->moveCards($undo->tokensIds, 'player', $playerId);
+        $this->destinations->moveCards($undo->tokensIds, 'player', $playerId);
 
         $this->setGlobalVariable(POWER_PAY_ONE_LESS, $undo->payOneLess);
 
@@ -424,7 +424,7 @@ trait ActionTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'cards' => $this->getCardsFromDb($this->cards->getCards($undo->cardsIds)),
-            'tokens' => $this->getTokensFromDb($this->tokens->getCards($undo->tokensIds)),
+            'tokens' => $this->getDestinationsFromDb($this->destinations->getCards($undo->tokensIds)),
         ]);
 
         $this->updateScore($playerId);

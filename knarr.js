@@ -1206,10 +1206,6 @@ var CardManager = /** @class */ (function () {
     };
     return CardManager;
 }());
-var HOUSE = 1;
-var STORAGE = 2;
-var HUMAN = 3;
-var TOOL = 4;
 var CardsManager = /** @class */ (function (_super) {
     __extends(CardsManager, _super);
     function CardsManager(game) {
@@ -1251,6 +1247,52 @@ var CardsManager = /** @class */ (function (_super) {
         return message;
     };
     return CardsManager;
+}(CardManager));
+var DestinationsManager = /** @class */ (function (_super) {
+    __extends(DestinationsManager, _super);
+    function DestinationsManager(game) {
+        var _this = _super.call(this, game, {
+            getId: function (card) { return "destination-".concat(card.id); },
+            setupDiv: function (card, div) {
+                div.classList.add('knarr-destination');
+                div.dataset.cardId = '' + card.id;
+            },
+            setupFrontDiv: function (card, div) {
+                div.dataset.cardId = "".concat(_this.getId(card), "-front");
+                div.dataset.type = '' + card.type;
+                div.dataset.number = '' + card.number;
+                game.setTooltip(div.id, _this.getTooltip(card));
+            },
+        }) || this;
+        _this.game = game;
+        return _this;
+    }
+    DestinationsManager.prototype.getGain = function (type) {
+        switch (type) {
+            case 1: return _("House");
+            case 2: return _("Storage");
+            case 3: return _("Human");
+            case 4: return _("Tool");
+        }
+    };
+    DestinationsManager.prototype.getColor = function (color) {
+        switch (color) {
+            case 1: return _("Blue");
+            case 2: return _("Yellow");
+            case 3: return _("Green");
+            case 4: return _("Red");
+            case 5: return _("Purple");
+        }
+    };
+    DestinationsManager.prototype.getTooltip = function (card) {
+        var message = "TODO"; /*
+        <strong>${_("Color:")}</strong> ${this.getColor(card.color)}
+        <br>
+        <strong>${_("Gain:")}</strong> ${this.getGain(card.gain)}
+        `;*/
+        return message;
+    };
+    return DestinationsManager;
 }(CardManager));
 var CARD_OVERLAP = 40;
 var FIRST_ANIMAL_SHIFT = 28;
@@ -1336,7 +1378,16 @@ var SHADOW_COLORS = [
 ];
 var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
+        var _this = this;
         this.game = game;
+        this.destinations = [];
+        ['A', 'B'].forEach(function (letter) {
+            _this.destinations[letter] = new SlotStock(game.destinationsManager, document.getElementById("table-destinations-".concat(letter)), {
+                slotsIds: [1, 2, 3],
+                mapCardToSlot: function (card) { return card.locationArg; },
+            });
+            _this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
+        });
         this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: function (card) { return card.locationArg; },
@@ -1385,12 +1436,12 @@ var PlayerTable = /** @class */ (function () {
         });
         this.played.addCards(player.played);
         
-        this.tokensFree = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
+        this.tokensFree = new LineStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
             center: false,
-            sort: (a: Token, b: Token) => a.type - b.type,
+            sort: (a: Destination, b: Destination) => a.type - b.type,
         });
-        this.tokensFree.onSelectionChange = (selection: Token[], lastChange: Token) => this.game.onTokenSelectionChange(selection);
-        this.tokensChief = new SlotStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
+        this.tokensFree.onSelectionChange = (selection: Destination[], lastChange: Destination) => this.game.onTokenSelectionChange(selection);
+        this.tokensChief = new SlotStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
             gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
             direction: 'column',
             slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
@@ -1401,55 +1452,6 @@ var PlayerTable = /** @class */ (function () {
             player.tokens.forEach((token, index) => this.tokensChief.addCard(token, undefined, { slot: index }));
         }*/
     }
-    PlayerTable.prototype.freeResources = function () {
-        //this.tokensFree.addCards(this.tokensChief.getCards());
-    };
-    PlayerTable.prototype.setCardsSelectable = function (selectable, selectableCards) {
-        var _this = this;
-        if (selectableCards === void 0) { selectableCards = null; }
-        this.hand.setSelectionMode(selectable ? 'single' : 'none');
-        this.hand.getCards().forEach(function (card) {
-            var element = _this.hand.getCardElement(card);
-            var disabled = selectable && selectableCards != null && !selectableCards.some(function (s) { return s.id == card.id; });
-            element.classList.toggle('disabled', disabled);
-            element.classList.toggle('selectable', selectable && !disabled);
-        });
-    };
-    PlayerTable.prototype.setFreeTokensSelectable = function (selectable) {
-        this.tokensFree.setSelectionMode(selectable ? 'multiple' : 'none');
-    };
-    PlayerTable.prototype.getTokenOfType = function (type) {
-        return this.tokensFree.getCards().find(function (card) { return card.type == type; });
-    };
-    PlayerTable.prototype.setStoreButtons = function (activated) {
-        if (activated) {
-            document.getElementById("player-table-".concat(this.playerId)).classList.add('can-store');
-            this.game.cardsManager.updateStorageButtons();
-        }
-        else {
-            document.getElementById("player-table-".concat(this.playerId)).classList.remove('can-store');
-        }
-    };
-    PlayerTable.prototype.storeToken = function (cardId, token) {
-        this.game.cardsManager.prestoreToken(cardId, token);
-        this.game.cardsManager.updateStorageButtons();
-    };
-    PlayerTable.prototype.unstoreToken = function (token) {
-        this.tokensFree.addCard(token);
-        this.game.cardsManager.updateStorageButtons();
-    };
-    PlayerTable.prototype.confirmStoreTokens = function (tokens) {
-        var _this = this;
-        Object.entries(tokens).forEach(function (entry) {
-            return _this.game.cardsManager.confirmStoreToken(Number(entry[0]), entry[1]);
-        });
-        this.setStoreButtons(false);
-    };
-    PlayerTable.prototype.cancelLastMoves = function (cards, tokens) {
-        var _a;
-        (_a = this.hand) === null || _a === void 0 ? void 0 : _a.addCards(cards);
-        this.tokensFree.addCards(tokens);
-    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -1459,7 +1461,9 @@ var Knarr = /** @class */ (function () {
     function Knarr() {
         this.playersTables = [];
         this.handCounters = [];
-        this.resourcesCounters = [];
+        this.fameCounters = [];
+        this.recruitCounters = [];
+        this.braceletCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -1479,6 +1483,7 @@ var Knarr = /** @class */ (function () {
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
         this.cardsManager = new CardsManager(this);
+        this.destinationsManager = new DestinationsManager(this);
         this.animationManager = new AnimationManager(this);
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
@@ -1508,7 +1513,6 @@ var Knarr = /** @class */ (function () {
     //                  You can use this method to perform some user interface changes at this moment.
     //
     Knarr.prototype.onEnteringState = function (stateName, args) {
-        var _a, _b;
         log('Entering state: ' + stateName, args.args);
         switch (stateName) {
             case 'takeCard':
@@ -1525,20 +1529,20 @@ var Knarr = /** @class */ (function () {
             case 'discardTokens':
                 if (this.isCurrentPlayerActive()) {
                     //this.getCurrentPlayerTable()?.setStoreButtons(false);
-                    (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setFreeTokensSelectable(true);
+                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(true);
                 }
                 break;
         }
         if (['playCard', 'chooseOneLess', 'discardCard'].includes(stateName)) {
             if (this.isCurrentPlayerActive()) {
-                (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setStoreButtons(true);
+                //this.getCurrentPlayerTable()?.setStoreButtons(true);
             }
         }
     };
     Knarr.prototype.onEnteringTakeCard = function (args) {
-        this.getPlayerTable(args.playerId).freeResources();
+        //this.getPlayerTable(args.playerId).freeResources();
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true);
+            //this.tableCenter.setCardsSelectable(true);
         }
     };
     Knarr.prototype.setGamestateDescription = function (property) {
@@ -1549,24 +1553,21 @@ var Knarr = /** @class */ (function () {
         this.updatePageTitle();
     };
     Knarr.prototype.onEnteringPlayCard = function (args) {
-        var _a;
         if (args.canStore) {
             this.setGamestateDescription('Storage');
         }
         if (this.isCurrentPlayerActive()) {
-            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.playableCards);
+            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
         }
     };
     Knarr.prototype.onEnteringDiscardCard = function (args) {
-        var _a;
         if (this.isCurrentPlayerActive()) {
-            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.playableCards);
+            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
             var selectedCardDiv = this.getCurrentPlayerTable().hand.getCardElement(args.selectedCard);
             selectedCardDiv.classList.add('selected-discard');
         }
     };
     Knarr.prototype.onLeavingState = function (stateName) {
-        var _a;
         log('Leaving state: ' + stateName);
         switch (stateName) {
             case 'takeCard':
@@ -1582,17 +1583,16 @@ var Knarr = /** @class */ (function () {
                 break;
             case 'discardTokens':
                 if (this.isCurrentPlayerActive()) {
-                    (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setFreeTokensSelectable(false);
+                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(false);
                 }
                 break;
         }
     };
     Knarr.prototype.onLeavingTakeCard = function () {
-        this.tableCenter.setCardsSelectable(false);
+        //this.tableCenter.setCardsSelectable(false);
     };
     Knarr.prototype.onLeavingPlayCard = function () {
-        var _a;
-        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+        //this.getCurrentPlayerTable()?.setCardsSelectable(false);
     };
     Knarr.prototype.onLeavingDiscardCard = function () {
         document.querySelectorAll('.selected-discard').forEach(function (elem) { return elem.classList.remove('selected-discard'); });
@@ -1681,7 +1681,7 @@ var Knarr = /** @class */ (function () {
         return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
     };
     Knarr.prototype.getVariantOption = function () {
-        return this.gamedatas.chieftainOption;
+        return this.gamedatas.variantOption;
     };
     Knarr.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
@@ -1714,32 +1714,26 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div><div class=\"counters\">");
-            for (var i = 1; i <= 5; i++) {
-                html += "\n                <div id=\"resource".concat(i, "-counter-wrapper-").concat(player.id, "\" class=\"resource-counter\">\n                    <div class=\"token-icon\" data-type=\"").concat(i, "\"></div>\n                    <span id=\"resource").concat(i, "-counter-").concat(player.id, "\"></span>\n                </div>");
-                if (i == 4) {
-                    html += "</div><div class=\"counters\">";
-                }
-            }
-            html += "\n            </div>";
+            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div><div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             var handCounter = new ebg.counter();
             handCounter.create("playerhand-counter-".concat(playerId));
             handCounter.setValue(player.handCount);
             _this.handCounters[playerId] = handCounter;
-            _this.resourcesCounters[playerId] = [];
-            var _loop_3 = function (i) {
-                var resourceCounter = new ebg.counter();
-                resourceCounter.create("resource".concat(i, "-counter-").concat(playerId));
-                resourceCounter.setValue(player.tokens.filter(function (token) { return token.type == i; }).length);
-                _this.resourcesCounters[playerId][i] = resourceCounter;
-            };
-            for (var i = 1; i <= 5; i++) {
-                _loop_3(i);
-            }
+            _this.fameCounters[playerId] = new ebg.counter();
+            _this.fameCounters[playerId].create("fame-counter-".concat(playerId));
+            _this.fameCounters[playerId].setValue(player.fame);
+            _this.recruitCounters[playerId] = new ebg.counter();
+            _this.recruitCounters[playerId].create("recruit-counter-".concat(playerId));
+            _this.recruitCounters[playerId].setValue(player.recruit);
+            _this.braceletCounters[playerId] = new ebg.counter();
+            _this.braceletCounters[playerId].create("bracelet-counter-".concat(playerId));
+            _this.braceletCounters[playerId].setValue(player.bracelet);
         });
         this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
-        this.setTooltipToClass('resource-counter', _('Number of resources by type'));
+        this.setTooltipToClass('fame-counter', _('Fame'));
+        this.setTooltipToClass('recruit-counter', _('Recruits'));
+        this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     };
     Knarr.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
@@ -1924,7 +1918,7 @@ var Knarr = /** @class */ (function () {
         if (notif.args.pile != -2) {
             this.notif_refillTokens(notif);
         }
-        this.resourcesCounters[playerId][token.type].incValue(1);
+        this.fameCounters[playerId][token.type].incValue(1);
     };
     Knarr.prototype.notif_refillTokens = function (notif) {
         this.tableCenter.setNewToken(notif.args.pile, notif.args.newToken, notif.args.newCount);
@@ -1939,7 +1933,7 @@ var Knarr = /** @class */ (function () {
         });
         notif.args.discardedTokens.forEach(function (token) {
             playerTable.tokensFree.removeCard(token);
-            _this.resourcesCounters[playerId][token.type].incValue(-1);
+            _this.fameCounters[playerId][token.type].incValue(-1);
         });
         this.handCounters[playerId].toValue(notif.args.newCount);
     };
@@ -1950,13 +1944,13 @@ var Knarr = /** @class */ (function () {
         var playerId = notif.args.playerId;
         var token = notif.args.token;
         this.getPlayerTable(playerId).storeToken(notif.args.cardId, token);
-        this.resourcesCounters[playerId][token.type].incValue(-1);
+        this.fameCounters[playerId][token.type].incValue(-1);
     };
     Knarr.prototype.notif_unstoredToken = function (notif) {
         var playerId = notif.args.playerId;
         var token = notif.args.token;
         this.getPlayerTable(playerId).unstoreToken(token);
-        this.resourcesCounters[playerId][token.type].incValue(+1);
+        this.fameCounters[playerId][token.type].incValue(+1);
     };
     Knarr.prototype.notif_confirmStoredTokens = function (notif) {
         var playerId = notif.args.playerId;
@@ -1968,7 +1962,7 @@ var Knarr = /** @class */ (function () {
         var playerTable = this.getPlayerTable(playerId);
         notif.args.discardedTokens.forEach(function (token) {
             playerTable.tokensFree.removeCard(token);
-            _this.resourcesCounters[playerId][token.type].incValue(-1);
+            _this.fameCounters[playerId][token.type].incValue(-1);
         });
         notif.args.keptTokens.forEach(function (token, index) { return playerTable.tokensChief.addCard(token, undefined, { slot: index }); });
     };
@@ -1980,7 +1974,7 @@ var Knarr = /** @class */ (function () {
         var playerId = notif.args.playerId;
         this.getPlayerTable(playerId).cancelLastMoves(notif.args.cards, notif.args.tokens);
         [1, 2, 3, 4, 5].forEach(function (type) {
-            return _this.resourcesCounters[playerId][type].toValue(notif.args.tokens.filter(function (token) { return token.type == type; }).length);
+            return _this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(function (token) { return token.type == type; }).length);
         });
     };
     /**

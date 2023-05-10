@@ -10,20 +10,26 @@ interface Card {
     gain: number;
 }
 
-interface Token {
+interface Destination {
     id: number;
     location: string;
     locationArg: number;
     type: number;
+    number: number;
+    cost: { [color: number]: number };
+    immediateGains: { [type: number]: number };
+    gains: (number | null)[];
 }
 
 interface KnarrPlayer extends Player {
     playerNo: number;
+    fame: number;
+    recruit: number;
+    bracelet: number;
     handCount: number;
     hand?: Card[];
-    chief: number;
     played: Card[];
-    tokens: Token[];
+    tokens: Destination[];
 }
 
 interface KnarrGamedatas {
@@ -40,16 +46,15 @@ interface KnarrGamedatas {
 
     // Add here variables you set up in getAllDatas
     centerCards: Card[];
-    centerTokens: { [position: number]: Token };
-    centerTokensCount: { [position: number]: number };
-    fireToken: Token;
-    fireTokenCount: number;
-    chieftainOption: number;
+    centerDestinations: { [letter: string]: Destination[] };
+    boatSideOption: number;
+    variantOption: number;
     lastTurn: boolean;
 }
 
 interface KnarrGame extends Game {
     cardsManager: CardsManager;
+    destinationsManager: DestinationsManager;
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
@@ -60,7 +65,7 @@ interface KnarrGame extends Game {
     setTooltip(id: string, html: string): void;
     onCenterCardClick(pile: number): void;
     onHandCardClick(card: Card): void;
-    onTokenSelectionChange(selection: Token[]): void;
+    onTokenSelectionChange(selection: Destination[]): void;
     storeToken(cardId: number, tokenType: number): void;
     unstoreToken(tokenId: number): void;
 }
@@ -102,8 +107,8 @@ interface NotifTakeCardArgs extends NotifTakeElementArgs {
 
 // takeToken
 interface NotifTakeTokenArgs extends NotifTakeElementArgs {
-    token: Token;
-    newToken: Token | null;
+    token: Destination;
+    newToken: Destination | null;
 } 
 
 // playCard
@@ -111,7 +116,7 @@ interface NotifPlayCardArgs {
     playerId: number;
     newCount: number;
     card: Card;
-    discardedTokens: Token[];
+    discardedTokens: Destination[];
 } 
 
 // discardCard
@@ -123,7 +128,7 @@ interface NotifDiscardCardArgs {
 // unstoredToken
 interface NotifUnstoredTokenArgs {
     playerId: number;
-    token: Token;
+    token: Destination;
 }
 
 // storedToken
@@ -133,14 +138,14 @@ interface NotifStoredTokenArgs extends NotifUnstoredTokenArgs {
 // confirmStoredTokens
 interface NotifConfirmStoredTokensArgs {
     playerId: number;
-    tokens: { [cardId: number]: Token };
+    tokens: { [cardId: number]: Destination };
 }
 
 // discardTokens
 interface NotifDiscardTokensArgs {
     playerId: number;
-    keptTokens: Token[];    
-    discardedTokens: Token[];
+    keptTokens: Destination[];    
+    discardedTokens: Destination[];
 }
 
 // updateScore
@@ -153,5 +158,5 @@ interface NotifUpdateScoreArgs {
 interface NotifCancelLastMovesArgs {
     playerId: number;
     cards: Card[];
-    tokens: Token[];
+    tokens: Destination[];
 } 

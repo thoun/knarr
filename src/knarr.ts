@@ -12,6 +12,7 @@ const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 
 class Knarr implements KnarrGame {
     public cardsManager: CardsManager;
+    public destinationsManager: DestinationsManager;
 
     private zoomManager: ZoomManager;
     private animationManager: AnimationManager;
@@ -19,7 +20,9 @@ class Knarr implements KnarrGame {
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
     private handCounters: Counter[] = [];
-    private resourcesCounters: Counter[][] = [];
+    private fameCounters: Counter[] = [];
+    private recruitCounters: Counter[] = [];
+    private braceletCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -48,6 +51,7 @@ class Knarr implements KnarrGame {
 
 
         this.cardsManager = new CardsManager(this);
+        this.destinationsManager = new DestinationsManager(this);
         this.animationManager = new AnimationManager(this);
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
@@ -100,22 +104,22 @@ class Knarr implements KnarrGame {
             case 'discardTokens':
                     if ((this as any).isCurrentPlayerActive()) {
                         //this.getCurrentPlayerTable()?.setStoreButtons(false);
-                        this.getCurrentPlayerTable()?.setFreeTokensSelectable(true);
+                        //this.getCurrentPlayerTable()?.setFreeTokensSelectable(true);
                     }
                     break;
         }
 
         if (['playCard', 'chooseOneLess', 'discardCard'].includes(stateName)) {
             if ((this as any).isCurrentPlayerActive()) {
-                this.getCurrentPlayerTable()?.setStoreButtons(true);
+                //this.getCurrentPlayerTable()?.setStoreButtons(true);
             }
         }
     }
 
     private onEnteringTakeCard(args: EnteringTakeCardArgs) {
-        this.getPlayerTable(args.playerId).freeResources();
+        //this.getPlayerTable(args.playerId).freeResources();
         if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true);
+            //this.tableCenter.setCardsSelectable(true);
         }
     }
     
@@ -132,13 +136,13 @@ class Knarr implements KnarrGame {
         }
 
         if ((this as any).isCurrentPlayerActive()) {
-            this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
+            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
         }
     }
 
     private onEnteringDiscardCard(args: EnteringDiscardCardArgs) {
         if ((this as any).isCurrentPlayerActive()) {
-            this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
+            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
             const selectedCardDiv = this.getCurrentPlayerTable().hand.getCardElement(args.selectedCard);
             selectedCardDiv.classList.add('selected-discard');
         }
@@ -161,18 +165,18 @@ class Knarr implements KnarrGame {
                 break;
            case 'discardTokens':
                 if ((this as any).isCurrentPlayerActive()) {
-                    this.getCurrentPlayerTable()?.setFreeTokensSelectable(false);
+                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(false);
                 }
                 break;
         }
     }
 
     private onLeavingTakeCard() {
-        this.tableCenter.setCardsSelectable(false);
+        //this.tableCenter.setCardsSelectable(false);
     }
 
     private onLeavingPlayCard() {
-        this.getCurrentPlayerTable()?.setCardsSelectable(false);
+        //this.getCurrentPlayerTable()?.setCardsSelectable(false);
     }
 
     private onLeavingDiscardCard() {
@@ -272,7 +276,7 @@ class Knarr implements KnarrGame {
     }
 
     public getVariantOption(): number {
-        return this.gamedatas.chieftainOption;
+        return this.gamedatas.variantOption;
     }
 
     public getGameStateName(): string {
@@ -318,20 +322,23 @@ class Knarr implements KnarrGame {
                     <div class="player-hand-card"></div> 
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>
-            </div><div class="counters">`;
-
-            for (let i = 1; i <= 5; i++) {
-                html += `
-                <div id="resource${i}-counter-wrapper-${player.id}" class="resource-counter">
-                    <div class="token-icon" data-type="${i}"></div>
-                    <span id="resource${i}-counter-${player.id}"></span>
-                </div>`;
-                if (i == 4) {
-                    html += `</div><div class="counters">`;
-                }
-            }
-
-            html += `
+            </div><div class="counters">
+            
+                <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
+                    <div class="fame icon"></div>
+                    <span id="fame-counter-${player.id}"></span>
+                </div>
+            
+                <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
+                    <div class="recruit icon"></div>
+                    <span id="recruit-counter-${player.id}"></span>
+                </div>
+            
+                <div id="bracelet-counter-wrapper-${player.id}" class="bracelet-counter">
+                    <div class="bracelet icon"></div>
+                    <span id="bracelet-counter-${player.id}"></span>
+                </div>
+                
             </div>`;
 
             dojo.place(html, `player_board_${player.id}`);
@@ -341,17 +348,23 @@ class Knarr implements KnarrGame {
             handCounter.setValue(player.handCount);
             this.handCounters[playerId] = handCounter;
 
-            this.resourcesCounters[playerId] = [];
-            for (let i = 1; i <= 5; i++) {
-                const resourceCounter = new ebg.counter();
-                resourceCounter.create(`resource${i}-counter-${playerId}`);
-                resourceCounter.setValue(player.tokens.filter(token => token.type == i).length);
-                this.resourcesCounters[playerId][i] = resourceCounter;
-            }
+            this.fameCounters[playerId] = new ebg.counter();
+            this.fameCounters[playerId].create(`fame-counter-${playerId}`);
+            this.fameCounters[playerId].setValue(player.fame);
+
+            this.recruitCounters[playerId] = new ebg.counter();
+            this.recruitCounters[playerId].create(`recruit-counter-${playerId}`);
+            this.recruitCounters[playerId].setValue(player.recruit);
+
+            this.braceletCounters[playerId] = new ebg.counter();
+            this.braceletCounters[playerId].create(`bracelet-counter-${playerId}`);
+            this.braceletCounters[playerId].setValue(player.bracelet);
         });
 
         this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
-        this.setTooltipToClass('resource-counter', _('Number of resources by type'));
+        this.setTooltipToClass('fame-counter', _('Fame'));
+        this.setTooltipToClass('recruit-counter', _('Recruits'));
+        this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     }
 
     private createPlayerTables(gamedatas: KnarrGamedatas) {
@@ -383,7 +396,7 @@ class Knarr implements KnarrGame {
         }
     }
 
-    public onTokenSelectionChange(selection: Token[]): void {
+    public onTokenSelectionChange(selection: Destination[]): void {
         if (this.gamedatas.gamestate.name !== 'discardTokens') {
             return;
         }
@@ -571,7 +584,7 @@ class Knarr implements KnarrGame {
         if (notif.args.pile != -2) {
             this.notif_refillTokens(notif);
         }
-        this.resourcesCounters[playerId][token.type].incValue(1);
+        this.fameCounters[playerId][token.type].incValue(1);
     }
 
     notif_refillTokens(notif: Notif<NotifTakeTokenArgs>) {
@@ -587,7 +600,7 @@ class Knarr implements KnarrGame {
         });
         notif.args.discardedTokens.forEach(token => {
             playerTable.tokensFree.removeCard(token);
-            this.resourcesCounters[playerId][token.type].incValue(-1);
+            this.fameCounters[playerId][token.type].incValue(-1);
         });
         this.handCounters[playerId].toValue(notif.args.newCount);
     }
@@ -600,14 +613,14 @@ class Knarr implements KnarrGame {
         const playerId = notif.args.playerId;
         const token = notif.args.token;
         this.getPlayerTable(playerId).storeToken(notif.args.cardId, token);
-        this.resourcesCounters[playerId][token.type].incValue(-1);
+        this.fameCounters[playerId][token.type].incValue(-1);
     }
 
     notif_unstoredToken(notif: Notif<NotifUnstoredTokenArgs>) {
         const playerId = notif.args.playerId;
         const token = notif.args.token;
         this.getPlayerTable(playerId).unstoreToken(token);
-        this.resourcesCounters[playerId][token.type].incValue(+1);
+        this.fameCounters[playerId][token.type].incValue(+1);
     }
 
     notif_confirmStoredTokens(notif: Notif<NotifConfirmStoredTokensArgs>) {
@@ -620,7 +633,7 @@ class Knarr implements KnarrGame {
         const playerTable = this.getPlayerTable(playerId);
         notif.args.discardedTokens.forEach(token => {
             playerTable.tokensFree.removeCard(token);
-            this.resourcesCounters[playerId][token.type].incValue(-1);
+            this.fameCounters[playerId][token.type].incValue(-1);
         });
         notif.args.keptTokens.forEach((token, index) => playerTable.tokensChief.addCard(token, undefined, { slot: index }));
     }
@@ -633,7 +646,7 @@ class Knarr implements KnarrGame {
         const playerId = notif.args.playerId;
         this.getPlayerTable(playerId).cancelLastMoves(notif.args.cards, notif.args.tokens);
         [1,2,3,4,5].forEach(type => 
-            this.resourcesCounters[playerId][type].toValue(notif.args.tokens.filter(token => token.type == type).length)
+            this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(token => token.type == type).length)
         );
     }
     

@@ -1,0 +1,78 @@
+.knarr-destination {
+  display: inline-block;
+  position: relative;
+  width: 120px;
+  height: 221px;
+  margin: 5px;
+  border-radius: 10px;
+
+  &.disabled {
+    cursor: not-allowed;
+    filter: contrast(0.6);
+  }
+
+  .card-sides {
+      .card-side {
+          border-radius: 10px;
+
+          &>* {
+              pointer-events: none;
+              user-select: none;
+          }
+
+          /*&.back {  
+              background-size: auto 100%;
+              background-image: url('img/card-back.jpg');
+          }*/
+
+          &.front {
+              background-size: auto 100%;
+              background-image: url('img/cards.jpg');
+          }
+      }
+  }    
+
+  &.selectable:not(.disabled) {
+      cursor: pointer;
+      &:not(.selected) {
+          animation: selectable-card-animation 1s alternate infinite ease-in-out;
+      }
+
+      .card-side {
+          box-shadow: unset;
+      }
+  }    
+
+  &.selected:not(.disabled) {
+      box-shadow: 0 0 5px 5px orange;
+
+      .card-side {
+          box-shadow: unset;
+      }
+  }
+  
+  &.selected-discard {
+      outline: 4px solid orange;
+
+      .card-side {
+          box-shadow: unset;
+      }
+  }
+
+  @for $type from 1 through 2 {
+      @for $number from 1 through 20 {
+          .front[data-type="#{$type}"][data-number="#{$number}"] {
+              background-position: #{($type - 1) * 100%} #{($number - 1) * 100% / 19};
+          }
+      }
+  }
+}
+
+@keyframes selectable-card-animation {
+  0% {
+    box-shadow: 0 0 3px 2px orange;
+  }
+  100% { 
+    box-shadow: 0 0 5px 3px orange;
+  }
+}

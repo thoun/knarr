@@ -9,8 +9,8 @@ class PlayerTable {
     public hand?: LineStock<Card>;
     public chief: LineStock<number>;
     public played: LineStock<Card>;
-    public tokensFree: LineStock<Token>;
-    public tokensChief: SlotStock<Token>;
+    public tokensFree: LineStock<Destination>;
+    public tokensChief: SlotStock<Destination>;
 
     private currentPlayer: boolean;
 
@@ -69,12 +69,12 @@ class PlayerTable {
         });
         this.played.addCards(player.played);
         
-        this.tokensFree = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
+        this.tokensFree = new LineStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
             center: false,
-            sort: (a: Token, b: Token) => a.type - b.type,
+            sort: (a: Destination, b: Destination) => a.type - b.type,
         });
-        this.tokensFree.onSelectionChange = (selection: Token[], lastChange: Token) => this.game.onTokenSelectionChange(selection);
-        this.tokensChief = new SlotStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
+        this.tokensFree.onSelectionChange = (selection: Destination[], lastChange: Destination) => this.game.onTokenSelectionChange(selection);
+        this.tokensChief = new SlotStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
             gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
             direction: 'column',
             slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
@@ -86,7 +86,7 @@ class PlayerTable {
         }*/
     }
 
-    public freeResources() {
+    /*public freeResources() {
         //this.tokensFree.addCards(this.tokensChief.getCards());
     }
     
@@ -104,7 +104,7 @@ class PlayerTable {
         this.tokensFree.setSelectionMode(selectable ? 'multiple' : 'none');
     }
 
-    public getTokenOfType(type: number): Token | null {
+    public getTokenOfType(type: number): Destination | null {
         return this.tokensFree.getCards().find(card => card.type == type);
     }
     
@@ -117,25 +117,25 @@ class PlayerTable {
         }
     }
     
-    public storeToken(cardId: number, token: Token) {
+    public storeToken(cardId: number, token: Destination) {
         this.game.cardsManager.prestoreToken(cardId, token);
         this.game.cardsManager.updateStorageButtons();
     }
     
-    public unstoreToken(token: Token) {
+    public unstoreToken(token: Destination) {
         this.tokensFree.addCard(token);
         this.game.cardsManager.updateStorageButtons();
     }
     
-    public confirmStoreTokens(tokens: { [cardId: number]: Token; }) {
+    public confirmStoreTokens(tokens: { [cardId: number]: Destination; }) {
         Object.entries(tokens).forEach(entry => 
             this.game.cardsManager.confirmStoreToken(Number(entry[0]), entry[1])
         );
         this.setStoreButtons(false);
     }
     
-    public cancelLastMoves(cards: Card[], tokens: Token[]) {
+    public cancelLastMoves(cards: Card[], tokens: Destination[]) {
         this.hand?.addCards(cards);
         this.tokensFree.addCards(tokens);
-    }
+    }*/
 }

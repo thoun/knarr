@@ -15,17 +15,17 @@ trait DebugUtilTrait {
     }
 
     function debugPickResources($playerId = 2343492) {
-		$this->tokens->pickCardsForLocation(20, 'deck', 'player', $playerId);
+		$this->destinations->pickCardsForLocation(20, 'deck', 'player', $playerId);
     }
 
     function debugAlmostEmptyPile($pile) {
-		$tokenCount = intval($this->tokens->countCardInLocation('pile'.$pile));
-        $this->tokens->pickCardsForLocation($tokenCount - 1, 'pile'.$pile, 'discard');
+		$tokenCount = intval($this->destinations->countCardInLocation('pile'.$pile));
+        $this->destinations->pickCardsForLocation($tokenCount - 1, 'pile'.$pile, 'discard');
     }
 
     function debugEmptyFire($remaining = 1) {
-		$fireTokenCount = intval($this->tokens->countCardInLocation('center'));
-        $this->tokens->pickCardsForLocation($fireTokenCount - $remaining, 'center', 'discard');
+		$fireTokenCount = intval($this->destinations->countCardInLocation('center'));
+        $this->destinations->pickCardsForLocation($fireTokenCount - $remaining, 'center', 'discard');
     }
 
     function debugLastTurn() {

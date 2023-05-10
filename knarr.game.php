@@ -20,7 +20,7 @@
 require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
 
 require_once('modules/php/objects/card.php');
-require_once('modules/php/objects/token.php');
+require_once('modules/php/objects/destination.php');
 require_once('modules/php/objects/player.php');
 require_once('modules/php/objects/undo.php');
 require_once('modules/php/constants.inc.php');
@@ -50,6 +50,7 @@ class Knarr extends Table {
             LAST_TURN => LAST_TURN,
             SELECTED_CARD => SELECTED_CARD,
 
+            BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
             VARIANT_OPTION => VARIANT_OPTION,
         ]);   
 		
@@ -57,9 +58,9 @@ class Knarr extends Table {
         $this->cards->init("card");
         $this->cards->autoreshuffle = false;     
 		
-        $this->tokens = $this->getNew("module.common.deck");
-        $this->tokens->init("token");
-        $this->tokens->autoreshuffle = true;   
+        $this->destinations = $this->getNew("module.common.deck");
+        $this->destinations->init("destination");
+        $this->destinations->autoreshuffle = false;   
 	}
 	
     protected function getGameName() {
@@ -83,28 +84,13 @@ class Knarr extends Table {
  
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
-        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar, player_chief) VALUES ";
+        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
         $values = [];
 
-        $affectedChiefs = [];
-        $chiefs = [1, 2, 3, 4];
-
-        for ($i = 0; $i < count($players); $i++) {
-            $index = bga_rand(1, count($chiefs)) - 1;
-            $affectedChiefs[] = $chiefs[$index];
-            array_splice($chiefs, $index, 1);
-        }
-        $chiefsInPlay = $affectedChiefs;
-
-        $startingPlayerId = null;
         foreach( $players as $player_id => $player ) {
             $color = array_shift( $default_colors );
-            $chief = array_shift( $affectedChiefs );
 
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."', $chief)";
-            if ($chief == min($chiefsInPlay)) {
-                $startingPlayerId = $player_id;
-            }
+            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
         }
         $sql .= implode(',', $values);
         self::DbQuery( $sql );
@@ -132,12 +118,12 @@ class Knarr extends Table {
         }
 
         // setup the initial game situation here
-        $this->setupCards(count($players));
-        $this->setupTokens(count($players));
+        $this->setupCards(array_keys($players));
+        $this->setupDestinations();
        
 
         // Activate first player (which is in general a good idea :) )
-        $this->gamestate->changeActivePlayer($startingPlayerId);
+        $this->activeNextPlayer();
 
         // TODO TEMP
         //$this->debugSetup();
@@ -161,7 +147,7 @@ class Knarr extends Table {
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score, player_no playerNo, player_chief chief FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_no playerNo, player_fame fame, player_recruit recruit, player_bracelet bracelet FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
   
         // Gather all information about current game situation (visible by player $current_player_id).
@@ -170,30 +156,25 @@ class Knarr extends Table {
         
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
-            $player['chief'] = intval($player['chief']);
+            $player['fame'] = intval($player['fame']);
+            $player['recruit'] = intval($player['recruit']);
+            $player['bracelet'] = intval($player['bracelet']);
             $player['played'] = $this->getPlayedCardWithStoredResources($playerId);
-            $player['tokens'] = $this->getTokensByLocation('player', $playerId);
+            $player['tokens'] = $this->getDestinationsByLocation('player', $playerId);
             $player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
                 $player['hand'] = $this->getCardsByLocation('hand', $playerId);
             }
         }
-        
-        $centerTokens = [];
-        $centerTokensCount = [];
-        for ($pile=0; $pile<6; $pile++) {
-            $centerCards[$pile] = $this->getCardFromDb($this->cards->getCardOnTop('pile'.$pile));
-            $centerCardsCount[$pile] = intval($this->cards->countCardInLocation('pile'.$pile));
-            $centerTokens[$pile] = $this->getTokenFromDb($this->tokens->getCardOnTop('pile'.$pile));
-            $centerTokensCount[$pile] = intval($this->tokens->countCardInLocation('pile'.$pile));
-        }
+
         $result['centerCards'] = $this->getCardsByLocation('slot');
-        $result['centerTokens'] = $centerTokens;
-        $result['centerTokensCount'] = $centerTokensCount;
-        $result['fireToken'] = Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('center')));
-        $result['fireTokenCount'] = intval($this->tokens->countCardInLocation('center'));
-        $result['chieftainOption'] = $this->getVariantOption();
+        $result['centerDestinations'] = [
+            'A' => $this->getDestinationsByLocation('slotA'),
+            'B' => $this->getDestinationsByLocation('slotB'),
+        ];
+        $result['boatSideOption'] = $this->getBoatSideOption();
+        $result['variantOption'] = $this->getVariantOption();
 
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   
@@ -211,9 +192,8 @@ class Knarr extends Table {
         (see states.inc.php)
     */
     function getGameProgression() {
-        $max = $this->CENTER_RESOURCES_BY_PLAYER_COUNT[count($this->getPlayersIds())];
-        $current = intval($this->tokens->countCardInLocation('center'));
-        return ($max - $current) * 100 / $max;
+        $maxScore = intval($this->getUniqueValueFromDB("SELECT max(`player_score`) FROM player"));
+        return $maxScore * 100 / 40;
     }
 
 //////////////////////////////////////////////////////////////////////////////

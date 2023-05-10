@@ -29,7 +29,7 @@ trait ArgsTrait {
         $resources = [];
         for ($i = 1; $i <= $tokens + 1; $i++) {
             $tokenPile = ($pile + $i) % 6;
-            $resources[] = $this->getTokenFromDb($this->tokens->getCardOnTop('pile'.$tokenPile))->type;
+            $resources[] = $this->getDestinationFromDb($this->destinations->getCardOnTop('pile'.$tokenPile))->type;
         }
 
         return [

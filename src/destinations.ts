@@ -1,15 +1,15 @@
-class CardsManager extends CardManager<Card> {
+class DestinationsManager extends CardManager<Destination> {
     constructor (public game: KnarrGame) {
         super(game, {
-            getId: (card) => `card-${card.id}`,
-            setupDiv: (card: Card, div: HTMLElement) => {
-                div.classList.add('knarr-card');
+            getId: (card) => `destination-${card.id}`,
+            setupDiv: (card: Destination, div: HTMLElement) => {
+                div.classList.add('knarr-destination');
                 div.dataset.cardId = ''+card.id;
             },
-            setupFrontDiv: (card: Card, div: HTMLElement) => { 
+            setupFrontDiv: (card: Destination, div: HTMLElement) => { 
                 div.dataset.cardId = `${this.getId(card)}-front`;
-                div.dataset.color = ''+card.color;
-                div.dataset.gain = ''+card.gain;
+                div.dataset.type = ''+card.type;
+                div.dataset.number = ''+card.number;
                 game.setTooltip(div.id, this.getTooltip(card));
             },
         });
@@ -34,12 +34,12 @@ class CardsManager extends CardManager<Card> {
         }
     }
 
-    private getTooltip(card: Card): string {
-        let message = `
+    private getTooltip(card: Destination): string {
+        let message = `TODO`;/*
         <strong>${_("Color:")}</strong> ${this.getColor(card.color)}
         <br>
         <strong>${_("Gain:")}</strong> ${this.getGain(card.gain)}
-        `;
+        `;*/
  
         return message;
     }

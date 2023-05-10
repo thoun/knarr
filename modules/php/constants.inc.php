@@ -1,8 +1,15 @@
 <?php
 
 /*
+ * Destination types
+ */
+define('A', 'A');
+define('B', 'B');
+
+/*
  * Color
  */
+define('DIFFERENT', 0);
 define('BLUE', 1);
 define('YELLOW', 2);
 define('GREEN', 3);
@@ -16,38 +23,7 @@ define('VP', 1);
 define('BRACELET', 2);
 define('RECRUIT', 3);
 define('FAME', 4);
-
-/*
- * Card type
- */
-define('HOUSE', 1);
-define('STORAGE', 2);
-define('HUMAN', 3);
-define('TOOL', 4);
-
-define('POWER_CARD', 10);
-define('POWER_RESSOURCE', 11);
-
-/*
- * Tokens
- */
-define('DISCARD', 0); // special type, only for card resources array
-define('DIFFERENT', 0); // special type, only for storage
-
-define('BERRY', 1);
-define('MEAT', 2);
-define('FLINT', 3);
-define('SKIN', 4);
-define('BONE', 5);
-
-/*
- * Chief powers
- */
-
-define('CHIEF_POWER_SKIP_RESOURCE', 1);
-define('CHIEF_POWER_PAY_ONE_LESS_RESOURCE', 2);
-define('CHIEF_POWER_TAKE_CARD', 3);
-define('CHIEF_POWER_ADDITIONAL_RESOURCE', 4);
+define('CARD', 5);
 
 /*
  * State constants
@@ -81,7 +57,8 @@ define('SELECTED_CARD', 11);
 /*
  * Options
  */
-define('VARIANT_OPTION', 100);
+define('BOAT_SIDE_OPTION', 100);
+define('VARIANT_OPTION', 110);
 
 /*
  * Global variables

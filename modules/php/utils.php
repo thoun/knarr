@@ -131,7 +131,8 @@ trait UtilTrait {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
     }
 
-    function setupCards(int $playerCount) {
+    function setupCards(array $playersIds) {
+        $playerCount = count($playersIds);
         foreach ($this->CARDS as $cardType) {
             $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => $cardType->number[$playerCount] ];
         }
@@ -141,21 +142,25 @@ trait UtilTrait {
         foreach ([1,2,3,4,5] as $slot) {
             $this->cards->pickCardForLocation('deck', 'slot', $slot);
         }
+
+        foreach ($playersIds as $playerId) {
+            $this->cards->pickCardsForLocation(3, 'deck', 'hand', $playerId);
+        }
     }
 
-    function getTokenFromDb(/*array|null*/ $dbCard) {
+    function getDestinationFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
         }
-        return new Token($dbCard);
+        return new Destination($dbCard, $this->DESTINATIONS);
     }
 
-    function getTokensFromDb(array $dbCards) {
-        return array_map(fn($dbCard) => $this->getTokenFromDb($dbCard), array_values($dbCards));
+    function getDestinationsFromDb(array $dbCards) {
+        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbCards));
     }
 
-    function getTokensByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        $sql = "SELECT * FROM `token` WHERE `card_location` = '$location'";
+    function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
+        $sql = "SELECT * FROM `destination` WHERE `card_location` = '$location'";
         if ($location_arg !== null) {
             $sql .= " AND `card_location_arg` = $location_arg";
         }
@@ -167,30 +172,28 @@ trait UtilTrait {
         }
         $sql .= " ORDER BY `card_location_arg`";
         $dbResults = $this->getCollectionFromDb($sql);
-        return array_map(fn($dbCard) => $this->getTokenFromDb($dbCard), array_values($dbResults));
+        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbResults));
     }
 
-    function setupTokens(int $playerCount) {
-        $tokens = [
-            [ 'type' => BERRY, 'type_arg' => null, 'nbr' => 24 ],
-            [ 'type' => MEAT, 'type_arg' => null, 'nbr' => 20 ],
-            [ 'type' => FLINT, 'type_arg' => null, 'nbr' => 16 ],
-            [ 'type' => SKIN, 'type_arg' => null, 'nbr' => 12 ],
-            [ 'type' => BONE, 'type_arg' => null, 'nbr' => 8 ],
-        ];
-        for ($i = 1; $i <= 60; $i++) {
-            $cards[] = [ 'type' => 1, 'type_arg' => $i, 'nbr' => 1 ];
+    function setupDestinations() {
+        $cards[] = ['A' => [], 'B' => []];
+        foreach ($this->DESTINATIONS as $number => $destinationType) {
+            $cards[$number > 20 ? 'B' : 'A'][] = [ 'type' => $number > 20 ? 2 : 1, 'type_arg' => $number, 'nbr' => 1 ];
         }
-        $this->tokens->createCards($tokens, 'deck');
-        $this->tokens->shuffle('deck');
-
-        foreach ([0,1,2,3,4,5] as $pile) {
-            $this->tokens->pickCardsForLocation(5, 'deck', 'pile'.$pile);
-            $this->tokens->shuffle('pile'.$pile); // to give them a locationArg asc
+        foreach (['A', 'B'] as $type) {
+            $this->destinations->createCards($cards[$type], 'deck'.$type);
+            $this->destinations->shuffle('deck'.$type);
         }
 
-        $this->tokens->pickCardsForLocation($this->CENTER_RESOURCES_BY_PLAYER_COUNT[$playerCount], 'deck', 'center');
-        $this->tokens->shuffle('center'); // to give them a locationArg asc
+        foreach ([1,2,3] as $slot) {
+            foreach (['A', 'B'] as $type) {
+                $this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $slot);
+            }
+        }
+    }
+
+    function getBoatSideOption() {
+        return intval($this->getGameStateValue(BOAT_SIDE_OPTION));
     }
 
     function getVariantOption() {
@@ -198,11 +201,11 @@ trait UtilTrait {
     }
 
     function getChiefPower(int $playerId) {
-        return $this->getVariantOption() == 2 ? $this->getPlayer($playerId)->chief : 0;
+        return $this->getBoatSideOption() == 2 ? $this->getPlayer($playerId)->fame : 0;
     }
 
     function getPlayerResources(int $playerId) {
-        $tokens = $this->getTokensByLocation('player', $playerId);
+        $tokens = $this->getDestinationsByLocation('player', $playerId);
         $resources = [
             1 => [],
             2 => [],
@@ -292,9 +295,9 @@ trait UtilTrait {
 
         foreach($played as $card) {
             if ($card->cardType == STORAGE) {
-                $prestored = $this->getTokensByLocation('prestore', $card->id);
+                $prestored = $this->getDestinationsByLocation('prestore', $card->id);
                 $card->prestoredResource = count($prestored) > 0 ? $prestored[0] : null;
-                $card->storedResources = $this->getTokensByLocation('card', $card->id);
+                $card->storedResources = $this->getDestinationsByLocation('card', $card->id);
             }
         }
 
@@ -302,7 +305,7 @@ trait UtilTrait {
     }
 
     function takeRessourceFromPool(int $playerId) {
-        $token = $this->getTokenFromDb($this->tokens->pickCardForLocation('deck', 'player', $playerId));
+        $token = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck', 'player', $playerId));
 
         if ($token !== null) {
             self::notifyAllPlayers('takeToken', clienttranslate('${player_name} takes resource ${type} from resource pool'), [
@@ -341,7 +344,7 @@ trait UtilTrait {
 
     function saveForUndo(int $playerId, bool $logUndoPoint) {
         $cards = $this->getCardsByLocation('hand', $playerId);        
-        $tokens = $this->getTokensByLocation('player', $playerId);
+        $tokens = $this->getDestinationsByLocation('player', $playerId);
 
         if ($logUndoPoint) {
             self::notifyPlayer($playerId, 'log', clienttranslate('As you revealed a hidden element, Cancel last moves will only allow to come back to this point'), []);
@@ -360,7 +363,7 @@ trait UtilTrait {
         foreach ($cards as $card) {
             if ($card->prestoredResource) {
                 $tokens[$card->id] = $card->prestoredResource;
-                $this->tokens->moveCard($card->prestoredResource->id, 'card', $card->id);
+                $this->destinations->moveCard($card->prestoredResource->id, 'card', $card->id);
             }
         }
 

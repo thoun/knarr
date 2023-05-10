@@ -22,24 +22,26 @@
 
 CREATE TABLE IF NOT EXISTS `card` (
    `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-   `card_type` varchar(16) NOT NULL,
-   `card_type_arg` int(11) NOT NULL,
+   `card_type` tinyint(1) NOT NULL,
+   `card_type_arg` tinyint(1) NOT NULL,
    `card_location` varchar(16) NOT NULL,
    `card_location_arg` int(11) NOT NULL,
    PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `token` (
+CREATE TABLE IF NOT EXISTS `destination` (
    `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-   `card_type` tinyint NOT NULL,
-   `card_type_arg` tinyint,
+   `card_type` tinyint(1) NOT NULL,
+   `card_type_arg` tinyint(2) NOT NULL,
    `card_location` varchar(16) NOT NULL,
    `card_location_arg` int(11) NOT NULL,
    PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 -- Example 2: add a custom field to the standard "player" table
-ALTER TABLE `player` ADD `player_chief` tinyint UNSIGNED NULL;
+ALTER TABLE `player` ADD `player_fame` tinyint UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `player` ADD `player_recruit` tinyint UNSIGNED NOT NULL DEFAULT 3;
+ALTER TABLE `player` ADD `player_bracelet` tinyint UNSIGNED NOT NULL DEFAULT 3;
 
 CREATE TABLE IF NOT EXISTS `global_variables` (
   `name` varchar(50) NOT NULL,

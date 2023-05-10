@@ -28,6 +28,20 @@ require_once("modules/php/constants.inc.php");
 
  $game_options = [
 
+    BOAT_SIDE_OPTION => [
+        'name' => totranslate('Boat side'),
+        'values' => [
+            1 => [
+                'name' => totranslate('Normal'),
+            ],
+            2 => [
+                'name' => totranslate('Advanced'),
+                'tmdisplay' => totranslate('Advanced board side'),
+            ],
+        ],
+        'default' => 1,
+    ],
+
     VARIANT_OPTION => [
         'name' => totranslate('Artefact variant'),
         'values' => [
