@@ -244,8 +244,8 @@ body > .card {
 .knarr-card {
   display: inline-block;
   position: relative;
-  width: 202px;
-  height: 282px;
+  width: 120px;
+  height: 221px;
   margin: 5px;
   border-radius: 10px;
 }
@@ -265,7 +265,7 @@ body > .card {
   user-select: none;
 }
 .knarr-card .card-sides .card-side.front {
-  background-size: auto 500%;
+  background-size: auto 100%;
   background-image: url("img/cards.jpg");
 }
 .knarr-card.selectable:not(.disabled) {
@@ -289,212 +289,64 @@ body > .card {
 .knarr-card.selected-discard .card-side {
   box-shadow: unset;
 }
-.knarr-card .front[data-color="1"][data-number="1"] {
-  background-position: 0% 0%;
+.knarr-card .front[data-color="1"][data-gain="1"] {
+  background-position-x: 5%;
 }
-.knarr-card .front[data-color="1"][data-number="2"] {
-  background-position: 9.0909090909% 0%;
+.knarr-card .front[data-color="1"][data-gain="2"] {
+  background-position-x: 10%;
 }
-.knarr-card .front[data-color="1"][data-number="3"] {
-  background-position: 18.1818181818% 0%;
+.knarr-card .front[data-color="1"][data-gain="3"] {
+  background-position-x: 15%;
 }
-.knarr-card .front[data-color="1"][data-number="4"] {
-  background-position: 27.2727272727% 0%;
+.knarr-card .front[data-color="1"][data-gain="4"] {
+  background-position-x: 20%;
 }
-.knarr-card .front[data-color="1"][data-number="5"] {
-  background-position: 36.3636363636% 0%;
+.knarr-card .front[data-color="2"][data-gain="1"] {
+  background-position-x: 25%;
 }
-.knarr-card .front[data-color="1"][data-number="6"] {
-  background-position: 45.4545454545% 0%;
+.knarr-card .front[data-color="2"][data-gain="2"] {
+  background-position-x: 30%;
 }
-.knarr-card .front[data-color="1"][data-number="7"] {
-  background-position: 54.5454545455% 0%;
+.knarr-card .front[data-color="2"][data-gain="3"] {
+  background-position-x: 35%;
 }
-.knarr-card .front[data-color="1"][data-number="8"] {
-  background-position: 63.6363636364% 0%;
+.knarr-card .front[data-color="2"][data-gain="4"] {
+  background-position-x: 40%;
 }
-.knarr-card .front[data-color="1"][data-number="9"] {
-  background-position: 72.7272727273% 0%;
+.knarr-card .front[data-color="3"][data-gain="1"] {
+  background-position-x: 45%;
 }
-.knarr-card .front[data-color="1"][data-number="10"] {
-  background-position: 81.8181818182% 0%;
+.knarr-card .front[data-color="3"][data-gain="2"] {
+  background-position-x: 50%;
 }
-.knarr-card .front[data-color="1"][data-number="11"] {
-  background-position: 90.9090909091% 0%;
+.knarr-card .front[data-color="3"][data-gain="3"] {
+  background-position-x: 55%;
 }
-.knarr-card .front[data-color="1"][data-number="12"] {
-  background-position: 100% 0%;
+.knarr-card .front[data-color="3"][data-gain="4"] {
+  background-position-x: 60%;
 }
-.knarr-card .front[data-color="2"][data-number="1"] {
-  background-position: 0% 25%;
+.knarr-card .front[data-color="4"][data-gain="1"] {
+  background-position-x: 65%;
 }
-.knarr-card .front[data-color="2"][data-number="2"] {
-  background-position: 9.0909090909% 25%;
+.knarr-card .front[data-color="4"][data-gain="2"] {
+  background-position-x: 70%;
 }
-.knarr-card .front[data-color="2"][data-number="3"] {
-  background-position: 18.1818181818% 25%;
+.knarr-card .front[data-color="4"][data-gain="3"] {
+  background-position-x: 75%;
 }
-.knarr-card .front[data-color="2"][data-number="4"] {
-  background-position: 27.2727272727% 25%;
+.knarr-card .front[data-color="4"][data-gain="4"] {
+  background-position-x: 80%;
 }
-.knarr-card .front[data-color="2"][data-number="5"] {
-  background-position: 36.3636363636% 25%;
+.knarr-card .front[data-color="5"][data-gain="1"] {
+  background-position-x: 85%;
 }
-.knarr-card .front[data-color="2"][data-number="6"] {
-  background-position: 45.4545454545% 25%;
+.knarr-card .front[data-color="5"][data-gain="2"] {
+  background-position-x: 90%;
 }
-.knarr-card .front[data-color="2"][data-number="7"] {
-  background-position: 54.5454545455% 25%;
+.knarr-card .front[data-color="5"][data-gain="3"] {
+  background-position-x: 95%;
 }
-.knarr-card .front[data-color="2"][data-number="8"] {
-  background-position: 63.6363636364% 25%;
-}
-.knarr-card .front[data-color="2"][data-number="9"] {
-  background-position: 72.7272727273% 25%;
-}
-.knarr-card .front[data-color="2"][data-number="10"] {
-  background-position: 81.8181818182% 25%;
-}
-.knarr-card .front[data-color="2"][data-number="11"] {
-  background-position: 90.9090909091% 25%;
-}
-.knarr-card .front[data-color="2"][data-number="12"] {
-  background-position: 100% 25%;
-}
-.knarr-card .front[data-color="3"][data-number="1"] {
-  background-position: 0% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="2"] {
-  background-position: 9.0909090909% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="3"] {
-  background-position: 18.1818181818% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="4"] {
-  background-position: 27.2727272727% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="5"] {
-  background-position: 36.3636363636% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="6"] {
-  background-position: 45.4545454545% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="7"] {
-  background-position: 54.5454545455% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="8"] {
-  background-position: 63.6363636364% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="9"] {
-  background-position: 72.7272727273% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="10"] {
-  background-position: 81.8181818182% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="11"] {
-  background-position: 90.9090909091% 50%;
-}
-.knarr-card .front[data-color="3"][data-number="12"] {
-  background-position: 100% 50%;
-}
-.knarr-card .front[data-color="4"][data-number="1"] {
-  background-position: 0% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="2"] {
-  background-position: 9.0909090909% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="3"] {
-  background-position: 18.1818181818% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="4"] {
-  background-position: 27.2727272727% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="5"] {
-  background-position: 36.3636363636% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="6"] {
-  background-position: 45.4545454545% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="7"] {
-  background-position: 54.5454545455% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="8"] {
-  background-position: 63.6363636364% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="9"] {
-  background-position: 72.7272727273% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="10"] {
-  background-position: 81.8181818182% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="11"] {
-  background-position: 90.9090909091% 75%;
-}
-.knarr-card .front[data-color="4"][data-number="12"] {
-  background-position: 100% 75%;
-}
-.knarr-card .front[data-color="5"][data-number="1"] {
-  background-position: 0% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="2"] {
-  background-position: 9.0909090909% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="3"] {
-  background-position: 18.1818181818% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="4"] {
-  background-position: 27.2727272727% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="5"] {
-  background-position: 36.3636363636% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="6"] {
-  background-position: 45.4545454545% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="7"] {
-  background-position: 54.5454545455% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="8"] {
-  background-position: 63.6363636364% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="9"] {
-  background-position: 72.7272727273% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="10"] {
-  background-position: 81.8181818182% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="11"] {
-  background-position: 90.9090909091% 100%;
-}
-.knarr-card .front[data-color="5"][data-number="12"] {
-  background-position: 100% 100%;
-}
-.knarr-card.chief {
-  background-size: auto 100%;
-  background-image: url("img/chiefs.jpg");
-}
-.knarr-card.chief[data-number="1"][data-level="1"] {
-  background-position-x: 0%;
-}
-.knarr-card.chief[data-number="1"][data-level="2"] {
-  background-position-x: 57.1428571429%;
-}
-.knarr-card.chief[data-number="2"][data-level="1"] {
-  background-position-x: 14.2857142857%;
-}
-.knarr-card.chief[data-number="2"][data-level="2"] {
-  background-position-x: 71.4285714286%;
-}
-.knarr-card.chief[data-number="3"][data-level="1"] {
-  background-position-x: 28.5714285714%;
-}
-.knarr-card.chief[data-number="3"][data-level="2"] {
-  background-position-x: 85.7142857143%;
-}
-.knarr-card.chief[data-number="4"][data-level="1"] {
-  background-position-x: 42.8571428571%;
-}
-.knarr-card.chief[data-number="4"][data-level="2"] {
+.knarr-card .front[data-color="5"][data-gain="4"] {
   background-position-x: 100%;
 }
 
@@ -506,161 +358,6 @@ body > .card {
     box-shadow: 0 0 5px 3px orange;
   }
 }
-.card.token {
-  display: inline-block;
-  position: relative;
-  width: 68px;
-  height: 68px;
-  box-shadow: none;
-}
-.card.token.disabled {
-  cursor: not-allowed;
-  filter: contrast(0.6);
-}
-.card.token .card-sides .card-side {
-  box-shadow: none;
-  border-radius: 10px;
-  background-size: auto 100%;
-  background-image: url("img/tokens.png");
-}
-.card.token .card-sides .card-side > * {
-  pointer-events: none;
-  user-select: none;
-}
-.card.token.selected:not(.disabled) {
-  box-shadow: 0 0 5px 5px orange;
-  border-radius: 50%;
-}
-.card.token .front[data-type="1"] {
-  background-position-x: 20%;
-}
-.card.token .front[data-type="2"] {
-  background-position-x: 40%;
-}
-.card.token .front[data-type="3"] {
-  background-position-x: 60%;
-}
-.card.token .front[data-type="4"] {
-  background-position-x: 80%;
-}
-.card.token .front[data-type="5"] {
-  background-position-x: 100%;
-}
-
-.token-icon {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-size: auto 100%;
-  background-image: url("img/tokens.png");
-  vertical-align: middle;
-}
-.token-icon[data-type="1"] {
-  background-position-x: 20%;
-}
-.token-icon[data-type="2"] {
-  background-position-x: 40%;
-}
-.token-icon[data-type="3"] {
-  background-position-x: 60%;
-}
-.token-icon[data-type="4"] {
-  background-position-x: 80%;
-}
-.token-icon[data-type="5"] {
-  background-position-x: 100%;
-}
-
-/*@keyframes selectable-card-animation {
-    0% { 
-      //background: var(--background-lighter);
-      box-shadow: 0 0 3px 2px #FFFFFF;
-    }
-    100% { 
-      //background: var(--background-darker);
-      box-shadow: 0 0 5px 3px #FFFFFF;
-    }
-}*/
-.chief {
-  display: inline-block;
-  position: relative;
-  width: 202px;
-  height: 282px;
-  margin: 5px;
-  border-radius: 10px;
-  /*&.selectable:not(.disabled) {
-      cursor: pointer;
-      &:not(.selected) {
-          animation: selectable-card-animation 1s alternate infinite ease-in-out;
-      }
-
-      .card-side {
-          box-shadow: unset;
-      }
-  }    
-
-  &.selected:not(.disabled) {
-      box-shadow: 0 0 5px 8px #e273f5;
-
-      .card-side {
-          box-shadow: unset;
-      }
-  } */
-}
-.chief.disabled {
-  cursor: not-allowed;
-  filter: contrast(0.6);
-}
-.chief .card-sides .card-side {
-  border-radius: 10px;
-  /*&.back {  
-      background-size: auto 100%;
-      background-image: url('img/card-back.jpg');
-  }*/
-}
-.chief .card-sides .card-side > * {
-  pointer-events: none;
-  user-select: none;
-}
-.chief .card-sides .card-side.front {
-  background-size: auto 100%;
-  background-image: url("img/chiefs.jpg");
-}
-.chief .card-sides .card-side.front[data-number="1"][data-level="1"] {
-  background-position-x: 0%;
-}
-.chief .card-sides .card-side.front[data-number="1"][data-level="2"] {
-  background-position-x: 57.1428571429%;
-}
-.chief .card-sides .card-side.front[data-number="2"][data-level="1"] {
-  background-position-x: 14.2857142857%;
-}
-.chief .card-sides .card-side.front[data-number="2"][data-level="2"] {
-  background-position-x: 71.4285714286%;
-}
-.chief .card-sides .card-side.front[data-number="3"][data-level="1"] {
-  background-position-x: 28.5714285714%;
-}
-.chief .card-sides .card-side.front[data-number="3"][data-level="2"] {
-  background-position-x: 85.7142857143%;
-}
-.chief .card-sides .card-side.front[data-number="4"][data-level="1"] {
-  background-position-x: 42.8571428571%;
-}
-.chief .card-sides .card-side.front[data-number="4"][data-level="2"] {
-  background-position-x: 100%;
-}
-
-/*@keyframes selectable-card-animation {
-    0% { 
-      //background: var(--background-lighter);
-      box-shadow: 0 0 3px 2px #FFFFFF;
-    }
-    100% { 
-      //background: var(--background-darker);
-      box-shadow: 0 0 5px 3px #FFFFFF;
-    }
-}*/
 #table-center-wrapper {
   display: flex;
   justify-content: center;
@@ -677,7 +374,7 @@ body > .card {
   top: 450px;
   left: 364px;
   position: absolute;
-  width: 202px;
+  width: 120px;
   transform-origin: top center;
   transform: rotate(var(--angle)) translateY(100px);
   display: flex;
@@ -798,7 +495,7 @@ body > .card {
 }
 .player-table .block-with-text > div:not(.block-label) {
   flex: 1;
-  min-height: 282px;
+  min-height: 221px;
 }
 .player-table .hand-wrapper {
   margin: 5px;
@@ -807,7 +504,7 @@ body > .card {
 }
 .player-table .chief-and-tokens {
   display: grid;
-  grid-template-columns: 156px 202px;
+  grid-template-columns: 156px 120px;
 }
 .player-table .chief-and-tokens .tokens-free {
   align-content: flex-start;

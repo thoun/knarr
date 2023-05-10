@@ -6,18 +6,8 @@ interface Card {
     id: number;
     location: string;
     locationArg: number;
-    points: number;
     color: number;
-    number: number;
-    cardType: number;
-    resources: number[];
-    discard: boolean;
-    tokens: number;
-    power?: number;
-    storageType?: number;
-    prestoredResource?: Token;
-    storedResources?: Token[];
-    canStoreResourceType?: boolean;
+    gain: number;
 }
 
 interface Token {
@@ -49,8 +39,7 @@ interface KnarrGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas
-    centerCards: { [position: number]: Card };
-    centerCardsCount: { [position: number]: number };
+    centerCards: Card[];
     centerTokens: { [position: number]: Token };
     centerTokensCount: { [position: number]: number };
     fireToken: Token;
@@ -61,8 +50,6 @@ interface KnarrGamedatas {
 
 interface KnarrGame extends Game {
     cardsManager: CardsManager;
-    tokensManager: TokensManager;
-    chiefsManager: ChiefsManager;
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;

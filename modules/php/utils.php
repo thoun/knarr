@@ -101,7 +101,7 @@ trait UtilTrait {
         if ($dbCard == null) {
             return null;
         }
-        return new Card($dbCard, $this->CARDS);
+        return new Card($dbCard);
     }
 
     function getCardsFromDb(array $dbCards) {
@@ -131,20 +131,15 @@ trait UtilTrait {
         return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
     }
 
-    function setupCards() {
-        // number cards
-        $cards = [];
-        for ($color = 1; $color <= 5; $color++) {
-            for ($i = 1; $i <= 12; $i++) {
-                $cards[] = [ 'type' => $color, 'type_arg' => $i, 'nbr' => 1 ];
-            }
+    function setupCards(int $playerCount) {
+        foreach ($this->CARDS as $cardType) {
+            $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => $cardType->number[$playerCount] ];
         }
         $this->cards->createCards($cards, 'deck');
         $this->cards->shuffle('deck');
 
-        foreach ([0,1,2,3,4,5] as $pile) {
-            $this->cards->pickCardsForLocation(10, 'deck', 'pile'.$pile);
-            $this->cards->shuffle('pile'.$pile); // to give them a locationArg asc
+        foreach ([1,2,3,4,5] as $slot) {
+            $this->cards->pickCardForLocation('deck', 'slot', $slot);
         }
     }
 

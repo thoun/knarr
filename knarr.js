@@ -1222,30 +1222,14 @@ var CardsManager = /** @class */ (function (_super) {
             setupFrontDiv: function (card, div) {
                 div.dataset.cardId = "".concat(_this.getId(card), "-front");
                 div.dataset.color = '' + card.color;
-                div.dataset.number = '' + card.number;
+                div.dataset.gain = '' + card.gain;
                 game.setTooltip(div.id, _this.getTooltip(card));
-                if (card.cardType == STORAGE) {
-                    div.classList.add('storage-stock');
-                    _this.storageStocks[card.id] = new LineStock(game.tokensManager, div);
-                    _this.setStoreButtons(card);
-                    if (card.storedResources) {
-                        _this.storageStocks[card.id].addCards(card.storedResources);
-                    }
-                }
             },
         }) || this;
         _this.game = game;
-        _this.prestorageStocks = [];
-        _this.storageStocks = [];
         return _this;
     }
-    CardsManager.prototype.prestoreToken = function (cardId, token) {
-        this.prestorageStocks[cardId].addCard(token);
-    };
-    CardsManager.prototype.confirmStoreToken = function (cardId, token) {
-        this.storageStocks[cardId].addCard(token);
-    };
-    CardsManager.prototype.getType = function (type) {
+    CardsManager.prototype.getGain = function (type) {
         switch (type) {
             case 1: return _("House");
             case 2: return _("Storage");
@@ -1262,202 +1246,11 @@ var CardsManager = /** @class */ (function (_super) {
             case 5: return _("Purple");
         }
     };
-    CardsManager.prototype.getPower = function (power) {
-        switch (power) {
-            case 10: return _("When a player places this card in front of them, they take 1 visible card from the top of any pile. They do not take the associated resources.");
-            case 11: return _("When a player places this card in front of them, they take 1 resource at random from the resource pool.");
-        }
-    };
     CardsManager.prototype.getTooltip = function (card) {
-        var _this = this;
-        var message = "<strong>".concat(_("Points:"), "</strong> ").concat(card.points);
-        if (card.cardType == HOUSE) {
-            message += " / ".concat(this.getColor(card.storageType));
-        }
-        else if (card.cardType == STORAGE) {
-            message += " / ".concat(this.game.tokensManager.getType(card.storageType));
-        }
-        else if (card.cardType == TOOL) {
-            message += " / ".concat(this.getType(card.storageType));
-        }
-        message += "\n        <br>\n        <strong>".concat(_("Type:"), "</strong> ").concat(this.getType(card.cardType), "\n        <br>\n        <strong>").concat(_("Color:"), "</strong> ").concat(this.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Required resources:"), "</strong> ");
-        if (!card.discard && !card.resources.length) {
-            message += _('None');
-        }
-        else {
-            var resources_1 = [];
-            if (card.discard) {
-                resources_1.push(_('discard 1 tribe card from hand'));
-            }
-            card.resources.forEach(function (type) { return resources_1.push(_this.game.tokensManager.getType(type)); });
-            message += resources_1.join(', ');
-        }
-        if (card.power) {
-            message += "\n            <br>\n            <strong>".concat(_("Power:"), "</strong> ").concat(this.getPower(card.power));
-        }
-        message += "\n        <br>\n        <strong>".concat(_("Resources to take:"), "</strong> ").concat(card.tokens);
+        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> ").concat(this.getGain(card.gain), "\n        ");
         return message;
-    };
-    CardsManager.prototype.storageCardHasTokenOfType = function (cardId, type) {
-        return this.storageStocks[cardId].getCards().some(function (card) { return card.type == type; });
-    };
-    CardsManager.prototype.createStorageStock = function (card, storageActions) {
-        var storageStock = document.createElement('div');
-        storageStock.dataset.used = 'false';
-        storageStock.classList.add('storage-stock');
-        storageActions.appendChild(storageStock);
-        this.prestorageStocks[card.id] = new LineStock(this.game.tokensManager, storageStock);
-        if (card.prestoredResource) {
-            this.prestorageStocks[card.id].addCard(card.prestoredResource);
-        }
-        storageActions.dataset.used = Boolean(card.prestoredResource).toString();
-        this.createCancelButton(storageStock, storageActions, this.prestorageStocks[card.id]);
-    };
-    CardsManager.prototype.createStorageAction = function (cardId, storageActions, type) {
-        var _this = this;
-        var storageAction = document.createElement('div');
-        storageAction.classList.add('storage-action');
-        storageActions.appendChild(storageAction);
-        var button = document.createElement('button');
-        button.classList.add('bgabutton', 'bgabutton_blue');
-        button.dataset.type = '' + type;
-        storageAction.appendChild(button);
-        button.innerHTML = _("Store ${type}").replace('${type}', "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"));
-        button.addEventListener('click', function () {
-            //const token = this.game.getCurrentPlayerTable()?.getTokenOfType(type);
-            _this.game.storeToken(cardId, type);
-            /*stock.addCard(token);
-            storageActions.dataset.used = 'true';
-            storageActions.dataset.tokenId = ''+token.id;
-
-
-            setTimeout(() => {
-                button.classList.add('hidden');
-                this.updateStorageButtons();
-            });*/
-        });
-    };
-    CardsManager.prototype.createCancelButton = function (storageAction, storageActions, stock) {
-        var _this = this;
-        var cancelButton = document.createElement('button');
-        cancelButton.classList.add('cancel');
-        cancelButton.innerText = '✖';
-        storageAction.appendChild(cancelButton);
-        cancelButton.addEventListener('click', function () {
-            _this.game.unstoreToken(stock.getCards()[0].id);
-            /*storageActions.dataset.used = 'false';
-            this.tokensFree.addCard(stock.getCards()[0]);
-            button.classList.remove('hidden');
-            cancelButton.remove();
-            storageActions.dataset.tokenId = '';
-            this.updateStorageButtons();*/
-        });
-    };
-    CardsManager.prototype.setStoreButtons = function (card) {
-        var _this = this;
-        var storageActions = document.createElement('div');
-        storageActions.dataset.cardId = '' + card.id;
-        storageActions.classList.add('storage-actions');
-        storageActions.dataset.tokenId = '';
-        this.game.cardsManager.getCardElement(card).appendChild(storageActions);
-        this.createStorageStock(card, storageActions);
-        var possibleTypes = card.storageType ? [card.storageType, BONE] : [1, 2, 3, 4, BONE];
-        possibleTypes.forEach(function (type) { return _this.createStorageAction(card.id, storageActions, type); });
-    };
-    CardsManager.prototype.updateStorageButtons = function () {
-        var _this = this;
-        document.querySelectorAll('.storage-actions').forEach(function (storageActions) {
-            return storageActions.dataset.used = (!_this.prestorageStocks[Number(storageActions.dataset.cardId)].isEmpty()).toString();
-        });
-        document.querySelectorAll('.storage-action button').forEach(function (button) { var _a; return button.classList.toggle('disabled', ((_a = _this.game.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.getTokenOfType(Number(button.dataset.type))) == null); });
     };
     return CardsManager;
-}(CardManager));
-var TokensManager = /** @class */ (function (_super) {
-    __extends(TokensManager, _super);
-    function TokensManager(game) {
-        var _this = _super.call(this, game, {
-            getId: function (card) { return "token-".concat(card.id); },
-            setupDiv: function (card, div) {
-                div.classList.add('token');
-                div.dataset.cardId = '' + card.id;
-            },
-            setupFrontDiv: function (card, div) {
-                div.id = "".concat(_this.getId(card), "-front");
-                div.dataset.type = '' + card.type;
-                game.setTooltip(div.id, _this.getType(card.type));
-            },
-        }) || this;
-        _this.game = game;
-        return _this;
-    }
-    TokensManager.prototype.getType = function (type) {
-        var message = '';
-        switch (type) {
-            case 1:
-                message = _("Berry");
-                break;
-            case 2:
-                message = _("Meat");
-                break;
-            case 3:
-                message = _("Flint");
-                break;
-            case 4:
-                message = _("Skin");
-                break;
-            case 5:
-                message = _("Bone");
-                break;
-        }
-        return message;
-    };
-    return TokensManager;
-}(CardManager));
-var ChiefsManager = /** @class */ (function (_super) {
-    __extends(ChiefsManager, _super);
-    function ChiefsManager(game) {
-        var _this = _super.call(this, game, {
-            getId: function (card) { return "chief-".concat(card); },
-            setupDiv: function (card, div) {
-                div.classList.add('chief');
-                game.setTooltip(div.id, _this.getTooltip(card));
-            },
-            setupFrontDiv: function (card, div) {
-                div.dataset.number = '' + card;
-                div.dataset.level = '' + game.getVariantOption();
-            },
-        }) || this;
-        _this.game = game;
-        return _this;
-    }
-    ChiefsManager.prototype.getPower = function (number) {
-        var message = '';
-        switch (number) {
-            case 1:
-                message = _("When this player takes the resources associated with their chosen card, they may skip a pile.");
-                break;
-            case 2:
-                message = _("When this player places a second tribe card in front of them during their turn, they discard 1 less resource or sacrifice than required for that card.");
-                break;
-            case 3:
-                message = _("When this player finishes one of the 6 resource piles, in addition to taking a resource from the center pile, they take a visible card of their choice. They do not take the resources associated with that card.");
-                break;
-            case 4:
-                message = _("When this player chooses a tribe card that only allows them to take 1 resource, they take 1 additional resource at random from the resource pool.");
-                break;
-        }
-        return message;
-    };
-    ChiefsManager.prototype.getTooltip = function (number) {
-        var level = this.game.getVariantOption();
-        var message = "<strong>".concat(_('Chieftain card'), "</strong> ").concat(number, " (").concat(level == 2 ? _('Advanced side') : _('Normal side'), ")<br><br>").concat(_("The chieftain card allow to store ${number} resources between turns.").replace('${number}', "<strong>".concat(5 - level, "</strong>")));
-        if (level == 2) {
-            message += "<br><br><strong>".concat(_('Power:'), "</strong> ").concat(this.getPower(number));
-        }
-        return message;
-    };
-    return ChiefsManager;
 }(CardManager));
 var CARD_OVERLAP = 40;
 var FIRST_ANIMAL_SHIFT = 28;
@@ -1544,59 +1337,12 @@ var SHADOW_COLORS = [
 var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
         this.game = game;
-        this.spots = [];
-        for (var i = 0; i < 6; i++) {
-            this.spots.push(new CenterSpot(game, this, i, gamedatas.centerCards[i], gamedatas.centerCardsCount[i], gamedatas.centerTokens[i], gamedatas.centerTokensCount[i]));
-        }
-        this.hiddenToken = new HiddenDeck(game.tokensManager, document.getElementById("center-stock"), {
-            width: 68,
-            height: 68,
-            cardNumber: gamedatas.fireTokenCount,
-            autoUpdateCardNumber: false,
+        this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
+            slotsIds: [1, 2, 3, 4, 5],
+            mapCardToSlot: function (card) { return card.locationArg; },
         });
-        if (gamedatas.fireToken) {
-            this.hiddenToken.addCard(gamedatas.fireToken);
-        }
-        this.fireCounter = new ebg.counter();
-        this.fireCounter.create("center-token-counter");
-        this.fireCounter.setValue(gamedatas.fireTokenCount);
-        this.setShadow("center-token-counter", gamedatas.fireTokenCount);
+        this.cards.addCards(gamedatas.centerCards);
     }
-    TableCenter.prototype.setNewCard = function (pile, newCard, newCount) {
-        this.spots[pile].setNewCard(newCard, newCount);
-    };
-    TableCenter.prototype.setNewToken = function (pile, newToken, newCount) {
-        if (pile == -1) {
-            this.hiddenToken.setCardNumber(newCount);
-            this.setShadow("center-token-counter", newCount);
-            if (newToken) {
-                this.hiddenToken.addCard(newToken);
-            }
-            this.fireCounter.toValue(newCount);
-        }
-        else {
-            this.spots[pile].setNewToken(newToken, newCount);
-        }
-    };
-    TableCenter.prototype.setShadow = function (stockId, count) {
-        document.getElementById(stockId).style.setProperty('--shadow-color', SHADOW_COLORS[Math.min(3, count)]);
-    };
-    TableCenter.prototype.setCardsSelectable = function (selectable) {
-        this.spots.forEach(function (spot) { return spot.setCardSelectable(selectable); });
-    };
-    TableCenter.prototype.showLinkedTokens = function (pile, count, skip) {
-        if (skip === void 0) { skip = null; }
-        var linked = [];
-        if (this.game.getGameStateName() == 'takeCard' || skip !== null) {
-            for (var i = 1; i <= count + (!skip ? 0 : 1); i++) {
-                if (i == skip) {
-                    continue;
-                }
-                linked.push((pile + i) % 6);
-            }
-        }
-        this.spots.forEach(function (spot) { return spot.showLinked(linked.includes(spot.pile)); });
-    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -1605,7 +1351,6 @@ var log = isDebug ? console.log.bind(window.console) : function () { };
 var BONE = 5;
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
-        var _this = this;
         this.game = game;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
@@ -1615,45 +1360,49 @@ var PlayerTable = /** @class */ (function () {
         }
         html += "\n            <div class=\"visible-cards\">\n                <div id=\"player-table-".concat(this.playerId, "-played\" class=\"cards\">\n                    <div class=\"chief-and-tokens\">\n                        <div id=\"player-table-").concat(this.playerId, "-tokens-free\" class=\"tokens-free\"></div>\n                        <div id=\"player-table-").concat(this.playerId, "-chief\" class=\"chief-card\">\n                            <div id=\"player-table-").concat(this.playerId, "-tokens-chief\" class=\"tokens-chief\"></div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n        ");
         dojo.place(html, document.getElementById('tables'));
-        if (this.currentPlayer) {
-            var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
-            this.hand = new LineStock(this.game.cardsManager, handDiv, {
-                sort: function (a, b) { return a.number - b.number; },
+        /*if (this.currentPlayer) {
+            const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
+            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
+                sort: (a: Card, b: Card) => a.number - b.number,
             });
-            this.hand.onCardClick = function (card) {
+            this.hand.onCardClick = (card: Card) => {
                 //if (handDiv.classList.contains('selectable')) {
-                _this.game.onHandCardClick(card);
-                //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
+                    this.game.onHandCardClick(card);
+                    //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
                 //}
-            };
+            }
+            
             this.hand.addCards(player.hand);
+
         }
-        this.voidStock = new VoidStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-name")));
-        this.chief = new LineStock(this.game.chiefsManager, document.getElementById("player-table-".concat(this.playerId, "-chief")));
+        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
+
+        this.chief = new LineStock<number>(this.game.chiefsManager, document.getElementById(`player-table-${this.playerId}-chief`));
         this.chief.addCard(player.chief);
-        this.played = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-played")), {
+        
+        this.played = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played`), {
             center: false,
         });
         this.played.addCards(player.played);
-        this.tokensFree = new LineStock(this.game.tokensManager, document.getElementById("player-table-".concat(this.playerId, "-tokens-free")), {
+        
+        this.tokensFree = new LineStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
             center: false,
-            sort: function (a, b) { return a.type - b.type; },
+            sort: (a: Token, b: Token) => a.type - b.type,
         });
-        this.tokensFree.onSelectionChange = function (selection, lastChange) { return _this.game.onTokenSelectionChange(selection); };
-        this.tokensChief = new SlotStock(this.game.tokensManager, document.getElementById("player-table-".concat(this.playerId, "-tokens-chief")), {
-            gap: "".concat(this.game.getVariantOption() == 2 ? 15 : 4, "px"),
+        this.tokensFree.onSelectionChange = (selection: Token[], lastChange: Token) => this.game.onTokenSelectionChange(selection);
+        this.tokensChief = new SlotStock<Token>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
+            gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
             direction: 'column',
             slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
         });
-        if (this.playerId == this.game.getActivePlayerId()) {
+        if (this.playerId == (this.game as any).getActivePlayerId()) {
             this.tokensFree.addCards(player.tokens);
-        }
-        else {
-            player.tokens.forEach(function (token, index) { return _this.tokensChief.addCard(token, undefined, { slot: index }); });
-        }
+        } else {
+            player.tokens.forEach((token, index) => this.tokensChief.addCard(token, undefined, { slot: index }));
+        }*/
     }
     PlayerTable.prototype.freeResources = function () {
-        this.tokensFree.addCards(this.tokensChief.getCards());
+        //this.tokensFree.addCards(this.tokensChief.getCards());
     };
     PlayerTable.prototype.setCardsSelectable = function (selectable, selectableCards) {
         var _this = this;
@@ -1702,6 +1451,569 @@ var PlayerTable = /** @class */ (function () {
         this.tokensFree.addCards(tokens);
     };
     return PlayerTable;
+}());
+var ANIMATION_MS = 500;
+var ACTION_TIMER_DURATION = 5;
+var LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
+var Knarr = /** @class */ (function () {
+    function Knarr() {
+        this.playersTables = [];
+        this.handCounters = [];
+        this.resourcesCounters = [];
+        this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
+    }
+    /*
+        setup:
+
+        This method must set up the game user interface according to current game situation specified
+        in parameters.
+
+        The method is called each time the game interface is displayed to a player, ie:
+        _ when the game starts
+        _ when a player refreshes the game page (F5)
+
+        "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
+    */
+    Knarr.prototype.setup = function (gamedatas) {
+        log("Starting game setup");
+        this.gamedatas = gamedatas;
+        log('gamedatas', gamedatas);
+        this.cardsManager = new CardsManager(this);
+        this.animationManager = new AnimationManager(this);
+        this.tableCenter = new TableCenter(this, gamedatas);
+        this.createPlayerPanels(gamedatas);
+        this.createPlayerTables(gamedatas);
+        this.zoomManager = new ZoomManager({
+            element: document.getElementById('table'),
+            smooth: false,
+            zoomControls: {
+                color: 'black',
+            },
+            localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
+            onDimensionsChange: function () {
+                var tablesAndCenter = document.getElementById('tables-and-center');
+                tablesAndCenter.classList.toggle('double-column', tablesAndCenter.clientWidth > 1600);
+            },
+        });
+        if (gamedatas.lastTurn) {
+            this.notif_lastTurn(false);
+        }
+        this.setupNotifications();
+        this.setupPreferences();
+        log("Ending game setup");
+    };
+    ///////////////////////////////////////////////////
+    //// Game & client states
+    // onEnteringState: this method is called each time we are entering into a new game state.
+    //                  You can use this method to perform some user interface changes at this moment.
+    //
+    Knarr.prototype.onEnteringState = function (stateName, args) {
+        var _a, _b;
+        log('Entering state: ' + stateName, args.args);
+        switch (stateName) {
+            case 'takeCard':
+            case 'takeCardPower':
+            case 'takeCardChiefPower':
+                this.onEnteringTakeCard(args.args);
+                break;
+            case 'playCard':
+                this.onEnteringPlayCard(args.args);
+                break;
+            case 'discardCard':
+                this.onEnteringDiscardCard(args.args);
+                break;
+            case 'discardTokens':
+                if (this.isCurrentPlayerActive()) {
+                    //this.getCurrentPlayerTable()?.setStoreButtons(false);
+                    (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setFreeTokensSelectable(true);
+                }
+                break;
+        }
+        if (['playCard', 'chooseOneLess', 'discardCard'].includes(stateName)) {
+            if (this.isCurrentPlayerActive()) {
+                (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setStoreButtons(true);
+            }
+        }
+    };
+    Knarr.prototype.onEnteringTakeCard = function (args) {
+        this.getPlayerTable(args.playerId).freeResources();
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true);
+        }
+    };
+    Knarr.prototype.setGamestateDescription = function (property) {
+        if (property === void 0) { property = ''; }
+        var originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
+        this.gamedatas.gamestate.description = "".concat(originalState['description' + property]);
+        this.gamedatas.gamestate.descriptionmyturn = "".concat(originalState['descriptionmyturn' + property]);
+        this.updatePageTitle();
+    };
+    Knarr.prototype.onEnteringPlayCard = function (args) {
+        var _a;
+        if (args.canStore) {
+            this.setGamestateDescription('Storage');
+        }
+        if (this.isCurrentPlayerActive()) {
+            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.playableCards);
+        }
+    };
+    Knarr.prototype.onEnteringDiscardCard = function (args) {
+        var _a;
+        if (this.isCurrentPlayerActive()) {
+            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.playableCards);
+            var selectedCardDiv = this.getCurrentPlayerTable().hand.getCardElement(args.selectedCard);
+            selectedCardDiv.classList.add('selected-discard');
+        }
+    };
+    Knarr.prototype.onLeavingState = function (stateName) {
+        var _a;
+        log('Leaving state: ' + stateName);
+        switch (stateName) {
+            case 'takeCard':
+            case 'takeCardPower':
+            case 'takeCardChiefPower':
+                this.onLeavingTakeCard();
+                break;
+            case 'playCard':
+                this.onLeavingPlayCard();
+                break;
+            case 'discardCard':
+                this.onLeavingDiscardCard();
+                break;
+            case 'discardTokens':
+                if (this.isCurrentPlayerActive()) {
+                    (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setFreeTokensSelectable(false);
+                }
+                break;
+        }
+    };
+    Knarr.prototype.onLeavingTakeCard = function () {
+        this.tableCenter.setCardsSelectable(false);
+    };
+    Knarr.prototype.onLeavingPlayCard = function () {
+        var _a;
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+    };
+    Knarr.prototype.onLeavingDiscardCard = function () {
+        document.querySelectorAll('.selected-discard').forEach(function (elem) { return elem.classList.remove('selected-discard'); });
+    };
+    Knarr.prototype.onLeavingStoreTokens = function () {
+    };
+    // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
+    //                        action status bar (ie: the HTML links in the status bar).
+    //
+    Knarr.prototype.onUpdateActionButtons = function (stateName, args) {
+        var _this = this;
+        if (this.isCurrentPlayerActive()) {
+            switch (stateName) {
+                case 'skipResource':
+                    var skipResourceArgs_1 = args;
+                    var _loop_2 = function (i) {
+                        var label = '';
+                        if (i == 0) {
+                            label = _("Don't skip resource, take ${resources}").replace('${resources}', skipResourceArgs_1.resources.slice(0, skipResourceArgs_1.resources.length - 1).map(function (type) { return "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"); }).join(''));
+                        }
+                        else {
+                            var resources = skipResourceArgs_1.resources.slice();
+                            var resource = resources.splice(i - 1, 1)[0];
+                            label = _("Skip ${resource}, take ${resources}").replace('${resource}', "<div class=\"token-icon\" data-type=\"".concat(resource, "\"></div>")).replace('${resources}', resources.map(function (type) { return "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"); }).join(''));
+                        }
+                        this_1.addActionButton("skipResource".concat(i, "_button"), label, function () { return _this.skipResource(i); });
+                        var skipResourceButton = document.getElementById("skipResource".concat(i, "_button"));
+                        skipResourceButton.addEventListener('mouseenter', function () { return _this.tableCenter.showLinkedTokens(skipResourceArgs_1.pile, skipResourceArgs_1.resources.length - 1, i); });
+                        skipResourceButton.addEventListener('mouseleave', function () { return _this.tableCenter.showLinkedTokens(skipResourceArgs_1.pile, 0); });
+                    };
+                    var this_1 = this;
+                    for (var i = 0; i < skipResourceArgs_1.resources.length; i++) {
+                        _loop_2(i);
+                    }
+                    break;
+                case 'playCard':
+                    this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
+                    break;
+                case 'chooseOneLess':
+                    var chooseOneLessArgs = args;
+                    if (chooseOneLessArgs.canSkipDiscard) {
+                        this.addActionButton("chooseOneLess0_button", _("Ignore sacrifice"), function () { return _this.chooseOneLess(0); });
+                    }
+                    chooseOneLessArgs.tokens.forEach(function (token) {
+                        if (!document.getElementById("chooseOneLess".concat(token, "_button"))) {
+                            _this.addActionButton("chooseOneLess".concat(token, "_button"), _("Ignore ${resource}").replace('${resource}', "<div class=\"token-icon\" data-type=\"".concat(token, "\"></div>")), function () { return _this.chooseOneLess(token); });
+                        }
+                    });
+                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
+                    break;
+                case 'discardCard':
+                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
+                    break;
+                case 'discardTokens':
+                    this.addActionButton("keepSelectedTokens_button", _("Keep selected resources"), function () { return _this.keepSelectedTokens(); });
+                    var button = document.getElementById("keepSelectedTokens_button");
+                    button.classList.add('disabled');
+                    button.dataset.max = args.number;
+                    break;
+            }
+        }
+        if (['playCard', 'chooseOneLess', 'discardCard', 'discardTokens'].includes(stateName)) {
+            this.addActionButton("cancelLastMoves_button", _("Cancel last moves"), function () { return _this.cancelLastMoves(); }, null, null, 'gray');
+        }
+    };
+    ///////////////////////////////////////////////////
+    //// Utility methods
+    ///////////////////////////////////////////////////
+    Knarr.prototype.setTooltip = function (id, html) {
+        this.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+    };
+    Knarr.prototype.setTooltipToClass = function (className, html) {
+        this.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
+    };
+    Knarr.prototype.getPlayerId = function () {
+        return Number(this.player_id);
+    };
+    Knarr.prototype.getPlayer = function (playerId) {
+        return Object.values(this.gamedatas.players).find(function (player) { return Number(player.id) == playerId; });
+    };
+    Knarr.prototype.getPlayerTable = function (playerId) {
+        return this.playersTables.find(function (playerTable) { return playerTable.playerId === playerId; });
+    };
+    Knarr.prototype.getCurrentPlayerTable = function () {
+        var _this = this;
+        return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
+    };
+    Knarr.prototype.getVariantOption = function () {
+        return this.gamedatas.chieftainOption;
+    };
+    Knarr.prototype.getGameStateName = function () {
+        return this.gamedatas.gamestate.name;
+    };
+    Knarr.prototype.setupPreferences = function () {
+        var _this = this;
+        // Extract the ID and value from the UI control
+        var onchange = function (e) {
+            var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
+            if (!match) {
+                return;
+            }
+            var prefId = +match[1];
+            var prefValue = +e.target.value;
+            _this.prefs[prefId].value = prefValue;
+        };
+        // Call onPreferenceChange() when any value changes
+        dojo.query(".preference_control").connect("onchange", onchange);
+        // Call onPreferenceChange() now
+        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
+    };
+    Knarr.prototype.getOrderedPlayers = function (gamedatas) {
+        var _this = this;
+        var players = Object.values(gamedatas.players).sort(function (a, b) { return a.playerNo - b.playerNo; });
+        var playerIndex = players.findIndex(function (player) { return Number(player.id) === Number(_this.player_id); });
+        var orderedPlayers = playerIndex > 0 ? __spreadArray(__spreadArray([], players.slice(playerIndex), true), players.slice(0, playerIndex), true) : players;
+        return orderedPlayers;
+    };
+    Knarr.prototype.createPlayerPanels = function (gamedatas) {
+        var _this = this;
+        Object.values(gamedatas.players).forEach(function (player) {
+            var playerId = Number(player.id);
+            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div><div class=\"counters\">");
+            for (var i = 1; i <= 5; i++) {
+                html += "\n                <div id=\"resource".concat(i, "-counter-wrapper-").concat(player.id, "\" class=\"resource-counter\">\n                    <div class=\"token-icon\" data-type=\"").concat(i, "\"></div>\n                    <span id=\"resource").concat(i, "-counter-").concat(player.id, "\"></span>\n                </div>");
+                if (i == 4) {
+                    html += "</div><div class=\"counters\">";
+                }
+            }
+            html += "\n            </div>";
+            dojo.place(html, "player_board_".concat(player.id));
+            var handCounter = new ebg.counter();
+            handCounter.create("playerhand-counter-".concat(playerId));
+            handCounter.setValue(player.handCount);
+            _this.handCounters[playerId] = handCounter;
+            _this.resourcesCounters[playerId] = [];
+            var _loop_3 = function (i) {
+                var resourceCounter = new ebg.counter();
+                resourceCounter.create("resource".concat(i, "-counter-").concat(playerId));
+                resourceCounter.setValue(player.tokens.filter(function (token) { return token.type == i; }).length);
+                _this.resourcesCounters[playerId][i] = resourceCounter;
+            };
+            for (var i = 1; i <= 5; i++) {
+                _loop_3(i);
+            }
+        });
+        this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
+        this.setTooltipToClass('resource-counter', _('Number of resources by type'));
+    };
+    Knarr.prototype.createPlayerTables = function (gamedatas) {
+        var _this = this;
+        var orderedPlayers = this.getOrderedPlayers(gamedatas);
+        orderedPlayers.forEach(function (player) {
+            return _this.createPlayerTable(gamedatas, Number(player.id));
+        });
+    };
+    Knarr.prototype.createPlayerTable = function (gamedatas, playerId) {
+        var table = new PlayerTable(this, gamedatas.players[playerId]);
+        this.playersTables.push(table);
+    };
+    Knarr.prototype.setScore = function (playerId, score) {
+        var _a;
+        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
+    };
+    Knarr.prototype.onCenterCardClick = function (pile) {
+        this.takeCard(pile);
+    };
+    Knarr.prototype.onHandCardClick = function (card) {
+        if (this.gamedatas.gamestate.name == 'discardCard') {
+            this.discardCard(card.id);
+        }
+        else {
+            this.playCard(card.id);
+        }
+    };
+    Knarr.prototype.onTokenSelectionChange = function (selection) {
+        if (this.gamedatas.gamestate.name !== 'discardTokens') {
+            return;
+        }
+        var button = document.getElementById("keepSelectedTokens_button");
+        button.classList.toggle('disabled', selection.length != Number(button.dataset.max));
+    };
+    Knarr.prototype.takeCard = function (pile) {
+        if (!this.checkAction('takeCard')) {
+            return;
+        }
+        this.takeAction('takeCard', {
+            pile: pile
+        });
+    };
+    Knarr.prototype.playCard = function (id) {
+        if (!this.checkAction('playCard')) {
+            return;
+        }
+        this.takeAction('playCard', {
+            id: id
+        });
+    };
+    Knarr.prototype.skipResource = function (number) {
+        if (!this.checkAction('skipResource')) {
+            return;
+        }
+        this.takeAction('skipResource', {
+            number: number
+        });
+    };
+    Knarr.prototype.pass = function () {
+        if (!this.checkAction('pass')) {
+            return;
+        }
+        this.takeAction('pass');
+    };
+    Knarr.prototype.endTurn = function () {
+        if (!this.checkAction('endTurn')) {
+            return;
+        }
+        this.takeAction('endTurn');
+    };
+    Knarr.prototype.discardCard = function (id) {
+        if (!this.checkAction('discardCard')) {
+            return;
+        }
+        this.takeAction('discardCard', {
+            id: id
+        });
+    };
+    Knarr.prototype.chooseOneLess = function (type) {
+        if (!this.checkAction('chooseOneLess')) {
+            return;
+        }
+        this.takeAction('chooseOneLess', {
+            type: type
+        });
+    };
+    Knarr.prototype.cancel = function () {
+        if (!this.checkAction('cancel')) {
+            return;
+        }
+        this.takeAction('cancel');
+    };
+    Knarr.prototype.storeToken = function (cardId, tokenType) {
+        if (!this.checkAction('storeToken')) {
+            return;
+        }
+        this.takeAction('storeToken', {
+            cardId: cardId,
+            tokenType: tokenType,
+        });
+    };
+    Knarr.prototype.unstoreToken = function (tokenId) {
+        if (!this.checkAction('unstoreToken')) {
+            return;
+        }
+        this.takeAction('unstoreToken', {
+            tokenId: tokenId,
+        });
+    };
+    Knarr.prototype.keepSelectedTokens = function () {
+        if (!this.checkAction('keepSelectedTokens')) {
+            return;
+        }
+        this.takeAction('keepSelectedTokens', {
+            ids: this.getCurrentPlayerTable().tokensFree.getSelection().map(function (token) { return token.id; }).join(','),
+        });
+    };
+    Knarr.prototype.cancelLastMoves = function () {
+        /*if(!(this as any).checkAction('cancelLastMoves')) {
+            return;
+        }*/
+        this.takeAction('cancelLastMoves');
+    };
+    Knarr.prototype.takeAction = function (action, data) {
+        data = data || {};
+        data.lock = true;
+        this.ajaxcall("/knarr/knarr/".concat(action, ".html"), data, this, function () { });
+    };
+    ///////////////////////////////////////////////////
+    //// Reaction to cometD notifications
+    /*
+        setupNotifications:
+
+        In this method, you associate each of your game notifications with your local method to handle it.
+
+        Note: game notification names correspond to "notifyAllPlayers" and "notifyPlayer" calls in
+                your pylos.game.php file.
+
+    */
+    Knarr.prototype.setupNotifications = function () {
+        //log( 'notifications subscriptions setup' );
+        var _this = this;
+        var notifs = [
+            ['takeCard', ANIMATION_MS],
+            ['takeToken', ANIMATION_MS],
+            ['playCard', ANIMATION_MS],
+            ['discardCard', 1],
+            ['storedToken', ANIMATION_MS],
+            ['unstoredToken', ANIMATION_MS],
+            ['confirmStoredTokens', ANIMATION_MS],
+            ['discardTokens', 1],
+            ['refillTokens', 1],
+            ['updateScore', 1],
+            ['cancelLastMoves', ANIMATION_MS],
+            ['lastTurn', 1],
+        ];
+        notifs.forEach(function (notif) {
+            dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
+            _this.notifqueue.setSynchronous(notif[0], notif[1]);
+        });
+    };
+    Knarr.prototype.notif_takeCard = function (notif) {
+        var currentPlayer = this.getPlayerId() == notif.args.playerId;
+        var playerTable = this.getPlayerTable(notif.args.playerId);
+        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
+        this.tableCenter.setNewCard(notif.args.pile, notif.args.newCard, notif.args.newCount);
+    };
+    Knarr.prototype.notif_takeToken = function (notif) {
+        var playerId = notif.args.playerId;
+        var token = notif.args.token;
+        var fromCenter = notif.args.pile == -1;
+        if (fromCenter) {
+            this.tokensManager.flipCard(token, {
+                updateData: true,
+                updateFront: true,
+                updateBack: false,
+            });
+        }
+        this.getPlayerTable(playerId).tokensFree.addCard(token, {
+            fromElement: fromCenter ? document.getElementById("center-stock") : undefined,
+        });
+        if (notif.args.pile != -2) {
+            this.notif_refillTokens(notif);
+        }
+        this.resourcesCounters[playerId][token.type].incValue(1);
+    };
+    Knarr.prototype.notif_refillTokens = function (notif) {
+        this.tableCenter.setNewToken(notif.args.pile, notif.args.newToken, notif.args.newCount);
+    };
+    Knarr.prototype.notif_playCard = function (notif) {
+        var _this = this;
+        var playerId = notif.args.playerId;
+        var playerTable = this.getPlayerTable(playerId);
+        var currentPlayer = this.getPlayerId() == playerId;
+        playerTable.played.addCard(notif.args.card, {
+            fromElement: currentPlayer ? undefined : document.getElementById("player-table-".concat(playerId, "-name"))
+        });
+        notif.args.discardedTokens.forEach(function (token) {
+            playerTable.tokensFree.removeCard(token);
+            _this.resourcesCounters[playerId][token.type].incValue(-1);
+        });
+        this.handCounters[playerId].toValue(notif.args.newCount);
+    };
+    Knarr.prototype.notif_discardCard = function (notif) {
+        this.getPlayerTable(notif.args.playerId).hand.removeCard(notif.args.card);
+    };
+    Knarr.prototype.notif_storedToken = function (notif) {
+        var playerId = notif.args.playerId;
+        var token = notif.args.token;
+        this.getPlayerTable(playerId).storeToken(notif.args.cardId, token);
+        this.resourcesCounters[playerId][token.type].incValue(-1);
+    };
+    Knarr.prototype.notif_unstoredToken = function (notif) {
+        var playerId = notif.args.playerId;
+        var token = notif.args.token;
+        this.getPlayerTable(playerId).unstoreToken(token);
+        this.resourcesCounters[playerId][token.type].incValue(+1);
+    };
+    Knarr.prototype.notif_confirmStoredTokens = function (notif) {
+        var playerId = notif.args.playerId;
+        this.getPlayerTable(playerId).confirmStoreTokens(notif.args.tokens);
+    };
+    Knarr.prototype.notif_discardTokens = function (notif) {
+        var _this = this;
+        var playerId = notif.args.playerId;
+        var playerTable = this.getPlayerTable(playerId);
+        notif.args.discardedTokens.forEach(function (token) {
+            playerTable.tokensFree.removeCard(token);
+            _this.resourcesCounters[playerId][token.type].incValue(-1);
+        });
+        notif.args.keptTokens.forEach(function (token, index) { return playerTable.tokensChief.addCard(token, undefined, { slot: index }); });
+    };
+    Knarr.prototype.notif_updateScore = function (notif) {
+        this.setScore(notif.args.playerId, notif.args.playerScore);
+    };
+    Knarr.prototype.notif_cancelLastMoves = function (notif) {
+        var _this = this;
+        var playerId = notif.args.playerId;
+        this.getPlayerTable(playerId).cancelLastMoves(notif.args.cards, notif.args.tokens);
+        [1, 2, 3, 4, 5].forEach(function (type) {
+            return _this.resourcesCounters[playerId][type].toValue(notif.args.tokens.filter(function (token) { return token.type == type; }).length);
+        });
+    };
+    /**
+     * Show last turn banner.
+     */
+    Knarr.prototype.notif_lastTurn = function (animate) {
+        if (animate === void 0) { animate = true; }
+        dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
+    };
+    /* This enable to inject translatable styled things to logs or action bar */
+    /* @Override */
+    Knarr.prototype.format_string_recursive = function (log, args) {
+        try {
+            if (log && args && !args.processed) {
+                if (args.type && (typeof args.type !== 'string' || args.type[0] !== '<')) {
+                    args.type = "<div class=\"token-icon\" data-type=\"".concat(args.type, "\"></div>");
+                }
+                if (args.types && (typeof args.types !== 'string' || args.types[0] !== '<')) {
+                    args.types = args.types.map(function (type) { return "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"); }).join('');
+                }
+                for (var property in args) {
+                    if (['left', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                        args[property] = "<strong>".concat(_(args[property]), "</strong>");
+                    }
+                }
+            }
+        }
+        catch (e) {
+            console.error(log, args, "Exception thrown", e.stack);
+        }
+        return this.inherited(arguments);
+    };
+    return Knarr;
 }());
 define([
     "dojo", "dojo/_base/declare",

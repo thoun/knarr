@@ -36,7 +36,7 @@
 
     &>div:not(.block-label) {
       flex: 1;
-      min-height: 282px;
+      min-height: 221px;
     }
   }
 
@@ -48,7 +48,7 @@
 
   .chief-and-tokens {
     display: grid;
-    grid-template-columns: 156px 202px;
+    grid-template-columns: 156px 120px;
 
     .tokens-free {
       align-content: flex-start;

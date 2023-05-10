@@ -3,10 +3,7 @@
     <div id="tables-and-center">
         <div id="table-center-wrapper">
             <div id="table-center">
-                <div id="fire">
-                    <div id="center-stock" class="center-spot-token">
-                        <div id="center-token-counter" class="center-spot-counter token-counter"></div>
-                    </div>
+                <div id="table-cards">
                 </div>
             </div>
         </div>

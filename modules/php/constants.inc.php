@@ -10,6 +10,14 @@ define('RED', 4);
 define('PURPLE', 5);
 
 /*
+ * Gain
+ */
+define('VP', 1);
+define('BRACELET', 2);
+define('RECRUIT', 3);
+define('FAME', 4);
+
+/*
  * Card type
  */
 define('HOUSE', 1);

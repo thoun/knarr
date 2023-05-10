@@ -12,8 +12,6 @@ const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 
 class Knarr implements KnarrGame {
     public cardsManager: CardsManager;
-    public tokensManager: TokensManager;
-    public chiefsManager: ChiefsManager;
 
     private zoomManager: ZoomManager;
     private animationManager: AnimationManager;
@@ -50,8 +48,6 @@ class Knarr implements KnarrGame {
 
 
         this.cardsManager = new CardsManager(this);
-        this.tokensManager = new TokensManager(this);
-        this.chiefsManager = new ChiefsManager(this);
         this.animationManager = new AnimationManager(this);
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);

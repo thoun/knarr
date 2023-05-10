@@ -44,7 +44,7 @@ class PlayerTable {
         `;
         dojo.place(html, document.getElementById('tables'));
 
-        if (this.currentPlayer) {
+        /*if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
             this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
                 sort: (a: Card, b: Card) => a.number - b.number,
@@ -83,11 +83,11 @@ class PlayerTable {
             this.tokensFree.addCards(player.tokens);
         } else {
             player.tokens.forEach((token, index) => this.tokensChief.addCard(token, undefined, { slot: index }));
-        }
+        }*/
     }
 
     public freeResources() {
-        this.tokensFree.addCards(this.tokensChief.getCards());
+        //this.tokensFree.addCards(this.tokensChief.getCards());
     }
     
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] | null = null) {

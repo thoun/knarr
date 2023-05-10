@@ -132,7 +132,7 @@ class Knarr extends Table {
         }
 
         // setup the initial game situation here
-        $this->setupCards();
+        $this->setupCards(count($players));
         $this->setupTokens(count($players));
        
 
@@ -180,8 +180,6 @@ class Knarr extends Table {
             }
         }
         
-        $centerCards = [];
-        $centerCardsCount = [];
         $centerTokens = [];
         $centerTokensCount = [];
         for ($pile=0; $pile<6; $pile++) {
@@ -190,8 +188,7 @@ class Knarr extends Table {
             $centerTokens[$pile] = $this->getTokenFromDb($this->tokens->getCardOnTop('pile'.$pile));
             $centerTokensCount[$pile] = intval($this->tokens->countCardInLocation('pile'.$pile));
         }
-        $result['centerCards'] = $centerCards;
-        $result['centerCardsCount'] = $centerCardsCount;
+        $result['centerCards'] = $this->getCardsByLocation('slot');
         $result['centerTokens'] = $centerTokens;
         $result['centerTokensCount'] = $centerTokensCount;
         $result['fireToken'] = Token::onlyId($this->getTokenFromDb($this->tokens->getCardOnTop('center')));

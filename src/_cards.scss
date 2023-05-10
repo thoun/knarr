@@ -1,8 +1,8 @@
 .knarr-card {
     display: inline-block;
     position: relative;
-    width: 202px;
-    height: 282px;
+    width: 120px;
+    height: 221px;
     margin: 5px;
     border-radius: 10px;
 
@@ -26,7 +26,7 @@
             }*/
 
             &.front {
-                background-size: auto 500%;
+                background-size: auto 100%;
                 background-image: url('img/cards.jpg');
             }
         }
@@ -60,23 +60,9 @@
     }
 
     @for $color from 1 through 5 {
-        @for $number from 1 through 12 {
-            .front[data-color="#{$color}"][data-number="#{$number}"] {
-                background-position: #{($number - 1) * 100% / 11} #{($color - 1) * 100% / 4};
-            }
-        }
-    }
-
-    &.chief {        
-        background-size: auto 100%;              
-        background-image: url('img/chiefs.jpg');
-
-        @for $number from 1 through 4 {
-            &[data-number="#{$number}"][data-level="1"] {
-                background-position-x: #{($number - 1) * 100% / 7};
-            }
-            &[data-number="#{$number}"][data-level="2"] {
-                background-position-x: #{($number + 3) * 100% / 7};
+        @for $gain from 1 through 4 {
+            .front[data-color="#{$color}"][data-gain="#{$gain}"] {
+                background-position-x: #{(($color - 1) * 4 + $gain) * 100% / 20};
             }
         }
     }

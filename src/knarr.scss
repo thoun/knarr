@@ -13,6 +13,15 @@
   }
 }
 
+@font-face {
+  font-family: 'komika parch';
+  src: url('img/komikap-webfont.woff2') format('woff2'),
+       url('img/komikap-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
 html, .mode_3d #game_play_area_background {
   background: url('img/background.jpg');
   background-size: 100% auto;
@@ -74,6 +83,7 @@ html, .mode_3d #game_play_area_background {
   align-items: stretch;
   gap: 20px;
   flex-direction: column;
+  margin-right: 10px;
 
   #tables {
     position: relative;
@@ -84,49 +94,42 @@ html, .mode_3d #game_play_area_background {
     gap: 20px;
     flex-direction: column;
   }
-}
 
-@media (min-width: 1500px) { 
-  #tables-and-center {
-    flex-direction: row-reverse;
+  &.double-column {
+    flex-direction: row;
     justify-content: center;
     align-items: start;
 
     &>div {
-      flex: 1
+      flex: 1;
     }
   }
 }
 
-.log, .dijitTooltipContents {
-  [data-color="1"] {
-    color: #f46d33;
-  }
-  [data-color="2"] {
-    color: #ef5c93;
-  }
-  [data-color="3"] {
-    color: #0079bc;
-  }
-  [data-color="4"] {
-    color: #6ab355;
-  }
-  [data-color="5"] {
-    color: #6967af;
-  }
-
-  .points-circle {
-    color: white;
-    border-radius: 50%;
-    background: #ffbb40;
-    display: inline-block;
-    height: 16px;
-    width: 16px;
+#last-round {
+    margin: 5px -5px -5px;
     text-align: center;
-    font-size: 90%;
+    background-color: #900;
+    color: white;
+    text-shadow: 0 0 1px #900, 0 0 5px #900, 0 0 6px #900, 0 0 7px #900;
 
-    &[data-negative="true"] {
-      background: #e94422;
+    .last-round-text {
+        display: inline-block;
+
+        &.animate {
+            animation: last-round-animation 2s 1 forwards ease-in-out;
+        }
     }
+}
+
+@keyframes last-round-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(3);
+  }
+  100% { 
+    transform: scale(1);
   }
 }
