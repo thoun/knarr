@@ -43,6 +43,8 @@ $this->DESTINATIONS = [
     16 => new DestinationType([YELLOW => 2], [FAME => 1], [VP, VP, null]),
     17 => new DestinationType([YELLOW => 2], [RECRUIT => 1], [VP, VP, null]),
     18 => new DestinationType([RED => 2], [BRACELET => 1, CARD => 1], [VP, null, VP]),
+    19 => new DestinationType([RED => 2], [BRACELET => 1, FAME => 1], [VP, null, VP]),
+    20 => new DestinationType([RED => 2], [BRACELET => 1], [VP, VP, null]),
     // B
     21 => new DestinationType([DIFFERENT => 4], [VP => 5, RECRUIT => 1], [null, null, VP]),
     22 => new DestinationType([DIFFERENT => 4], [VP => 5, FAME => 1], [null, null, VP]),
