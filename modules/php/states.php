@@ -11,6 +11,23 @@ trait StateTrait {
         The action method of state X is called everytime the current game state is set to X.
     */
 
+    function stScoreFame() {
+        $playerId = intval($this->getActivePlayerId());
+
+        $player = $this->getPlayer($playerId);
+
+        $inc = 0;
+        foreach ($this->VP_BY_FAME as $min => $points) {
+            if ($player->fame >= $min) {
+                $inc = $points;
+            }
+        }
+
+        $this->incPlayerScore($playerId, $inc, clienttranslate('${player_name} scores ${incScore} with fame'));
+        
+        $this->gamestate->nextState('next');
+    }
+
     function stPlayCard() {
         $playerId = intval($this->getActivePlayerId());
 

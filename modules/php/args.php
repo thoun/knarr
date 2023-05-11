@@ -42,23 +42,16 @@ trait ArgsTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $hand = $this->getCardsByLocation('hand', $playerId);
-        $resources = $this->getPlayerResources($playerId);
-
-        $payOneLess = false;
-        if ($this->getChiefPower($playerId) == CHIEF_POWER_PAY_ONE_LESS_RESOURCE) {
-            $payOneLessVar = $this->getGlobalVariable(POWER_PAY_ONE_LESS, true) ?? [0, 0, 0]; // played card, selected card id, chosen
-            $payOneLess = $payOneLessVar[0] == 1;
-        }
+        /*$resources = $this->getPlayerResources($playerId);
 
         $playableCards = array_values(array_filter($hand, fn($card) => $this->tokensToPayForCard($card, $resources, $hand, $payOneLess) !== null));
 
         $played = $this->getCardsByLocation('played'.$playerId);
-        $canStore = $this->array_some($played, fn($card) => $card->cardType == STORAGE);
+        $canStore = $this->array_some($played, fn($card) => $card->cardType == STORAGE);*/
 
         return [
-            'canStore' => $canStore,
-            'payOneLess' => $payOneLess,
-            'playableCards' => $playableCards,
+            /*'canStore' => $canStore,
+            'playableCards' => $playableCards,*/
         ];
     }
 

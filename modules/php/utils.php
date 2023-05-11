@@ -97,6 +97,19 @@ trait UtilTrait {
         return array_map(fn($dbResult) => new KnarrPlayer($dbResult), array_values($dbResults))[0];
     }
 
+    function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->DbQuery("UPDATE player SET `player_score` = `player_score` + $amount WHERE player_id = $playerId");
+        }
+            
+        $this->notifyAllPlayers('score', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->score,
+            'incScore' => $amount,
+        ] + $args);
+    }
+
     function getCardFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;
@@ -275,26 +288,6 @@ trait UtilTrait {
             case TOOL:
                 return $card->points * count(array_filter($cards, fn($c) => $c->cardType == $card->storageType));
         }
-    }
-
-    function getPlayerScore(int $playerId) {
-        $playedCards = $this->getPlayedCardWithStoredResources($playerId);
-        $score = 0;
-        foreach ($playedCards as $card) {
-            $score += $this->getCardScore($card, $playedCards);
-        }
-        return $score;
-    }
-
-    function updateScore(int $playerId) {
-        $playerScore = $this->getPlayerScore($playerId);
-
-        $this->DbQuery("UPDATE player SET player_score = $playerScore WHERE player_id = $playerId");
-
-        self::notifyAllPlayers('updateScore', '', [
-            'playerId' => $playerId,
-            'playerScore' => $playerScore,
-        ]);
     }
 
     function getPlayedCardWithStoredResources(int $playerId) {

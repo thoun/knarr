@@ -1368,6 +1368,16 @@ var PlayerTable = /** @class */ (function () {
 var ANIMATION_MS = 500;
 var ACTION_TIMER_DURATION = 5;
 var LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
+var VP_BY_FAME = {
+    0: 0,
+    3: 1,
+    6: 2,
+    10: 3,
+    14: 5,
+};
+function getVpByFame(fame) {
+    return Object.entries(VP_BY_FAME).find(function (entry) { return Number(entry[0]) >= fame; })[1];
+}
 var Knarr = /** @class */ (function () {
     function Knarr() {
         this.playersTables = [];
@@ -1637,7 +1647,7 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div><div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
+            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            </div><div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> ").concat(_('VP / round'), "\n                </div>\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             var handCounter = new ebg.counter();
             handCounter.create("playerhand-counter-".concat(playerId));
@@ -1645,7 +1655,7 @@ var Knarr = /** @class */ (function () {
             _this.handCounters[playerId] = handCounter;
             _this.fameCounters[playerId] = new ebg.counter();
             _this.fameCounters[playerId].create("fame-counter-".concat(playerId));
-            _this.fameCounters[playerId].setValue(player.fame);
+            _this.fameCounters[playerId].setValue(getVpByFame(player.fame));
             _this.recruitCounters[playerId] = new ebg.counter();
             _this.recruitCounters[playerId].create("recruit-counter-".concat(playerId));
             _this.recruitCounters[playerId].setValue(player.recruit);
@@ -1672,6 +1682,11 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.setScore = function (playerId, score) {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
+        // TODO move on board
+    };
+    Knarr.prototype.setFame = function (playerId, count) {
+        this.fameCounters[playerId].toValue(getVpByFame(count));
+        // TODO move on board
     };
     Knarr.prototype.setRecruits = function (playerId, count) {
         this.recruitCounters[playerId].toValue(count);
@@ -1907,6 +1922,9 @@ var Knarr = /** @class */ (function () {
         [1, 2, 3, 4, 5].forEach(function (type) {
             return _this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(function (token) { return token.type == type; }).length);
         });
+    };
+    Knarr.prototype.notif_score = function (notif) {
+        this.setScore(notif.args.playerId, +notif.args.newScore);
     };
     /**
      * Show last turn banner.

@@ -23,6 +23,13 @@ require_once(__DIR__.'/modules/php/constants.inc.php');
 require_once(__DIR__.'/modules/php/objects/destination.php');
 require_once(__DIR__.'/modules/php/objects/card.php');
 
+$this->VP_BY_FAME = [
+    3 => 1,
+    6 => 2,
+    10 => 3,
+    14 => 5,
+];
+
 $this->DESTINATIONS = [
     // A
     1 => new DestinationType([DIFFERENT => 3], [RECRUIT => 1, FAME => 1, CARD => 1], [null, VP, null]),

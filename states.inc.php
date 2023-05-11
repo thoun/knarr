@@ -56,7 +56,7 @@ $basicGameStates = [
         "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => [ "" => ST_PLAYER_TAKE_CARD ]
+        "transitions" => [ "" => ST_SCORE_FAME ]
     ],
    
     // Final state.
@@ -72,51 +72,7 @@ $basicGameStates = [
 
 $playerActionsGameStates = [
 
-    ST_PLAYER_TAKE_CARD => [
-        "name" => "takeCard",
-        "description" => clienttranslate('${actplayer} must take a tribe card on the table'),
-        "descriptionmyturn" => clienttranslate('${you} must take a tribe card on the table'),
-        "type" => "activeplayer",
-        "args" => "argTakeCard",
-        "possibleactions" => [ 
-            "takeCard",
-        ],
-        "transitions" => [
-            "skipResource" => ST_PLAYER_SKIP_RESOURCE,
-            "takeCard" => ST_PLAYER_TAKE_CARD_CHIEF_POWER,
-            "next" => ST_PLAYER_PLAY_CARD,
-        ]
-    ],
-
-    ST_PLAYER_SKIP_RESOURCE => [
-        "name" => "skipResource",
-        "description" => clienttranslate('${actplayer} can skip a pile'),
-        "descriptionmyturn" => clienttranslate('${you} can skip a pile'),
-        "type" => "activeplayer",
-        "args" => "argSkipResource",
-        "possibleactions" => [ 
-            "skipResource",
-        ],
-        "transitions" => [
-            "next" => ST_PLAYER_PLAY_CARD,
-        ]
-    ],
-
-    ST_PLAYER_TAKE_CARD_CHIEF_POWER => [
-        "name" => "takeCardChiefPower",
-        "description" => clienttranslate('${actplayer} must take a tribe card on the table (chieftain power)'),
-        "descriptionmyturn" => clienttranslate('${you} must take a tribe card on the table (chieftain power)'),
-        "type" => "activeplayer",
-        "args" => "argTakeCard",
-        "possibleactions" => [ 
-            "takeCard",
-        ],
-        "transitions" => [
-            "next" => ST_PLAYER_PLAY_CARD,
-        ]
-    ],
-
-    ST_PLAYER_PLAY_CARD => [
+    ST_PLAYER_PLAY_ACTION => [
         "name" => "playCard",
         "description" => clienttranslate('${actplayer} can play tribe cards from your hand'),
         "descriptionmyturn" => clienttranslate('${you} can play tribe cards from your hand'),
@@ -132,11 +88,11 @@ $playerActionsGameStates = [
             "endTurn",
         ],
         "transitions" => [
-            "stay" => ST_PLAYER_PLAY_CARD,
-            "takeCardPower" => ST_PLAYER_TAKE_CARD_POWER,
+            "stay" => ST_PLAYER_PLAY_ACTION,
+            "takeCardPower" => ST_SCORE_FAME_POWER,
             "discard" => ST_PLAYER_DISCARD_CARD,
             "chooseOneLessResource" => ST_PLAYER_CHOOSE_ONE_LESS,
-            "next" => ST_PLAYER_PLAY_CARD,
+            "next" => ST_PLAYER_PLAY_ACTION,
             "endTurnDiscard" => ST_PLAYER_DISCARD_TOKENS,
             "endTurn" => ST_NEXT_PLAYER,
         ],
@@ -156,9 +112,9 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "stay" => ST_PLAYER_CHOOSE_ONE_LESS,
-            "takeCardPower" => ST_PLAYER_TAKE_CARD_POWER,
+            "takeCardPower" => ST_SCORE_FAME_POWER,
             "discard" => ST_PLAYER_DISCARD_CARD,
-            "next" => ST_PLAYER_PLAY_CARD,
+            "next" => ST_PLAYER_PLAY_ACTION,
         ]
     ],
 
@@ -176,12 +132,12 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "stay" => ST_PLAYER_DISCARD_CARD,
-            "takeCardPower" => ST_PLAYER_TAKE_CARD_POWER,
-            "next" => ST_PLAYER_PLAY_CARD,
+            "takeCardPower" => ST_SCORE_FAME_POWER,
+            "next" => ST_PLAYER_PLAY_ACTION,
         ],
     ],
 
-    ST_PLAYER_TAKE_CARD_POWER => [
+    ST_SCORE_FAME_POWER => [
         "name" => "takeCardPower",
         "description" => clienttranslate('${actplayer} must take a tribe card on the table (played card power)'),
         "descriptionmyturn" => clienttranslate('${you} must take a tribe card on the table (played card power)'),
@@ -193,8 +149,8 @@ $playerActionsGameStates = [
             "unstoreToken",
         ],
         "transitions" => [
-            "stay" => ST_PLAYER_TAKE_CARD_POWER,
-            "next" => ST_PLAYER_PLAY_CARD,
+            "stay" => ST_SCORE_FAME_POWER,
+            "next" => ST_PLAYER_PLAY_ACTION,
         ]
     ],
 
@@ -215,13 +171,23 @@ $playerActionsGameStates = [
 
 $gameGameStates = [
 
+    ST_SCORE_FAME => [
+        "name" => "scoreFame",
+        "description" => clienttranslate('Scoring fame points...'),
+        "type" => "game",
+        "action" => "stScoreFame",
+        "transitions" => [
+            "next" => ST_PLAYER_PLAY_ACTION,
+        ]
+    ],
+
     ST_NEXT_PLAYER => [
         "name" => "nextPlayer",
         "description" => "",
         "type" => "game",
         "action" => "stNextPlayer",
         "transitions" => [
-            "nextPlayer" => ST_PLAYER_TAKE_CARD,
+            "nextPlayer" => ST_SCORE_FAME,
             "endScore" => ST_END_SCORE,
         ],
     ],

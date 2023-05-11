@@ -30,13 +30,11 @@ define('CARD', 5);
  */
 define('ST_BGA_GAME_SETUP', 1);
 
-define('ST_PLAYER_TAKE_CARD', 10);
-define('ST_PLAYER_SKIP_RESOURCE', 15);
-define('ST_PLAYER_TAKE_CARD_CHIEF_POWER', 16);
+define('ST_SCORE_FAME', 10);
 
-define('ST_PLAYER_PLAY_CARD', 20);
+define('ST_PLAYER_PLAY_ACTION', 20);
 define('ST_PLAYER_DISCARD_CARD', 21);
-define('ST_PLAYER_TAKE_CARD_POWER', 25);
+define('ST_SCORE_FAME_POWER', 25);
 define('ST_PLAYER_CHOOSE_ONE_LESS', 30);
 
 define('ST_PLAYER_DISCARD_TOKENS', 70);

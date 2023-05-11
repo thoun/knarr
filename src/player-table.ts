@@ -7,10 +7,7 @@ class PlayerTable {
     public playerId: number;
     public voidStock: VoidStock<Card>;
     public hand?: LineStock<Card>;
-    public chief: LineStock<number>;
     public played: LineStock<Card>;
-    public tokensFree: LineStock<Destination>;
-    public tokensChief: SlotStock<Destination>;
 
     private currentPlayer: boolean;
 

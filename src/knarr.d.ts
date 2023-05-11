@@ -100,64 +100,9 @@ interface NotifTakeElementArgs {
     newCount: number;
 } 
 
-// takeCard
-interface NotifTakeCardArgs extends NotifTakeElementArgs {
-    card: Card;
-    newCard: Card | null;
-} 
-
-// takeToken
-interface NotifTakeTokenArgs extends NotifTakeElementArgs {
-    token: Destination;
-    newToken: Destination | null;
-} 
-
-// playCard
-interface NotifPlayCardArgs {
+// score
+interface NotifScoreArgs {
     playerId: number;
-    newCount: number;
-    card: Card;
-    discardedTokens: Destination[];
-} 
-
-// discardCard
-interface NotifDiscardCardArgs {
-    playerId: number;
-    card: Card;
-} 
-
-// unstoredToken
-interface NotifUnstoredTokenArgs {
-    playerId: number;
-    token: Destination;
+    newScore: number;
+    incScore: number;
 }
-
-// storedToken
-interface NotifStoredTokenArgs extends NotifUnstoredTokenArgs {
-    cardId: number;
-}
-// confirmStoredTokens
-interface NotifConfirmStoredTokensArgs {
-    playerId: number;
-    tokens: { [cardId: number]: Destination };
-}
-
-// discardTokens
-interface NotifDiscardTokensArgs {
-    playerId: number;
-    keptTokens: Destination[];    
-    discardedTokens: Destination[];
-}
-
-// updateScore
-interface NotifUpdateScoreArgs {
-    playerId: number;
-    playerScore: number;
-} 
-
-// cancelLastMoves
-interface NotifCancelLastMovesArgs {
-    playerId: number;
-    cards: Card[];
-    tokens: Destination[];
-} 

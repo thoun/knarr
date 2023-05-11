@@ -10,6 +10,18 @@ const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 
+const VP_BY_FAME = {
+    0: 0,
+    3: 1,
+    6: 2,
+    10: 3,
+    14: 5,
+};
+
+function getVpByFame(fame: number) {
+    return Object.entries(VP_BY_FAME).find(entry => Number(entry[0]) >= fame)[1];
+}
+
 class Knarr implements KnarrGame {
     public cardsManager: CardsManager;
     public destinationsManager: DestinationsManager;
@@ -339,7 +351,7 @@ class Knarr implements KnarrGame {
             
                 <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
                     <div class="fame icon"></div>
-                    <span id="fame-counter-${player.id}"></span>
+                    <span id="fame-counter-${player.id}"></span> ${_('VP / round')}
                 </div>
             
                 <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
@@ -363,7 +375,7 @@ class Knarr implements KnarrGame {
 
             this.fameCounters[playerId] = new ebg.counter();
             this.fameCounters[playerId].create(`fame-counter-${playerId}`);
-            this.fameCounters[playerId].setValue(player.fame);
+            this.fameCounters[playerId].setValue(getVpByFame(player.fame));
 
             this.recruitCounters[playerId] = new ebg.counter();
             this.recruitCounters[playerId].create(`recruit-counter-${playerId}`);
@@ -395,6 +407,12 @@ class Knarr implements KnarrGame {
 
     private setScore(playerId: number, score: number) {
         (this as any).scoreCtrl[playerId]?.toValue(score);
+        // TODO move on board
+    }
+
+    private setFame(playerId: number, count: number) {
+        this.fameCounters[playerId].toValue(getVpByFame(count));
+        // TODO move on board
     }
 
     private setRecruits(playerId: number, count: number) {
@@ -671,6 +689,10 @@ class Knarr implements KnarrGame {
         [1,2,3,4,5].forEach(type => 
             this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(token => token.type == type).length)
         );
+    }
+
+    notif_score(notif: Notif<NotifScoreArgs>) {
+        this.setScore(notif.args.playerId, +notif.args.newScore);
     }
     
     /** 

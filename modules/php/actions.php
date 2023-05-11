@@ -69,8 +69,8 @@ trait ActionTrait {
         }
 
         $card = $this->getCardFromDb($this->cards->pickCardForLocation('pile'.$pile, 'hand', $playerId));
-        $fromCardPower = intval($this->gamestate->state_id()) == ST_PLAYER_TAKE_CARD_POWER;
-        $fromChieftainPower = intval($this->gamestate->state_id()) == ST_PLAYER_TAKE_CARD_CHIEF_POWER;
+        $fromCardPower = intval($this->gamestate->state_id()) == ST_SCORE_FAME_POWER;
+        $fromChieftainPower = intval($this->gamestate->state_id()) == ST_SCORE_FAME_CHIEF_POWER;
         $canSkipResource = !$fromCardPower && $this->getChiefPower($playerId) == CHIEF_POWER_SKIP_RESOURCE;
 
         $message = $fromCardPower || $fromChieftainPower ?
@@ -429,6 +429,6 @@ trait ActionTrait {
 
         $this->updateScore($playerId);
 
-        $this->gamestate->jumpToState(ST_PLAYER_PLAY_CARD);
+        $this->gamestate->jumpToState(ST_PLAYER_PLAY_ACTION);
     }
 }
