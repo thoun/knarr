@@ -28,7 +28,7 @@ interface KnarrPlayer extends Player {
     bracelet: number;
     handCount: number;
     hand?: Card[];
-    playedCards: Card[];
+    playedCards: { [color: number]: Card[] };
     tokens: Destination[];
 }
 
@@ -64,41 +64,18 @@ interface KnarrGame extends Game {
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
-    onCenterCardClick(pile: number): void;
+    onTableDestinationClick(destination: Destination): void;
     onHandCardClick(card: Card): void;
-    onTokenSelectionChange(selection: Destination[]): void;
-    storeToken(cardId: number, tokenType: number): void;
-    unstoreToken(tokenId: number): void;
 }
 
-interface EnteringTakeCardArgs {
-    playerId: number;
+interface EnteringPlayActionArgs {
+    canDoAction: boolean;
+    canTrade: boolean;
 }
 
-interface EnteringSkipResourceArgs {
-    pile: number;
-    resources: number[];
+interface EnteringTradeArgs {
+    bracelets: number;
 }
-
-interface EnteringPlayCardArgs {
-    playableCards: Card[];
-    canStore: boolean;
-}
-
-interface EnteringChooseOneLessArgs {
-    canSkipDiscard: boolean;
-    tokens: number[];
-}
-
-interface EnteringDiscardCardArgs extends EnteringPlayCardArgs {
-    selectedCard: Card;
-}
-
-interface NotifTakeElementArgs {
-    playerId: number;
-    pile: number;
-    newCount: number;
-} 
 
 // score
 interface NotifScoreArgs {

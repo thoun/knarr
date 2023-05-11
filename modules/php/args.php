@@ -12,84 +12,38 @@ trait ArgsTrait {
         game state.
     */
    
-    function argTakeCard() {
+    function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
 
-        return [
-            'playerId' => $playerId,
-            //'available' => [1,2,3,4,5,6],
-        ];
-    }
+        $bracelets = $this->getPlayer($playerId)->bracelet;
 
-    function argSkipResource() {
-        $skipResourceArray = $this->getGlobalVariable(POWER_SKIP_RESSOURCE, true);
-        $pile = $skipResourceArray[0];
-        $tokens = $skipResourceArray[1];
+        $actionDone = boolval($this->getGameStateValue(ACTION_DONE));
+        $tradeDone = boolval($this->getGameStateValue(TRADE_DONE));
 
-        $resources = [];
-        for ($i = 1; $i <= $tokens + 1; $i++) {
-            $tokenPile = ($pile + $i) % 6;
-            $resources[] = $this->getDestinationFromDb($this->destinations->getCardOnTop('pile'.$tokenPile))->type;
+        $possibleDestinations = [];
+        if (!$actionDone) {
+            $possibleDestinations = array_merge(
+                $this->getDestinationsByLocation('slotA'),
+                $this->getDestinationsByLocation('slotB'),
+            );
+
+            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => true)); // TODO
         }
 
         return [
-            'pile' => $pile,
-            'resources' => $resources,
+            'possibleDestinations' => $possibleDestinations,
+            'canDoAction' => !$actionDone,
+            'canTrade' => !$tradeDone && $bracelets > 0,
         ];
     }
-   
-    function argPlayCard() {
+
+    function argTrade() {
         $playerId = intval($this->getActivePlayerId());
 
-        $hand = $this->getCardsByLocation('hand', $playerId);
-        /*$resources = $this->getPlayerResources($playerId);
-
-        $playableCards = array_values(array_filter($hand, fn($card) => $this->tokensToPayForCard($card, $resources, $hand, $payOneLess) !== null));
-
-        $played = $this->getCardsByLocation('played'.$playerId);
-        $canStore = $this->array_some($played, fn($card) => $card->cardType == STORAGE);*/
+        $bracelets = $this->getPlayer($playerId)->bracelet;
 
         return [
-            /*'canStore' => $canStore,
-            'playableCards' => $playableCards,*/
-        ];
-    }
-
-    function argChooseOneLess() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $payOneLess = $this->getGlobalVariable(POWER_PAY_ONE_LESS, true); // played card, selected card id, chosen
-        $card = $this->getCardFromDb($this->cards->getCard($payOneLess[1]));
-
-        $resources = $this->getPlayerResources($playerId);
-        $tokens = array_values(array_unique($card->resources));
-
-        $tokens = array_values(array_filter($tokens, fn($token) => $this->tokensToPayForCard($card, $resources, null, false, $token) !== null));
-
-        return [
-            'canSkipDiscard' => $card->discard,
-            'tokens' => $tokens,
-        ];
-    }
-
-    function argDiscardCard() {
-        $playerId = intval($this->getActivePlayerId());
-
-        $hand = $this->getCardsByLocation('hand', $playerId);
-        $selectedCard = $this->getCardFromDb($this->cards->getCard(intval($this->getGameStateValue(SELECTED_CARD))));
-        $playableCards = array_values(array_filter($hand, fn($card) => $card->id != $selectedCard->id));
-
-        return [
-            'selectedCard' => $selectedCard,
-            'playableCards' => $playableCards,
-        ];
-    }
-
-    function argDiscardTokens() {
-        $number = 4;
-
-        return [
-            'number' => $number,
+            'bracelets' => $bracelets,
         ];
     }
 } 

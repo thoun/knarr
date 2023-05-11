@@ -16,6 +16,7 @@ class TableCenter {
                 mapCardToSlot: card => card.locationArg,
             });
             this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
+            this.destinations[letter].onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
         })
 
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {

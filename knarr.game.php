@@ -48,7 +48,8 @@ class Knarr extends Table {
         
         self::initGameStateLabels([
             LAST_TURN => LAST_TURN,
-            SELECTED_CARD => SELECTED_CARD,
+            ACTION_DONE => ACTION_DONE,
+            TRADE_DONE => TRADE_DONE,
 
             BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
             VARIANT_OPTION => VARIANT_OPTION,
@@ -101,7 +102,8 @@ class Knarr extends Table {
 
         // Init global values with their initial values
         $this->setGameStateInitialValue(LAST_TURN, 0);
-        $this->setGameStateInitialValue(SELECTED_CARD, -1);
+        $this->setGameStateInitialValue(ACTION_DONE, 0);
+        $this->setGameStateInitialValue(TRADE_DONE, 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -159,7 +161,10 @@ class Knarr extends Table {
             $player['fame'] = intval($player['fame']);
             $player['recruit'] = intval($player['recruit']);
             $player['bracelet'] = intval($player['bracelet']);
-            $player['playedCards'] = $this->getCardsByLocation('played'.$playerId);
+            $player['playedCards'] = [];
+            foreach ([1,2,3,4,5] as $color) {
+                $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+            }
             $player['tokens'] = $this->getDestinationsByLocation('player', $playerId);
             $player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 

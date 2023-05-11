@@ -1311,6 +1311,7 @@ var TableCenter = /** @class */ (function () {
                 mapCardToSlot: function (card) { return card.locationArg; },
             });
             _this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
+            _this.destinations[letter].onCardClick = function (card) { return _this.game.onTableDestinationClick(card); };
         });
         this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
             slotsIds: [1, 2, 3, 4, 5],
@@ -1329,6 +1330,7 @@ var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
         var _this = this;
         this.game = game;
+        this.played = [];
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
         var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n        ");
@@ -1339,26 +1341,27 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 3; i++) {
             html += "\n            <div class=\"token bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"token recruit\" data-number=\"").concat(i, "\"></div>\n            ");
         }
-        html += "\n            </div>\n            <div class=\"visible-cards\">\n                <div id=\"player-table-".concat(this.playerId, "-played\" class=\"cards\"></div>\n            </div>\n        </div>\n        ");
+        html += "\n            </div>\n            <div class=\"visible-cards\">";
+        for (var i = 1; i <= 5; i++) {
+            html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
+        }
+        html += "\n            </div>\n        </div>\n        ";
         dojo.place(html, document.getElementById('tables'));
         if (this.currentPlayer) {
             var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
             this.hand = new LineStock(this.game.cardsManager, handDiv, {
                 sort: function (a, b) { return a.color == b.color ? a.gain - b.gain : a.color - b.color; },
             });
-            this.hand.onCardClick = function (card) {
-                //if (handDiv.classList.contains('selectable')) {
-                _this.game.onHandCardClick(card);
-                //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
-                //}
-            };
+            this.hand.onCardClick = function (card) { return _this.game.onHandCardClick(card); };
             this.hand.addCards(player.hand);
         }
         //this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-        this.played = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-played")), {
-            center: false,
-        });
-        this.played.addCards(player.playedCards);
+        for (var i = 1; i <= 5; i++) {
+            this.played[i] = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-played-").concat(i)), {
+                center: false,
+            });
+            this.played[i].addCards(player.playedCards[i]);
+        }
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
@@ -1445,34 +1448,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onEnteringState = function (stateName, args) {
         log('Entering state: ' + stateName, args.args);
         switch (stateName) {
-            case 'takeCard':
-            case 'takeCardPower':
-            case 'takeCardChiefPower':
-                this.onEnteringTakeCard(args.args);
+            case 'playAction':
+                this.onEnteringPlayAction(args.args);
                 break;
-            case 'playCard':
-                this.onEnteringPlayCard(args.args);
-                break;
-            case 'discardCard':
-                this.onEnteringDiscardCard(args.args);
-                break;
-            case 'discardTokens':
-                if (this.isCurrentPlayerActive()) {
-                    //this.getCurrentPlayerTable()?.setStoreButtons(false);
-                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(true);
-                }
-                break;
-        }
-        if (['playCard', 'chooseOneLess', 'discardCard'].includes(stateName)) {
-            if (this.isCurrentPlayerActive()) {
-                //this.getCurrentPlayerTable()?.setStoreButtons(true);
-            }
-        }
-    };
-    Knarr.prototype.onEnteringTakeCard = function (args) {
-        //this.getPlayerTable(args.playerId).freeResources();
-        if (this.isCurrentPlayerActive()) {
-            //this.tableCenter.setCardsSelectable(true);
         }
     };
     Knarr.prototype.setGamestateDescription = function (property) {
@@ -1482,52 +1460,24 @@ var Knarr = /** @class */ (function () {
         this.gamedatas.gamestate.descriptionmyturn = "".concat(originalState['descriptionmyturn' + property]);
         this.updatePageTitle();
     };
-    Knarr.prototype.onEnteringPlayCard = function (args) {
-        if (args.canStore) {
-            this.setGamestateDescription('Storage');
+    Knarr.prototype.onEnteringPlayAction = function (args) {
+        if (!args.canDoAction) {
+            this.setGamestateDescription('TradeOnly');
         }
         if (this.isCurrentPlayerActive()) {
             //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
-        }
-    };
-    Knarr.prototype.onEnteringDiscardCard = function (args) {
-        if (this.isCurrentPlayerActive()) {
-            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
-            var selectedCardDiv = this.getCurrentPlayerTable().hand.getCardElement(args.selectedCard);
-            selectedCardDiv.classList.add('selected-discard');
         }
     };
     Knarr.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
         switch (stateName) {
-            case 'takeCard':
-            case 'takeCardPower':
-            case 'takeCardChiefPower':
-                this.onLeavingTakeCard();
-                break;
-            case 'playCard':
-                this.onLeavingPlayCard();
-                break;
-            case 'discardCard':
-                this.onLeavingDiscardCard();
-                break;
-            case 'discardTokens':
-                if (this.isCurrentPlayerActive()) {
-                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(false);
-                }
+            case 'playAction':
+                this.onLeavingPlayAction();
                 break;
         }
     };
-    Knarr.prototype.onLeavingTakeCard = function () {
-        //this.tableCenter.setCardsSelectable(false);
-    };
-    Knarr.prototype.onLeavingPlayCard = function () {
+    Knarr.prototype.onLeavingPlayAction = function () {
         //this.getCurrentPlayerTable()?.setCardsSelectable(false);
-    };
-    Knarr.prototype.onLeavingDiscardCard = function () {
-        document.querySelectorAll('.selected-discard').forEach(function (elem) { return elem.classList.remove('selected-discard'); });
-    };
-    Knarr.prototype.onLeavingStoreTokens = function () {
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -1536,56 +1486,27 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         if (this.isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'skipResource':
-                    var skipResourceArgs_1 = args;
-                    var _loop_2 = function (i) {
-                        var label = '';
-                        if (i == 0) {
-                            label = _("Don't skip resource, take ${resources}").replace('${resources}', skipResourceArgs_1.resources.slice(0, skipResourceArgs_1.resources.length - 1).map(function (type) { return "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"); }).join(''));
-                        }
-                        else {
-                            var resources = skipResourceArgs_1.resources.slice();
-                            var resource = resources.splice(i - 1, 1)[0];
-                            label = _("Skip ${resource}, take ${resources}").replace('${resource}', "<div class=\"token-icon\" data-type=\"".concat(resource, "\"></div>")).replace('${resources}', resources.map(function (type) { return "<div class=\"token-icon\" data-type=\"".concat(type, "\"></div>"); }).join(''));
-                        }
-                        this_1.addActionButton("skipResource".concat(i, "_button"), label, function () { return _this.skipResource(i); });
-                        var skipResourceButton = document.getElementById("skipResource".concat(i, "_button"));
-                        skipResourceButton.addEventListener('mouseenter', function () { return _this.tableCenter.showLinkedTokens(skipResourceArgs_1.pile, skipResourceArgs_1.resources.length - 1, i); });
-                        skipResourceButton.addEventListener('mouseleave', function () { return _this.tableCenter.showLinkedTokens(skipResourceArgs_1.pile, 0); });
-                    };
-                    var this_1 = this;
-                    for (var i = 0; i < skipResourceArgs_1.resources.length; i++) {
-                        _loop_2(i);
+                case 'playAction':
+                    var playActionArgs = args;
+                    this.addActionButton("goTrade_button", _("Trade"), function () { return _this.goTrade(); });
+                    if (!playActionArgs.canTrade) {
+                        document.getElementById("goTrade_button").classList.add('disabled');
+                    }
+                    if (!args.canDoAction) {
+                        this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
                     }
                     break;
-                case 'playCard':
-                    this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
-                    break;
-                case 'chooseOneLess':
-                    var chooseOneLessArgs = args;
-                    if (chooseOneLessArgs.canSkipDiscard) {
-                        this.addActionButton("chooseOneLess0_button", _("Ignore sacrifice"), function () { return _this.chooseOneLess(0); });
-                    }
-                    chooseOneLessArgs.tokens.forEach(function (token) {
-                        if (!document.getElementById("chooseOneLess".concat(token, "_button"))) {
-                            _this.addActionButton("chooseOneLess".concat(token, "_button"), _("Ignore ${resource}").replace('${resource}', "<div class=\"token-icon\" data-type=\"".concat(token, "\"></div>")), function () { return _this.chooseOneLess(token); });
+                case 'trade':
+                    var tradeArgs_1 = args;
+                    [1, 2, 3].forEach(function (number) {
+                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelets").replace('${number}', number), function () { return _this.trade(number); });
+                        if (tradeArgs_1.bracelets < number) {
+                            document.getElementById("trade".concat(number, "_button")).classList.add('disabled');
                         }
                     });
                     this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
                     break;
-                case 'discardCard':
-                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
-                    break;
-                case 'discardTokens':
-                    this.addActionButton("keepSelectedTokens_button", _("Keep selected resources"), function () { return _this.keepSelectedTokens(); });
-                    var button = document.getElementById("keepSelectedTokens_button");
-                    button.classList.add('disabled');
-                    button.dataset.max = args.number;
-                    break;
             }
-        }
-        if (['playCard', 'chooseOneLess', 'discardCard', 'discardTokens'].includes(stateName)) {
-            this.addActionButton("cancelLastMoves_button", _("Cancel last moves"), function () { return _this.cancelLastMoves(); }, null, null, 'gray');
         }
     };
     ///////////////////////////////////////////////////
@@ -1696,31 +1617,17 @@ var Knarr = /** @class */ (function () {
         this.braceletCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
     };
-    Knarr.prototype.onCenterCardClick = function (pile) {
-        this.takeCard(pile);
+    Knarr.prototype.onTableDestinationClick = function (destination) {
+        this.takeDestination(destination.id);
     };
     Knarr.prototype.onHandCardClick = function (card) {
-        if (this.gamedatas.gamestate.name == 'discardCard') {
-            this.discardCard(card.id);
-        }
-        else {
-            this.playCard(card.id);
-        }
+        this.playCard(card.id);
     };
-    Knarr.prototype.onTokenSelectionChange = function (selection) {
-        if (this.gamedatas.gamestate.name !== 'discardTokens') {
+    Knarr.prototype.goTrade = function () {
+        if (!this.checkAction('goTrade')) {
             return;
         }
-        var button = document.getElementById("keepSelectedTokens_button");
-        button.classList.toggle('disabled', selection.length != Number(button.dataset.max));
-    };
-    Knarr.prototype.takeCard = function (pile) {
-        if (!this.checkAction('takeCard')) {
-            return;
-        }
-        this.takeAction('takeCard', {
-            pile: pile
-        });
+        this.takeAction('goTrade');
     };
     Knarr.prototype.playCard = function (id) {
         if (!this.checkAction('playCard')) {
@@ -1730,40 +1637,20 @@ var Knarr = /** @class */ (function () {
             id: id
         });
     };
-    Knarr.prototype.skipResource = function (number) {
-        if (!this.checkAction('skipResource')) {
+    Knarr.prototype.takeDestination = function (id) {
+        if (!this.checkAction('takeDestination')) {
             return;
         }
-        this.takeAction('skipResource', {
-            number: number
-        });
-    };
-    Knarr.prototype.pass = function () {
-        if (!this.checkAction('pass')) {
-            return;
-        }
-        this.takeAction('pass');
-    };
-    Knarr.prototype.endTurn = function () {
-        if (!this.checkAction('endTurn')) {
-            return;
-        }
-        this.takeAction('endTurn');
-    };
-    Knarr.prototype.discardCard = function (id) {
-        if (!this.checkAction('discardCard')) {
-            return;
-        }
-        this.takeAction('discardCard', {
+        this.takeAction('takeDestination', {
             id: id
         });
     };
-    Knarr.prototype.chooseOneLess = function (type) {
-        if (!this.checkAction('chooseOneLess')) {
+    Knarr.prototype.trade = function (number) {
+        if (!this.checkAction('trade')) {
             return;
         }
-        this.takeAction('chooseOneLess', {
-            type: type
+        this.takeAction('trade', {
+            number: number
         });
     };
     Knarr.prototype.cancel = function () {
@@ -1772,36 +1659,11 @@ var Knarr = /** @class */ (function () {
         }
         this.takeAction('cancel');
     };
-    Knarr.prototype.storeToken = function (cardId, tokenType) {
-        if (!this.checkAction('storeToken')) {
+    Knarr.prototype.endTurn = function () {
+        if (!this.checkAction('endTurn')) {
             return;
         }
-        this.takeAction('storeToken', {
-            cardId: cardId,
-            tokenType: tokenType,
-        });
-    };
-    Knarr.prototype.unstoreToken = function (tokenId) {
-        if (!this.checkAction('unstoreToken')) {
-            return;
-        }
-        this.takeAction('unstoreToken', {
-            tokenId: tokenId,
-        });
-    };
-    Knarr.prototype.keepSelectedTokens = function () {
-        if (!this.checkAction('keepSelectedTokens')) {
-            return;
-        }
-        this.takeAction('keepSelectedTokens', {
-            ids: this.getCurrentPlayerTable().tokensFree.getSelection().map(function (token) { return token.id; }).join(','),
-        });
-    };
-    Knarr.prototype.cancelLastMoves = function () {
-        /*if(!(this as any).checkAction('cancelLastMoves')) {
-            return;
-        }*/
-        this.takeAction('cancelLastMoves');
+        this.takeAction('endTurn');
     };
     Knarr.prototype.takeAction = function (action, data) {
         data = data || {};
@@ -1823,104 +1685,12 @@ var Knarr = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            ['takeCard', ANIMATION_MS],
-            ['takeToken', ANIMATION_MS],
-            ['playCard', ANIMATION_MS],
-            ['discardCard', 1],
-            ['storedToken', ANIMATION_MS],
-            ['unstoredToken', ANIMATION_MS],
-            ['confirmStoredTokens', ANIMATION_MS],
-            ['discardTokens', 1],
-            ['refillTokens', 1],
-            ['updateScore', 1],
-            ['cancelLastMoves', ANIMATION_MS],
+            ['score', 1],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
             dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
-        });
-    };
-    Knarr.prototype.notif_takeCard = function (notif) {
-        var currentPlayer = this.getPlayerId() == notif.args.playerId;
-        var playerTable = this.getPlayerTable(notif.args.playerId);
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
-        this.tableCenter.setNewCard(notif.args.pile, notif.args.newCard, notif.args.newCount);
-    };
-    Knarr.prototype.notif_takeToken = function (notif) {
-        var playerId = notif.args.playerId;
-        var token = notif.args.token;
-        var fromCenter = notif.args.pile == -1;
-        if (fromCenter) {
-            this.tokensManager.flipCard(token, {
-                updateData: true,
-                updateFront: true,
-                updateBack: false,
-            });
-        }
-        this.getPlayerTable(playerId).tokensFree.addCard(token, {
-            fromElement: fromCenter ? document.getElementById("center-stock") : undefined,
-        });
-        if (notif.args.pile != -2) {
-            this.notif_refillTokens(notif);
-        }
-        this.fameCounters[playerId][token.type].incValue(1);
-    };
-    Knarr.prototype.notif_refillTokens = function (notif) {
-        this.tableCenter.setNewToken(notif.args.pile, notif.args.newToken, notif.args.newCount);
-    };
-    Knarr.prototype.notif_playCard = function (notif) {
-        var _this = this;
-        var playerId = notif.args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        var currentPlayer = this.getPlayerId() == playerId;
-        playerTable.played.addCard(notif.args.card, {
-            fromElement: currentPlayer ? undefined : document.getElementById("player-table-".concat(playerId, "-name"))
-        });
-        notif.args.discardedTokens.forEach(function (token) {
-            playerTable.tokensFree.removeCard(token);
-            _this.fameCounters[playerId][token.type].incValue(-1);
-        });
-        this.handCounters[playerId].toValue(notif.args.newCount);
-    };
-    Knarr.prototype.notif_discardCard = function (notif) {
-        this.getPlayerTable(notif.args.playerId).hand.removeCard(notif.args.card);
-    };
-    Knarr.prototype.notif_storedToken = function (notif) {
-        var playerId = notif.args.playerId;
-        var token = notif.args.token;
-        this.getPlayerTable(playerId).storeToken(notif.args.cardId, token);
-        this.fameCounters[playerId][token.type].incValue(-1);
-    };
-    Knarr.prototype.notif_unstoredToken = function (notif) {
-        var playerId = notif.args.playerId;
-        var token = notif.args.token;
-        this.getPlayerTable(playerId).unstoreToken(token);
-        this.fameCounters[playerId][token.type].incValue(+1);
-    };
-    Knarr.prototype.notif_confirmStoredTokens = function (notif) {
-        var playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).confirmStoreTokens(notif.args.tokens);
-    };
-    Knarr.prototype.notif_discardTokens = function (notif) {
-        var _this = this;
-        var playerId = notif.args.playerId;
-        var playerTable = this.getPlayerTable(playerId);
-        notif.args.discardedTokens.forEach(function (token) {
-            playerTable.tokensFree.removeCard(token);
-            _this.fameCounters[playerId][token.type].incValue(-1);
-        });
-        notif.args.keptTokens.forEach(function (token, index) { return playerTable.tokensChief.addCard(token, undefined, { slot: index }); });
-    };
-    Knarr.prototype.notif_updateScore = function (notif) {
-        this.setScore(notif.args.playerId, notif.args.playerScore);
-    };
-    Knarr.prototype.notif_cancelLastMoves = function (notif) {
-        var _this = this;
-        var playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).cancelLastMoves(notif.args.cards, notif.args.tokens);
-        [1, 2, 3, 4, 5].forEach(function (type) {
-            return _this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(function (token) { return token.type == type; }).length);
         });
     };
     Knarr.prototype.notif_score = function (notif) {

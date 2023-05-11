@@ -39,11 +39,10 @@
       }
   	} 
 
-    public function takeCard() {
+    public function goTrade() {
         self::setAjaxMode();     
 
-        $pile = self::getArg("pile", AT_posint, true);
-        $this->game->takeCard($pile);
+        $this->game->goTrade();
 
         self::ajaxResponse();
     } 
@@ -57,45 +56,20 @@
         self::ajaxResponse();
     }
 
-    public function skipResource() {
-        self::setAjaxMode();     
-
-        $number = self::getArg("number", AT_posint, true);
-        $this->game->skipResource($number);
-
-        self::ajaxResponse();
-    }
-
-    public function pass() {
-        self::setAjaxMode();
-
-        $this->game->pass();
-
-        self::ajaxResponse();
-    }
-
-    public function endTurn() {
-        self::setAjaxMode();
-
-        $this->game->endTurn();
-
-        self::ajaxResponse();
-    }
-
-    public function discardCard() {
+    public function takeDestination() {
         self::setAjaxMode();     
 
         $id = self::getArg("id", AT_posint, true);
-        $this->game->discardCard($id);
+        $this->game->takeDestination($id);
 
         self::ajaxResponse();
     }
 
-    public function chooseOneLess() {
+    public function trade() {
         self::setAjaxMode();     
 
-        $type = self::getArg("type", AT_posint, true);
-        $this->game->chooseOneLess($type);
+        $number = self::getArg("number", AT_posint, true);
+        $this->game->trade($number);
 
         self::ajaxResponse();
     }
@@ -108,39 +82,10 @@
         self::ajaxResponse();
     }
 
-    public function storeToken() {
+    public function endTurn() {
         self::setAjaxMode();     
 
-        $cardId = self::getArg( "cardId", AT_posint, true );
-        $tokenType = self::getArg( "tokenType", AT_posint, true );
-        $this->game->storeToken($cardId, $tokenType);
-
-        self::ajaxResponse();
-    }
-
-    public function unstoreToken() {
-        self::setAjaxMode();     
-
-        $tokenId = self::getArg( "tokenId", AT_posint, true );
-        $this->game->unstoreToken($tokenId);
-
-        self::ajaxResponse();
-    }
-
-    public function keepSelectedTokens() {
-        self::setAjaxMode();     
-
-        $idsStr = self::getArg( "ids", AT_numberlist, true );
-        $ids = array_map(fn($str) => intval($str), explode(',', $idsStr));
-        $this->game->keepSelectedTokens($ids);
-
-        self::ajaxResponse();
-    }
-
-    public function cancelLastMoves() {
-        self::setAjaxMode();     
-
-        $this->game->cancelLastMoves();
+        $this->game->endTurn();
 
         self::ajaxResponse();
     }

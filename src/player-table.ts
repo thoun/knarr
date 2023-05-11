@@ -7,7 +7,7 @@ class PlayerTable {
     public playerId: number;
     public voidStock: VoidStock<Card>;
     public hand?: LineStock<Card>;
-    public played: LineStock<Card>;
+    public played: LineStock<Card>[] = [];
 
     private currentPlayer: boolean;
 
@@ -36,8 +36,13 @@ class PlayerTable {
         }
         html += `
             </div>
-            <div class="visible-cards">
-                <div id="player-table-${this.playerId}-played" class="cards"></div>
+            <div class="visible-cards">`;            
+            for (let i = 1; i <= 5; i++) {
+                html += `
+                <div id="player-table-${this.playerId}-played-${i}" class="cards"></div>
+                `;
+            }
+            html += `
             </div>
         </div>
         `;
@@ -48,22 +53,19 @@ class PlayerTable {
             this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
                 sort: (a: Card, b: Card) => a.color == b.color ? a.gain - b.gain : a.color - b.color,
             });
-            this.hand.onCardClick = (card: Card) => {
-                //if (handDiv.classList.contains('selectable')) {
-                    this.game.onHandCardClick(card);
-                    //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
-                //}
-            }
+            this.hand.onCardClick = (card: Card) => this.game.onHandCardClick(card);
             
             this.hand.addCards(player.hand);
 
         }
         //this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-        
-        this.played = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played`), {
-            center: false,
-        });
-        this.played.addCards(player.playedCards);
+                
+        for (let i = 1; i <= 5; i++) {
+            this.played[i] = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played-${i}`), {
+                center: false,
+            });
+            this.played[i].addCards(player.playedCards[i]);
+        }
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {

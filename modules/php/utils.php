@@ -163,6 +163,9 @@ trait UtilTrait {
                 $this->cards->shuffle('deck');
                 $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
             }
+            foreach ($playedCards as $playedCard) {
+                $this->cards->moveCard($playedCard->id, 'played'.$playerId.'-'.$playedCard->color);
+            }
 
             $this->cards->pickCardsForLocation(3, 'deck', 'hand', $playerId);
         }
@@ -220,161 +223,15 @@ trait UtilTrait {
         return intval($this->getGameStateValue(VARIANT_OPTION));
     }
 
-    function getChiefPower(int $playerId) {
-        return $this->getBoatSideOption() == 2 ? $this->getPlayer($playerId)->fame : 0;
-    }
-
-    function getPlayerResources(int $playerId) {
-        $tokens = $this->getDestinationsByLocation('player', $playerId);
-        $resources = [
-            1 => [],
-            2 => [],
-            3 => [],
-            4 => [],
-            5 => [],
-        ];
-        foreach($tokens as $token) {
-            $resources[$token->type][] = $token;
-        }
-
-        return $resources;
-    }
-
-    function tokensToPayForCard(Card $card, array $resources, /*array | null*/ $hand = null, /*bool*/ $payOneLess = false, /*int|null*/$ignoreType = null) {
-        if ($hand !== null && $card->discard && count($hand) <= 1) {
-            if ($payOneLess) {
-                $payOneLess = false;
-            } else {
-                return null; // no card to discard
-            }
-        }
-
-        $tokensToPayForCard = [];
-        $missingResources = 0;
-        for ($i = 1; $i <= 4; $i++) {
-            $requiredForCard = count(array_filter($card->resources, fn($resource) => $resource == $i));
-            if ($i == $ignoreType) {
-                $requiredForCard--;
-                $ignoreType = null;
-            }
-            $available = count($resources[$i]);
-            $tokensToPayForCard = array_merge($tokensToPayForCard, array_slice($resources[$i], 0, min($requiredForCard, $available)));
-            if ($requiredForCard > $available) {
-                $missingResources += ($requiredForCard - $available);
-            }
-        }
-
-        if ($payOneLess) {
-            $missingResources--;
-        }
-
-        if (count($resources[BONE]) >= $missingResources) {
-            $tokensToPayForCard = array_merge($tokensToPayForCard, array_slice($resources[BONE], 0, $missingResources));
-        } else {
-            return null;
-        }
-
-        return $tokensToPayForCard;
-    }
-
-    function getCardScore(Card $card, array $cards) {
-        switch ($card->cardType) {
-            case HOUSE:
-                return $card->points * count(array_filter($cards, fn($c) => $c->color == $card->storageType));
-            case STORAGE:
-                return $card->points * (($card->prestoredResource != null ? 1 : 0) + count($card->storedResources));
-            case HUMAN:
-                return $card->points;
-            case TOOL:
-                return $card->points * count(array_filter($cards, fn($c) => $c->cardType == $card->storageType));
-        }
-    }
-
-    function getPlayedCardWithStoredResources(int $playerId) {
-        $played = $this->getCardsByLocation('played'.$playerId);
-
-        foreach($played as $card) {
-            if ($card->cardType == STORAGE) {
-                $prestored = $this->getDestinationsByLocation('prestore', $card->id);
-                $card->prestoredResource = count($prestored) > 0 ? $prestored[0] : null;
-                $card->storedResources = $this->getDestinationsByLocation('card', $card->id);
-            }
-        }
-
-        return $played;
-    }
-
-    function takeRessourceFromPool(int $playerId) {
-        $token = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck', 'player', $playerId));
-
-        if ($token !== null) {
-            self::notifyAllPlayers('takeToken', clienttranslate('${player_name} takes resource ${type} from resource pool'), [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-                'token' => $token,
-                'pile' => -2,
-                'type' => $token->type,
-            ]);
-
-            $this->incStat(1, 'collectedResources');
-            $this->incStat(1, 'collectedResources', $playerId);
-            $this->incStat(1, 'collectedResources'.$token->type);
-            $this->incStat(1, 'collectedResources'.$token->type, $playerId);
-        }
-    }
-
-    function getCardType(int $type) {
-        switch ($type) {
-            case 1: return clienttranslate("House");
-            case 2: return clienttranslate("Storage");
-            case 3: return clienttranslate("Human");
-            case 4: return clienttranslate("Tool");
-        }
-    }
-
-    function getCardColor(int $color) {
-        switch ($color) {
-            case 1: return clienttranslate("Blue");
-            case 2: return clienttranslate("Yellow");
-            case 3: return clienttranslate("Green");
-            case 4: return clienttranslate("Red");
-            case 5: return clienttranslate("Purple");
-        }
-    }
-
-    function saveForUndo(int $playerId, bool $logUndoPoint) {
-        $cards = $this->getCardsByLocation('hand', $playerId);        
-        $tokens = $this->getDestinationsByLocation('player', $playerId);
-
-        if ($logUndoPoint) {
-            self::notifyPlayer($playerId, 'log', clienttranslate('As you revealed a hidden element, Cancel last moves will only allow to come back to this point'), []);
-        }
-
-        $this->setGlobalVariable(UNDO, new Undo(
-            array_map(fn($card) => $card->id, $cards),
-            array_map(fn($token) => $token->id, $tokens),
-            $this->getGlobalVariable(POWER_PAY_ONE_LESS, true)
-        ));
-    }
-
-    function confirmStoreTokens(int $playerId) {
-        $cards = $this->getPlayedCardWithStoredResources($playerId);
-        $tokens = [];
-        foreach ($cards as $card) {
-            if ($card->prestoredResource) {
-                $tokens[$card->id] = $card->prestoredResource;
-                $this->destinations->moveCard($card->prestoredResource->id, 'card', $card->id);
-            }
-        }
-
-        //if (count($tokens) > 0) {
-            self::notifyAllPlayers('confirmStoredTokens', ''/*client translate('${player_name} stores ${number} resource(s)')*/, [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-                //'number' => count($tokens), // for logs
-                'tokens' => $tokens,
-            ]);
-        //}
-    }
+    function getBoatGain() {
+        return $this->getBoatSideOption() == 2 ? [VP, null, BRACELET] : [null, RECRUIT, null];
+    } 
     
+    function redirectAfterAction() {
+        $args = $this->argPlayAction();
+
+        $canPlay = $args['canDoAction'] || $args['canTrade'];
+
+        $this->gamestate->nextState($canPlay ? 'next' : 'endTurn');
+    }
 }

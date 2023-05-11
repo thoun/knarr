@@ -111,36 +111,9 @@ class Knarr implements KnarrGame {
         log('Entering state: ' + stateName, args.args);
 
         switch (stateName) {
-            case 'takeCard':
-            case 'takeCardPower':
-            case 'takeCardChiefPower':
-                this.onEnteringTakeCard(args.args);
+            case 'playAction':
+                this.onEnteringPlayAction(args.args);
                 break;
-            case 'playCard':
-                this.onEnteringPlayCard(args.args);
-                break;
-            case 'discardCard':
-                this.onEnteringDiscardCard(args.args);
-                break;
-            case 'discardTokens':
-                    if ((this as any).isCurrentPlayerActive()) {
-                        //this.getCurrentPlayerTable()?.setStoreButtons(false);
-                        //this.getCurrentPlayerTable()?.setFreeTokensSelectable(true);
-                    }
-                    break;
-        }
-
-        if (['playCard', 'chooseOneLess', 'discardCard'].includes(stateName)) {
-            if ((this as any).isCurrentPlayerActive()) {
-                //this.getCurrentPlayerTable()?.setStoreButtons(true);
-            }
-        }
-    }
-
-    private onEnteringTakeCard(args: EnteringTakeCardArgs) {
-        //this.getPlayerTable(args.playerId).freeResources();
-        if ((this as any).isCurrentPlayerActive()) {
-            //this.tableCenter.setCardsSelectable(true);
         }
     }
     
@@ -151,21 +124,13 @@ class Knarr implements KnarrGame {
         (this as any).updatePageTitle();
     }
 
-    private onEnteringPlayCard(args: EnteringPlayCardArgs) {
-        if (args.canStore) {
-            this.setGamestateDescription('Storage');
+    private onEnteringPlayAction(args: EnteringPlayActionArgs) {
+        if (!args.canDoAction) {
+            this.setGamestateDescription('TradeOnly');
         }
 
         if ((this as any).isCurrentPlayerActive()) {
             //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
-        }
-    }
-
-    private onEnteringDiscardCard(args: EnteringDiscardCardArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
-            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
-            const selectedCardDiv = this.getCurrentPlayerTable().hand.getCardElement(args.selectedCard);
-            selectedCardDiv.classList.add('selected-discard');
         }
     }
 
@@ -173,38 +138,14 @@ class Knarr implements KnarrGame {
         log( 'Leaving state: '+stateName );
 
         switch (stateName) {
-            case 'takeCard':
-            case 'takeCardPower':
-            case 'takeCardChiefPower':
-                this.onLeavingTakeCard();
-                break;
-            case 'playCard':
-                this.onLeavingPlayCard();
-                break;
-            case 'discardCard':
-                this.onLeavingDiscardCard();
-                break;
-           case 'discardTokens':
-                if ((this as any).isCurrentPlayerActive()) {
-                    //this.getCurrentPlayerTable()?.setFreeTokensSelectable(false);
-                }
+            case 'playAction':
+                this.onLeavingPlayAction();
                 break;
         }
     }
 
-    private onLeavingTakeCard() {
-        //this.tableCenter.setCardsSelectable(false);
-    }
-
-    private onLeavingPlayCard() {
+    private onLeavingPlayAction() {
         //this.getCurrentPlayerTable()?.setCardsSelectable(false);
-    }
-
-    private onLeavingDiscardCard() {
-        document.querySelectorAll('.selected-discard').forEach(elem => elem.classList.remove('selected-discard'));
-    }
-
-    private onLeavingStoreTokens() {
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -214,56 +155,28 @@ class Knarr implements KnarrGame {
         
         if ((this as any).isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'skipResource':
-                    const skipResourceArgs = args as EnteringSkipResourceArgs;
-                    for (let i=0; i < skipResourceArgs.resources.length; i++) {
-                        let label = '';
-                        if (i == 0) {
-                            label = _("Don't skip resource, take ${resources}").replace('${resources}', skipResourceArgs.resources.slice(0, skipResourceArgs.resources.length - 1).map(type => `<div class="token-icon" data-type="${type}"></div>`).join(''));
-                        } else {
-                            const resources = skipResourceArgs.resources.slice();
-                            const resource = resources.splice(i-1, 1)[0];
-                            label = _("Skip ${resource}, take ${resources}").replace('${resource}', `<div class="token-icon" data-type="${resource}"></div>`).replace('${resources}', resources.map(type => `<div class="token-icon" data-type="${type}"></div>`).join(''));
-                        }
-                        (this as any).addActionButton(`skipResource${i}_button`, label, () => this.skipResource(i));
-                        const skipResourceButton = document.getElementById(`skipResource${i}_button`);
-                        skipResourceButton.addEventListener('mouseenter', () => this.tableCenter.showLinkedTokens(skipResourceArgs.pile, skipResourceArgs.resources.length - 1, i));
-                        skipResourceButton.addEventListener('mouseleave', () => this.tableCenter.showLinkedTokens(skipResourceArgs.pile, 0));
+                case 'playAction':
+                    const playActionArgs = args as EnteringPlayActionArgs;
+                    (this as any).addActionButton(`goTrade_button`, _("Trade"), () => this.goTrade());
+                    if (!playActionArgs.canTrade) {
+                        document.getElementById(`goTrade_button`).classList.add('disabled');
+                    }
+                    if (!args.canDoAction) {
+                        (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
                     }
                     break;
-
-                case 'playCard':
-                    (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
-                    break;
-                case 'chooseOneLess':
-                    const chooseOneLessArgs = args as EnteringChooseOneLessArgs;
-                    if (chooseOneLessArgs.canSkipDiscard) {
-                        (this as any).addActionButton(`chooseOneLess0_button`, _("Ignore sacrifice"), () => this.chooseOneLess(0));
-                    }
-                    chooseOneLessArgs.tokens.forEach(token => {
-                        if (!document.getElementById(`chooseOneLess${token}_button`)) {
-                            (this as any).addActionButton(`chooseOneLess${token}_button`, _("Ignore ${resource}").replace('${resource}', `<div class="token-icon" data-type="${token}"></div>`), () => this.chooseOneLess(token));
+                case 'trade':
+                    const tradeArgs = args as EnteringTradeArgs;
+                    [1, 2, 3].forEach(number => {
+                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelets").replace('${number}', number), () => this.trade(number));
+                        if (tradeArgs.bracelets < number) {
+                            document.getElementById(`trade${number}_button`).classList.add('disabled');
                         }
                     });
-
                     (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
-                    break;
-
-                case 'discardCard':
-                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
-                    break;
-                case 'discardTokens':
-                    (this as any).addActionButton(`keepSelectedTokens_button`, _("Keep selected resources"), () => this.keepSelectedTokens());
-                    const button = document.getElementById(`keepSelectedTokens_button`);
-                    button.classList.add('disabled');
-                    button.dataset.max = args.number;
                     break;
                     
             }
-        }
-
-        if (['playCard', 'chooseOneLess', 'discardCard', 'discardTokens'].includes(stateName)) {
-            (this as any).addActionButton(`cancelLastMoves_button`, _("Cancel last moves"), () => this.cancelLastMoves(), null, null, 'gray');
         }
     }
 
@@ -425,35 +338,21 @@ class Knarr implements KnarrGame {
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
     }
 
-    public onCenterCardClick(pile: number): void {
-        this.takeCard(pile);
+    
+    public onTableDestinationClick(destination: Destination): void {
+        this.takeDestination(destination.id);
     }
 
     public onHandCardClick(card: Card): void {
-        if (this.gamedatas.gamestate.name == 'discardCard') {
-            this.discardCard(card.id);
-        } else {
-            this.playCard(card.id);
-        }
-    }
-
-    public onTokenSelectionChange(selection: Destination[]): void {
-        if (this.gamedatas.gamestate.name !== 'discardTokens') {
-            return;
-        }
-
-        const button = document.getElementById(`keepSelectedTokens_button`);
-        button.classList.toggle('disabled', selection.length != Number(button.dataset.max));
+        this.playCard(card.id);
     }
   	
-    public takeCard(pile: number) {
-        if(!(this as any).checkAction('takeCard')) {
+    public goTrade() {
+        if(!(this as any).checkAction('goTrade')) {
             return;
         }
 
-        this.takeAction('takeCard', {
-            pile
-        });
+        this.takeAction('goTrade');
     }
   	
     public playCard(id: number) {
@@ -466,51 +365,25 @@ class Knarr implements KnarrGame {
         });
     }
   	
-    public skipResource(number: number) {
-        if(!(this as any).checkAction('skipResource')) {
+    public takeDestination(id: number) {
+        if(!(this as any).checkAction('takeDestination')) {
             return;
         }
 
-        this.takeAction('skipResource', {
-            number
-        });
-    }
-  	
-    public pass() {
-        if(!(this as any).checkAction('pass')) {
-            return;
-        }
-
-        this.takeAction('pass');
-    }
-  	
-    public endTurn() {
-        if(!(this as any).checkAction('endTurn')) {
-            return;
-        }
-
-        this.takeAction('endTurn');
-    }
-  	
-    public discardCard(id: number) {
-        if(!(this as any).checkAction('discardCard')) {
-            return;
-        }
-
-        this.takeAction('discardCard', {
+        this.takeAction('takeDestination', {
             id
         });
     }
   	
-    public chooseOneLess(type: number) {
-        if(!(this as any).checkAction('chooseOneLess')) {
+    public trade(number: number) {
+        if(!(this as any).checkAction('trade')) {
             return;
         }
 
-        this.takeAction('chooseOneLess', {
-            type
+        this.takeAction('trade', {
+            number
         });
-    }    
+    }
   	
     public cancel() {
         if(!(this as any).checkAction('cancel')) {
@@ -520,43 +393,12 @@ class Knarr implements KnarrGame {
         this.takeAction('cancel');
     }
   	
-    public storeToken(cardId: number, tokenType: number) {
-        if(!(this as any).checkAction('storeToken')) {
+    public endTurn() {
+        if(!(this as any).checkAction('endTurn')) {
             return;
         }
 
-        this.takeAction('storeToken', {
-            cardId, 
-            tokenType,
-        });
-    }
-  	
-    public unstoreToken(tokenId: number) {
-        if(!(this as any).checkAction('unstoreToken')) {
-            return;
-        }
-
-        this.takeAction('unstoreToken', {
-            tokenId,
-        });
-    }
-  	
-    public keepSelectedTokens() {
-        if(!(this as any).checkAction('keepSelectedTokens')) {
-            return;
-        }
-
-        this.takeAction('keepSelectedTokens', {
-            ids: this.getCurrentPlayerTable().tokensFree.getSelection().map(token => token.id).join(','),
-        });
-    }
-  	
-    public cancelLastMoves() {
-        /*if(!(this as any).checkAction('cancelLastMoves')) {
-            return;
-        }*/
-
-        this.takeAction('cancelLastMoves');
+        this.takeAction('endTurn');
     }
 
     public takeAction(action: string, data?: any) {
@@ -581,17 +423,7 @@ class Knarr implements KnarrGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['takeCard', ANIMATION_MS],
-            ['takeToken', ANIMATION_MS],
-            ['playCard', ANIMATION_MS],
-            ['discardCard', 1],
-            ['storedToken', ANIMATION_MS],
-            ['unstoredToken', ANIMATION_MS],
-            ['confirmStoredTokens', ANIMATION_MS],
-            ['discardTokens', 1],
-            ['refillTokens', 1],
-            ['updateScore', 1],
-            ['cancelLastMoves', ANIMATION_MS],
+            ['score', 1],
             ['lastTurn', 1],
         ];
     
@@ -599,96 +431,6 @@ class Knarr implements KnarrGame {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
-    }
-
-    notif_takeCard(notif: Notif<NotifTakeCardArgs>) {
-        const currentPlayer = this.getPlayerId() == notif.args.playerId;
-        const playerTable = this.getPlayerTable(notif.args.playerId);
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
-        this.tableCenter.setNewCard(notif.args.pile, notif.args.newCard, notif.args.newCount);
-    }
-
-    notif_takeToken(notif: Notif<NotifTakeTokenArgs>) {
-        const playerId = notif.args.playerId;
-        const token = notif.args.token;
-        const fromCenter = notif.args.pile == -1;
-        if (fromCenter) {
-            this.tokensManager.flipCard(token, {
-                updateData: true,
-                updateFront: true,
-                updateBack: false,
-            });
-        }
-        this.getPlayerTable(playerId).tokensFree.addCard(token, {
-            fromElement: fromCenter ? document.getElementById(`center-stock`) : undefined,
-        });
-        if (notif.args.pile != -2) {
-            this.notif_refillTokens(notif);
-        }
-        this.fameCounters[playerId][token.type].incValue(1);
-    }
-
-    notif_refillTokens(notif: Notif<NotifTakeTokenArgs>) {
-        this.tableCenter.setNewToken(notif.args.pile, notif.args.newToken, notif.args.newCount);
-    }
-
-    notif_playCard(notif: Notif<NotifPlayCardArgs>) {
-        const playerId = notif.args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
-        const currentPlayer = this.getPlayerId() == playerId;
-        playerTable.played.addCard(notif.args.card, {
-            fromElement: currentPlayer ? undefined : document.getElementById(`player-table-${playerId}-name`)
-        });
-        notif.args.discardedTokens.forEach(token => {
-            playerTable.tokensFree.removeCard(token);
-            this.fameCounters[playerId][token.type].incValue(-1);
-        });
-        this.handCounters[playerId].toValue(notif.args.newCount);
-    }
-
-    notif_discardCard(notif: Notif<NotifDiscardCardArgs>) {
-        this.getPlayerTable(notif.args.playerId).hand.removeCard(notif.args.card);
-    }
-
-    notif_storedToken(notif: Notif<NotifStoredTokenArgs>) {
-        const playerId = notif.args.playerId;
-        const token = notif.args.token;
-        this.getPlayerTable(playerId).storeToken(notif.args.cardId, token);
-        this.fameCounters[playerId][token.type].incValue(-1);
-    }
-
-    notif_unstoredToken(notif: Notif<NotifUnstoredTokenArgs>) {
-        const playerId = notif.args.playerId;
-        const token = notif.args.token;
-        this.getPlayerTable(playerId).unstoreToken(token);
-        this.fameCounters[playerId][token.type].incValue(+1);
-    }
-
-    notif_confirmStoredTokens(notif: Notif<NotifConfirmStoredTokensArgs>) {
-        const playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).confirmStoreTokens(notif.args.tokens);
-    }
-
-    notif_discardTokens(notif: Notif<NotifDiscardTokensArgs>) {
-        const playerId = notif.args.playerId;
-        const playerTable = this.getPlayerTable(playerId);
-        notif.args.discardedTokens.forEach(token => {
-            playerTable.tokensFree.removeCard(token);
-            this.fameCounters[playerId][token.type].incValue(-1);
-        });
-        notif.args.keptTokens.forEach((token, index) => playerTable.tokensChief.addCard(token, undefined, { slot: index }));
-    }
-
-    notif_updateScore(notif: Notif<NotifUpdateScoreArgs>) {
-        this.setScore(notif.args.playerId, notif.args.playerScore);
-    }
-
-    notif_cancelLastMoves(notif: Notif<NotifCancelLastMovesArgs>) {
-        const playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).cancelLastMoves(notif.args.cards, notif.args.tokens);
-        [1,2,3,4,5].forEach(type => 
-            this.fameCounters[playerId][type].toValue(notif.args.tokens.filter(token => token.type == type).length)
-        );
     }
 
     notif_score(notif: Notif<NotifScoreArgs>) {

@@ -30,6 +30,14 @@ $this->VP_BY_FAME = [
     14 => 5,
 ];
 
+$this->COLOR_TO_SLOT_ID = [
+    RED => 1,
+    YELLOW => 2,
+    GREEN => 3,
+    BLUE => 4,
+    PURPLE => 5,
+];
+
 $this->DESTINATIONS = [
     // A
     1 => new DestinationType([DIFFERENT => 3], [RECRUIT => 1, FAME => 1, CARD => 1], [null, VP, null]),

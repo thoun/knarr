@@ -73,99 +73,42 @@ $basicGameStates = [
 $playerActionsGameStates = [
 
     ST_PLAYER_PLAY_ACTION => [
-        "name" => "playCard",
-        "description" => clienttranslate('${actplayer} can play tribe cards from your hand'),
-        "descriptionmyturn" => clienttranslate('${you} can play tribe cards from your hand'),
-        "descriptionStorage" => clienttranslate('${actplayer} can play tribe cards and store resources'),
-        "descriptionmyturnStorage" => clienttranslate('${you} can play tribe cards and store resources'),
+        "name" => "playAction",
+        "description" => clienttranslate('${actplayer} must recruit (play a card) or explore (take a destination)'),
+        "descriptionmyturn" => clienttranslate('${you} must recruit (play a card) or explore (take a destination)'),
+        "descriptionTradeOnly" => clienttranslate('${actplayer} can trade'),
+        "descriptionmyturnTradeOnly" => clienttranslate('${you} can trade'),
         "type" => "activeplayer",    
-        "args" => "argPlayCard",
-        "action" => "stPlayCard",
+        "args" => "argPlayAction",
+        "action" => "stPlayAction",
         "possibleactions" => [ 
             "playCard",
-            "storeToken",
-            "unstoreToken",
+            "takeDestination",
+            "goTrade",
             "endTurn",
         ],
         "transitions" => [
-            "stay" => ST_PLAYER_PLAY_ACTION,
-            "takeCardPower" => ST_SCORE_FAME_POWER,
-            "discard" => ST_PLAYER_DISCARD_CARD,
-            "chooseOneLessResource" => ST_PLAYER_CHOOSE_ONE_LESS,
             "next" => ST_PLAYER_PLAY_ACTION,
-            "endTurnDiscard" => ST_PLAYER_DISCARD_TOKENS,
+            "trade" => ST_PLAYER_TRADE,
             "endTurn" => ST_NEXT_PLAYER,
         ],
     ],
 
-    ST_PLAYER_CHOOSE_ONE_LESS => [
-        "name" => "chooseOneLess",
-        "description" => clienttranslate('${actplayer} must choose one resource or sacrifice to ignore'),
-        "descriptionmyturn" => clienttranslate('${you} must choose one resource or sacrifice to ignore'),
+    ST_PLAYER_TRADE => [
+        "name" => "trade",
+        "description" => clienttranslate('${actplayer} must choose how many bracelet to spend'),
+        "descriptionmyturn" => clienttranslate('${you} must choose how many bracelet to spend'),
         "type" => "activeplayer",
-        "args" => "argChooseOneLess",
+        "args" => "argTrade",
         "possibleactions" => [ 
-            "chooseOneLess",
-            "storeToken",
-            "unstoreToken",
+            "trade",
             "cancel",
         ],
         "transitions" => [
-            "stay" => ST_PLAYER_CHOOSE_ONE_LESS,
-            "takeCardPower" => ST_SCORE_FAME_POWER,
-            "discard" => ST_PLAYER_DISCARD_CARD,
             "next" => ST_PLAYER_PLAY_ACTION,
+            "endTurn" => ST_NEXT_PLAYER,
+            "cancel" => ST_PLAYER_PLAY_ACTION,
         ]
-    ],
-
-    ST_PLAYER_DISCARD_CARD => [
-        "name" => "discardCard",
-        "description" => clienttranslate('${actplayer} must discard a card to play selected card'),
-        "descriptionmyturn" => clienttranslate('${you} must discard a card from your hand to play selected card'),
-        "type" => "activeplayer",    
-        "args" => "argDiscardCard",
-        "possibleactions" => [ 
-            "discardCard",
-            "storeToken",
-            "unstoreToken",
-            "cancel",
-        ],
-        "transitions" => [
-            "stay" => ST_PLAYER_DISCARD_CARD,
-            "takeCardPower" => ST_SCORE_FAME_POWER,
-            "next" => ST_PLAYER_PLAY_ACTION,
-        ],
-    ],
-
-    ST_SCORE_FAME_POWER => [
-        "name" => "takeCardPower",
-        "description" => clienttranslate('${actplayer} must take a tribe card on the table (played card power)'),
-        "descriptionmyturn" => clienttranslate('${you} must take a tribe card on the table (played card power)'),
-        "type" => "activeplayer",
-        "args" => "argTakeCard",
-        "possibleactions" => [ 
-            "takeCard",
-            "storeToken",
-            "unstoreToken",
-        ],
-        "transitions" => [
-            "stay" => ST_SCORE_FAME_POWER,
-            "next" => ST_PLAYER_PLAY_ACTION,
-        ]
-    ],
-
-    ST_PLAYER_DISCARD_TOKENS => [
-        "name" => "discardTokens",
-        "description" => clienttranslate('${actplayer} must select ${number} resources to keep'),
-        "descriptionmyturn" => clienttranslate('${you} must select ${number} resources to keep'),
-        "type" => "activeplayer",    
-        "args" => "argDiscardTokens",
-        "possibleactions" => [ 
-            "keepSelectedTokens",
-        ],
-        "transitions" => [
-            "next" => ST_NEXT_PLAYER,
-        ],
     ],
 ];
 

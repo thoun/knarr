@@ -28,21 +28,24 @@ trait StateTrait {
         $this->gamestate->nextState('next');
     }
 
-    function stPlayCard() {
+    function stPlayAction() {
         $playerId = intval($this->getActivePlayerId());
 
         /*if (count($this->getCardsByLocation('hand', $playerId)) == 0) {
             $this->gamestate->nextState('next');
         } else {*/
-            if ($this->getGlobalVariable(UNDO) == null) {
+            /*if ($this->getGlobalVariable(UNDO) == null) {
                 $this->saveForUndo($playerId, false);
-            }
+            }*/
         /*}*/
     }
+
     function stNextPlayer() {
         //$playerId = intval($this->getActivePlayerId());
 
-        $this->deleteGlobalVariables([UNDO, POWER_PAY_ONE_LESS]);
+        //$this->deleteGlobalVariables([UNDO, POWER_PAY_ONE_LESS]);
+        $this->setGameStateValue(ACTION_DONE, 0);
+        $this->setGameStateValue(TRADE_DONE, 0);
 
         $this->activeNextPlayer();       
         $playerId = $this->getActivePlayerId();
@@ -50,12 +53,12 @@ trait StateTrait {
         $this->giveExtraTime($playerId);
 
         $endGame = false;
-        if ($this->getPlayer($playerId)->chief == intval($this->getUniqueValueFromDB("SELECT min(player_chief) FROM player"))) {
+        /* TODO check if first player if ($this->getPlayer($playerId)->chief == intval($this->getUniqueValueFromDB("SELECT min(player_chief) FROM player"))) {
             $this->incStat(1, 'roundNumber');
             if (boolval($this->getGameStateValue(LAST_TURN))) {
                 $endGame = true;
             }
-        }
+        }*/
 
         $this->gamestate->nextState($endGame ? 'endScore' : 'nextPlayer');
     }
