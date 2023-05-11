@@ -10,10 +10,10 @@ define('B', 'B');
  * Color
  */
 define('DIFFERENT', 0);
-define('BLUE', 1);
+define('RED', 1);
 define('YELLOW', 2);
 define('GREEN', 3);
-define('RED', 4);
+define('BLUE', 4);
 define('PURPLE', 5);
 
 /*

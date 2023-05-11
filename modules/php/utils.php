@@ -234,4 +234,89 @@ trait UtilTrait {
 
         $this->gamestate->nextState($canPlay ? 'next' : 'endTurn');
     }
+    
+    function groupGains(array $gains) {
+        $groupGains = [];
+
+        foreach ($gains as $gain) {
+            if (array_key_exists($gain, $groupGains)) {
+                $groupGains[$gain] += 1;
+            } else {
+                $groupGains[$gain] = 1;
+            }
+        }
+
+        return $groupGains;
+    }
+    
+    function gainResources(int $playerId, array $groupGains) {
+        $player = $this->getPlayer($playerId);
+
+        $effectiveGains = [];
+
+        foreach ($groupGains as $type => $amount) {
+            switch ($type) {
+                case VP: 
+                    $effectiveGains[VP] = min($amount, 40 - $player->score);
+                    $this->DbQuery("UPDATE player SET `player_score` = `player_score` + ".$effectiveGains[VP]." WHERE player_id = $playerId");
+                    break;
+                case BRACELET: 
+                    $effectiveGains[BRACELET] = min($amount, 3 - $player->bracelet);
+                    $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + ".$effectiveGains[BRACELET]." WHERE player_id = $playerId");
+                    break;
+                case RECRUIT:
+                    $effectiveGains[RECRUIT] = min($amount, 3 - $player->recruit);
+                    $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + ".$effectiveGains[RECRUIT]." WHERE player_id = $playerId");
+                    break;
+                case FAME:
+                    $effectiveGains[FAME] = min($amount, 14 - $player->fame);
+                    $this->DbQuery("UPDATE player SET `player_fame` = `player_fame` + ".$effectiveGains[FAME]." WHERE player_id = $playerId");
+                    break;
+                case CARD: 
+                    // TODO
+                    break;
+            }
+        }
+
+        return $effectiveGains;
+    }
+
+    function canTakeDestination(Destination $destination, array $handColors, int $recruits) {
+        $missingCards = 0;
+
+        foreach ($destination as $color => $required) {
+            $available = 0;
+            if ($color == DIFFERENT) {
+                $available = count(array_filter($handColors, fn($count) => $count > 0));
+            } else {
+                $available = $handColors[$color]; 
+            }
+
+            if ($available < $required) {
+                // TODO $missingCards += ($required - $available);
+            }
+        }
+
+        return $recruits >= $missingCards;
+    }
+
+    function getGainName(int $gain) {
+        switch ($gain) {
+            case VP: return clienttranslate("Victory Point");
+            case BRACELET: return clienttranslate("Bracelet");
+            case RECRUIT: return clienttranslate("Recruit");
+            case FAME: return clienttranslate("Fame");
+            case CARD: return clienttranslate("Card");
+        }
+    }
+
+    function getColorName(int $color) {
+        switch ($color) {
+            case BLUE: return clienttranslate("Blue");
+            case YELLOW: return clienttranslate("Yellow");
+            case GREEN: return clienttranslate("Green");
+            case RED: return clienttranslate("Red");
+            case PURPLE: return clienttranslate("Purple");
+        }
+    }
 }

@@ -1,8 +1,6 @@
 const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;;
 const log = isDebug ? console.log.bind(window.console) : function () { };
 
-const BONE = 5;
-
 class PlayerTable {
     public playerId: number;
     public voidStock: VoidStock<Card>;
@@ -58,18 +56,25 @@ class PlayerTable {
             this.hand.addCards(player.hand);
 
         }
-        //this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
+        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
                 
         for (let i = 1; i <= 5; i++) {
-            this.played[i] = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played-${i}`), {
+            const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
+            this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
+                direction: 'column',
                 center: false,
             });
             this.played[i].addCards(player.playedCards[i]);
+            playedDiv.style.setProperty('--card-overlap', '195px');
         }
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {
         document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
+    }
+
+    public playCard(playedCard: Card) {
+        this.played[playedCard.color].addCard(playedCard);
     }
 
     /*    
@@ -81,44 +86,5 @@ class PlayerTable {
             element.classList.toggle('disabled', disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
-    }
-
-    public setFreeTokensSelectable(selectable: boolean) {
-        this.tokensFree.setSelectionMode(selectable ? 'multiple' : 'none');
-    }
-
-    public getTokenOfType(type: number): Destination | null {
-        return this.tokensFree.getCards().find(card => card.type == type);
-    }
-    
-    public setStoreButtons(activated: boolean) {
-        if (activated) {
-            document.getElementById(`player-table-${this.playerId}`).classList.add('can-store');
-            this.game.cardsManager.updateStorageButtons();
-        } else {
-            document.getElementById(`player-table-${this.playerId}`).classList.remove('can-store');
-        }
-    }
-    
-    public storeToken(cardId: number, token: Destination) {
-        this.game.cardsManager.prestoreToken(cardId, token);
-        this.game.cardsManager.updateStorageButtons();
-    }
-    
-    public unstoreToken(token: Destination) {
-        this.tokensFree.addCard(token);
-        this.game.cardsManager.updateStorageButtons();
-    }
-    
-    public confirmStoreTokens(tokens: { [cardId: number]: Destination; }) {
-        Object.entries(tokens).forEach(entry => 
-            this.game.cardsManager.confirmStoreToken(Number(entry[0]), entry[1])
-        );
-        this.setStoreButtons(false);
-    }
-    
-    public cancelLastMoves(cards: Card[], tokens: Destination[]) {
-        this.hand?.addCards(cards);
-        this.tokensFree.addCards(tokens);
     }*/
 }

@@ -122,4 +122,21 @@
     background: #FFFFFF88;
     border-radius: 10px;
   }
+
+  .visible-cards {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 10px;
+
+    .cards {
+      width: 120px;
+
+      .card {
+        &:not(:first-child) {
+            margin-top: calc(-1 * var(--card-overlap));
+        }
+      }
+    }
+  }
 }

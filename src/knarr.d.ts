@@ -29,7 +29,7 @@ interface KnarrPlayer extends Player {
     handCount: number;
     hand?: Card[];
     playedCards: { [color: number]: Card[] };
-    tokens: Destination[];
+    destinations: Destination[];
 }
 
 interface KnarrGamedatas {
@@ -75,6 +75,20 @@ interface EnteringPlayActionArgs {
 
 interface EnteringTradeArgs {
     bracelets: number;
+}
+
+// playCard
+interface NotifPlayCardArgs {
+    playerId: number;
+    playedCard: Card;
+    newHandCard: Card;
+    effectiveGains: { [type: number]: number };
+}
+
+// card
+interface NotifNewCardArgs {
+    playerId: number;
+    card: Card;
 }
 
 // score

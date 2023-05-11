@@ -14,8 +14,22 @@ trait ArgsTrait {
    
     function argPlayAction() {
         $playerId = intval($this->getActivePlayerId());
+        $player = $this->getPlayer($playerId);
 
-        $bracelets = $this->getPlayer($playerId)->bracelet;
+        $bracelets = $player->bracelet;
+        $recruits = $player->recruit;
+        $hand = $this->getCardsByLocation('hand', $playerId);
+
+        $handColors = [
+            RED => 0,
+            YELLOW => 0,
+            GREEN => 0,
+            BLUE => 0,
+            PURPLE => 0,
+        ];
+        foreach ($hand as $card) {
+            $handColors[$card->color]++;
+        }
 
         $actionDone = boolval($this->getGameStateValue(ACTION_DONE));
         $tradeDone = boolval($this->getGameStateValue(TRADE_DONE));
@@ -27,7 +41,7 @@ trait ArgsTrait {
                 $this->getDestinationsByLocation('slotB'),
             );
 
-            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => true)); // TODO
+            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->canTakeDestination($destination, $handColors, $recruits)));
         }
 
         return [

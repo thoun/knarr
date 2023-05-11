@@ -564,6 +564,21 @@ body > .card {
   vertical-align: middle;
 }
 
+.fame.icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url("img/fame-icon.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}
+
+.fame-legend {
+  font-size: 80%;
+}
+
 .player-table {
   width: 100%;
   position: relative;
@@ -676,6 +691,18 @@ body > .card {
   margin: 5px;
   background: rgba(255, 255, 255, 0.5333333333);
   border-radius: 10px;
+}
+.player-table .visible-cards {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 10px;
+}
+.player-table .visible-cards .cards {
+  width: 120px;
+}
+.player-table .visible-cards .cards .card:not(:first-child) {
+  margin-top: calc(-1 * var(--card-overlap));
 }
 
 /* make space between buttons on touch devices */

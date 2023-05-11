@@ -18,6 +18,12 @@ const VP_BY_FAME = {
     14: 5,
 };
 
+const VP = 1;
+const BRACELET = 2;
+const RECRUIT = 3;
+const FAME = 4;
+const CARD = 5;
+
 function getVpByFame(fame: number) {
     return Object.entries(VP_BY_FAME).find(entry => Number(entry[0]) >= fame)[1];
 }
@@ -260,20 +266,21 @@ class Knarr implements KnarrGame {
                     <div class="player-hand-card"></div> 
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>
-            </div><div class="counters">
             
                 <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
                     <div class="fame icon"></div>
-                    <span id="fame-counter-${player.id}"></span> ${_('VP / round')}
+                    <span id="fame-counter-${player.id}"></span> <span class="fame-legend">${_('VP / round')}</span>
                 </div>
+
+            </div><div class="counters">
             
                 <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
-                    <div class="recruit icon"></div>
+                    <div class="recruit token"></div>
                     <span id="recruit-counter-${player.id}"></span>
                 </div>
             
                 <div id="bracelet-counter-wrapper-${player.id}" class="bracelet-counter">
-                    <div class="bracelet icon"></div>
+                    <div class="bracelet token"></div>
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
                 
@@ -316,6 +323,33 @@ class Knarr implements KnarrGame {
     private createPlayerTable(gamedatas: KnarrGamedatas, playerId: number) {
         const table = new PlayerTable(this, gamedatas.players[playerId]);
         this.playersTables.push(table);
+    }
+
+    private updateGains(playerId: number, gains: { [type: number]: number }) {
+        Object.entries(gains).forEach(entry => {
+            const type = Number(entry[0]);
+            const amount = entry[1];
+
+            if (amount != 0) {
+                switch (type) {
+                    case VP:
+                        this.setScore(playerId, (this as any).scoreCtrl[playerId].getValue() + amount);
+                        break;
+                    case BRACELET:
+                        this.setBracelets(playerId, this.braceletCounters[playerId].getValue() + amount);
+                        break;
+                    case RECRUIT:
+                        this.setRecruits(playerId, this.recruitCounters[playerId].getValue() + amount);
+                        break;
+                    case FAME:
+                        this.setFame(playerId, this.fameCounters[playerId].getValue() + amount);
+                        break;
+                    case CARD:
+                        // TODO
+                        break;
+                }
+            }
+        });
     }
 
     private setScore(playerId: number, score: number) {
@@ -423,6 +457,9 @@ class Knarr implements KnarrGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
+            ['playCard', ANIMATION_MS],
+            ['takeCard', ANIMATION_MS],
+            ['newTableCard', ANIMATION_MS],
             ['score', 1],
             ['lastTurn', 1],
         ];
@@ -431,6 +468,27 @@ class Knarr implements KnarrGame {
             dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
+    }
+
+    notif_playCard(notif: Notif<NotifPlayCardArgs>) {
+        const playerId = notif.args.playerId;
+        const playerTable = this.getPlayerTable(playerId);
+
+        playerTable.playCard(notif.args.playedCard);
+
+        this.updateGains(playerId, notif.args.effectiveGains);
+    }
+
+    notif_takeCard(notif: Notif<NotifNewCardArgs>) {
+        const playerId = notif.args.playerId;
+        const currentPlayer = this.getPlayerId() == playerId;
+        const playerTable = this.getPlayerTable(playerId);
+        
+        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
+    }
+
+    notif_newTableCard(notif: Notif<NotifNewCardArgs>) {
+        this.tableCenter.newTableCard(notif.args.card);
     }
 
     notif_score(notif: Notif<NotifScoreArgs>) {
@@ -451,21 +509,15 @@ class Knarr implements KnarrGame {
     public format_string_recursive(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
-
-                if (args.type && (typeof args.type !== 'string' || args.type[0] !== '<')) {
-                    args.type = `<div class="token-icon" data-type="${args.type}"></div>`;
-                }
-
-                if (args.types && (typeof args.types !== 'string' || args.types[0] !== '<')) {
-                    args.types = args.types.map(type => `<div class="token-icon" data-type="${type}"></div>`).join('');
+                if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
+                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[0]}<strong> <div class="token-icon" data-type="${entry[1]}"></div>`).join(', ');
                 }
 
                 for (const property in args) {
-                    if (['left', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }
-                
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);

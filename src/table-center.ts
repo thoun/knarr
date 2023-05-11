@@ -26,4 +26,10 @@ class TableCenter {
         });
         this.cards.addCards(gamedatas.centerCards);
     }
+    
+    public newTableCard(card: Card) {
+        this.cards.addCard(card, {
+            fromElement: document.getElementById(`board`)
+        });
+    }
 }

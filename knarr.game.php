@@ -165,7 +165,7 @@ class Knarr extends Table {
             foreach ([1,2,3,4,5] as $color) {
                 $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
             }
-            $player['tokens'] = $this->getDestinationsByLocation('player', $playerId);
+            $player['destinations'] = $this->getDestinationsByLocation('player'.$playerId);
             $player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
