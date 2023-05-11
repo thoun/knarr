@@ -1315,6 +1315,7 @@ var TableCenter = /** @class */ (function () {
         this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: function (card) { return card.locationArg; },
+            gap: '12px',
         });
         this.cards.addCards(gamedatas.centerCards);
     }
@@ -1326,6 +1327,7 @@ var log = isDebug ? console.log.bind(window.console) : function () { };
 var BONE = 5;
 var PlayerTable = /** @class */ (function () {
     function PlayerTable(game, player) {
+        var _this = this;
         this.game = game;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
@@ -1333,49 +1335,34 @@ var PlayerTable = /** @class */ (function () {
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
-        html += "\n            <div class=\"visible-cards\">\n                <div id=\"player-table-".concat(this.playerId, "-played\" class=\"cards\">\n                    <div class=\"chief-and-tokens\">\n                        <div id=\"player-table-").concat(this.playerId, "-tokens-free\" class=\"tokens-free\"></div>\n                        <div id=\"player-table-").concat(this.playerId, "-chief\" class=\"chief-card\">\n                            <div id=\"player-table-").concat(this.playerId, "-tokens-chief\" class=\"tokens-chief\"></div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n        ");
-        dojo.place(html, document.getElementById('tables'));
-        /*if (this.currentPlayer) {
-            const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
-            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
-                sort: (a: Card, b: Card) => a.number - b.number,
-            });
-            this.hand.onCardClick = (card: Card) => {
-                //if (handDiv.classList.contains('selectable')) {
-                    this.game.onHandCardClick(card);
-                    //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
-                //}
-            }
-            
-            this.hand.addCards(player.hand);
-
+        html += "\n            <div id=\"player-table-".concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\", data-bracelets=\"").concat(player.bracelet, "\">");
+        for (var i = 1; i <= 3; i++) {
+            html += "\n            <div class=\"token bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"token recruit\" data-number=\"").concat(i, "\"></div>\n            ");
         }
-        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-
-        this.chief = new LineStock<number>(this.game.chiefsManager, document.getElementById(`player-table-${this.playerId}-chief`));
-        this.chief.addCard(player.chief);
-        
-        this.played = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played`), {
+        html += "\n            </div>\n            <div class=\"visible-cards\">\n                <div id=\"player-table-".concat(this.playerId, "-played\" class=\"cards\"></div>\n            </div>\n        </div>\n        ");
+        dojo.place(html, document.getElementById('tables'));
+        if (this.currentPlayer) {
+            var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
+            this.hand = new LineStock(this.game.cardsManager, handDiv, {
+                sort: function (a, b) { return a.color == b.color ? a.gain - b.gain : a.color - b.color; },
+            });
+            this.hand.onCardClick = function (card) {
+                //if (handDiv.classList.contains('selectable')) {
+                _this.game.onHandCardClick(card);
+                //this.hand.getCards().forEach(c => this.hand.getCardElement(c).classList.toggle('selected', c.id == card.id));
+                //}
+            };
+            this.hand.addCards(player.hand);
+        }
+        //this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
+        this.played = new LineStock(this.game.cardsManager, document.getElementById("player-table-".concat(this.playerId, "-played")), {
             center: false,
         });
-        this.played.addCards(player.played);
-        
-        this.tokensFree = new LineStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
-            center: false,
-            sort: (a: Destination, b: Destination) => a.type - b.type,
-        });
-        this.tokensFree.onSelectionChange = (selection: Destination[], lastChange: Destination) => this.game.onTokenSelectionChange(selection);
-        this.tokensChief = new SlotStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
-            gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
-            direction: 'column',
-            slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
-        });
-        if (this.playerId == (this.game as any).getActivePlayerId()) {
-            this.tokensFree.addCards(player.tokens);
-        } else {
-            player.tokens.forEach((token, index) => this.tokensChief.addCard(token, undefined, { slot: index }));
-        }*/
+        this.played.addCards(player.playedCards);
     }
+    PlayerTable.prototype.updateCounter = function (type, count) {
+        document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
+    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -1613,6 +1600,9 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         return this.playersTables.find(function (playerTable) { return playerTable.playerId === _this.getPlayerId(); });
     };
+    Knarr.prototype.getBoatSide = function () {
+        return this.gamedatas.boatSideOption;
+    };
     Knarr.prototype.getVariantOption = function () {
         return this.gamedatas.variantOption;
     };
@@ -1682,6 +1672,14 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.setScore = function (playerId, score) {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
+    };
+    Knarr.prototype.setRecruits = function (playerId, count) {
+        this.recruitCounters[playerId].toValue(count);
+        this.getPlayerTable(playerId).updateCounter('recruits', count);
+    };
+    Knarr.prototype.setBracelets = function (playerId, count) {
+        this.braceletCounters[playerId].toValue(count);
+        this.getPlayerTable(playerId).updateCounter('bracelets', count);
     };
     Knarr.prototype.onCenterCardClick = function (pile) {
         this.takeCard(pile);

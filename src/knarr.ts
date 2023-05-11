@@ -284,6 +284,10 @@ class Knarr implements KnarrGame {
         return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
     }
 
+    public getBoatSide(): number {
+        return this.gamedatas.boatSideOption;
+    }
+
     public getVariantOption(): number {
         return this.gamedatas.variantOption;
     }
@@ -391,6 +395,16 @@ class Knarr implements KnarrGame {
 
     private setScore(playerId: number, score: number) {
         (this as any).scoreCtrl[playerId]?.toValue(score);
+    }
+
+    private setRecruits(playerId: number, count: number) {
+        this.recruitCounters[playerId].toValue(count);
+        this.getPlayerTable(playerId).updateCounter('recruits', count);
+    }
+
+    private setBracelets(playerId: number, count: number) {
+        this.braceletCounters[playerId].toValue(count);
+        this.getPlayerTable(playerId).updateCounter('bracelets', count);
     }
 
     public onCenterCardClick(pile: number): void {

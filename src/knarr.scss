@@ -1,3 +1,5 @@
+$playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
+
 @import '../node_modules/bga-zoom/bga-zoom';
 @import '../node_modules/bga-cards/bga-cards';
 @import 'cards';
@@ -24,9 +26,10 @@
 }
 
 html, .mode_3d #game_play_area_background {
-  background: url('img/background.jpg');
+  background: url('img/background.jpg') #b5b4b4;
   background-size: 100% auto;
-  background-repeat: repeat;
+  background-repeat: no-repeat;
+  background-position: top;
 }
 
 #zoom-wrapper {
@@ -76,6 +79,25 @@ html, .mode_3d #game_play_area_background {
     color: white;
   }
 }
+
+.token {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url('img/tokens.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  border-radius: 50%;
+  
+  &.bracelet {
+    background-position-x: 0%;
+  }
+  &.recruit {
+    background-position-x: 100%;
+  }
+}
+
 
 #tables-and-center {
   position: relative;

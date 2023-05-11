@@ -28,7 +28,7 @@ interface KnarrPlayer extends Player {
     bracelet: number;
     handCount: number;
     hand?: Card[];
-    played: Card[];
+    playedCards: Card[];
     tokens: Destination[];
 }
 
@@ -58,6 +58,7 @@ interface KnarrGame extends Game {
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
+    getBoatSide(): number;
     getVariantOption(): number;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;

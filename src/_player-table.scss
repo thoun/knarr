@@ -20,6 +20,83 @@
     font-size: 20pt;
     font-family: 'komika parch';
   }
+
+  .boat {
+    position: relative;
+    width: 309px;
+    height: 149px;
+    background-size: 100% auto;
+
+    &.normal {
+      background-image: url('img/boats-normal.png');
+    }
+    &.advanced {
+      background-image: url('img/boats-advanced.png');
+    }
+
+    @each $playerColor in $playerColors {
+      $i: index($playerColors, $playerColor) - 1;
+      &[data-color="#{$playerColor}"] { 
+        background-position-y: #{$i * 100% / 3};
+      }
+    }
+
+    &[data-recruits="0"] {
+      .recruit[data-number="1"], .recruit[data-number="2"], .recruit[data-number="3"] {
+        display: none;
+      }
+    }
+    &[data-recruits="1"] {
+      .recruit[data-number="2"], .recruit[data-number="3"] {
+        display: none;
+      }
+    }
+    &[data-recruits="2"] {
+      .recruit[data-number="3"] {
+        display: none;
+      }
+    }
+
+    &[data-bracelets="0"] {
+      .bracelet[data-number="1"], .bracelet[data-number="2"], .bracelet[data-number="3"] {
+        display: none;
+      }
+    }
+    &[data-bracelets="1"] {
+      .bracelet[data-number="2"], .bracelet[data-number="3"] {
+        display: none;
+      }
+    }
+    &[data-bracelets="2"] {
+      .bracelet[data-number="3"] {
+        display: none;
+      }
+    }
+
+    .token {
+      position: absolute;
+      box-shadow: 0 0 2px 1px black;
+
+      &[data-number="3"] {
+        top: 13px;
+
+        &.recruit { left: 20px; }
+        &.bracelet { right: 20px; }
+      }
+      &[data-number="2"] {
+        top: 53px;
+
+        &.recruit { left: 11px; }
+        &.bracelet { right: 11px; }
+      }
+      &[data-number="1"] {
+        top: 92px;
+
+        &.recruit { left: 2px; }
+        &.bracelet { right: 2px; }
+      }
+    }
+  }
   
   .block-with-text {
     display: flex;
@@ -44,99 +121,5 @@
     margin: 5px;
     background: #FFFFFF88;
     border-radius: 10px;
-  }
-
-  .chief-and-tokens {
-    display: grid;
-    grid-template-columns: 156px 120px;
-
-    .tokens-free {
-      align-content: flex-start;
-    }
-    .chief-card {
-      position: relative;
-
-      .tokens-chief {
-        position: absolute;
-        left: -38px;
-        top: 0;
-        bottom: 0;
-        z-index: 1;
-
-        .slot {
-          width: 68px;
-          height: 68px;
-        }
-      }
-    }
-  }
-
-  .storage-stock {
-    align-items: center;
-    align-content: center;
-  }
-
-  &.can-store .visible-cards .storage-actions {
-    display: flex;
-  }
-
-  .storage-actions {
-    position: absolute;
-    top: -60px;
-    height: 68px;
-    display: none;
-    justify-content: center;
-    align-items: stretch;
-    gap: 10px;
-    left: 0;
-    right: 0;
-
-    &[data-used="true"] {
-      .storage-action {
-        display: none;
-      }
-    }
-    &[data-used="false"] {
-      .storage-stock {
-        display: none;
-      }
-    }
-
-    .storage-action, .storage-stock {
-      position: relative;
-      width: 68px;
-      display: flex;
-      justify-content: center;
-      align-content: center;
-
-      button {
-        white-space: break-spaces;
-        width: 100%;
-        height: 100%;
-
-        &.cancel {
-          position: absolute;
-          width: 24px;
-          height: 24px;
-          background: white;
-          border-radius: 50%;
-          text-align: center;
-          line-height: 24px;
-          z-index: 1;
-          box-shadow: 0 0 3px 1px black;
-          right: 0;
-          top: -10px;
-          cursor: pointer;
-        }
-
-        /*&.hidden {
-          display: none;
-        }*/
-      }
-
-      .token {
-        opacity: 0.7;
-      }
-    }
   }
 }

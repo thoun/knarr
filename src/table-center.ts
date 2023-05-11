@@ -21,6 +21,7 @@ class TableCenter {
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: card => card.locationArg,
+            gap: '12px',
         });
         this.cards.addCards(gamedatas.centerCards);
     }

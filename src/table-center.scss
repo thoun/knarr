@@ -5,8 +5,12 @@
 }
 
 #table-center {
-  position: relative;
-  width: 930px;
-  min-width: 930px;
-  height: 904px;
+  width: 690px;
+  min-width: 690px;
+}
+
+#board {
+  width: 690px;
+  height: 256px;
+  background: url('img/board.jpg');
 }

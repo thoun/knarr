@@ -246,15 +246,14 @@ body > .card {
   position: relative;
   width: 120px;
   height: 221px;
-  margin: 5px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 .knarr-card.disabled {
   cursor: not-allowed;
   filter: contrast(0.6);
 }
 .knarr-card .card-sides .card-side {
-  border-radius: 10px;
+  border-radius: 5px;
   /*&.back {  
       background-size: auto 100%;
       background-image: url('img/card-back.jpg');
@@ -363,15 +362,14 @@ body > .card {
   position: relative;
   width: 221px;
   height: 120px;
-  margin: 5px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 .knarr-destination.disabled {
   cursor: not-allowed;
   filter: contrast(0.6);
 }
 .knarr-destination .card-sides .card-side {
-  border-radius: 10px;
+  border-radius: 5px;
   /*&.back {  
       background-size: auto 100%;
       background-image: url('img/card-back.jpg');
@@ -533,10 +531,14 @@ body > .card {
 }
 
 #table-center {
-  position: relative;
-  width: 930px;
-  min-width: 930px;
-  height: 904px;
+  width: 690px;
+  min-width: 690px;
+}
+
+#board {
+  width: 690px;
+  height: 256px;
+  background: url("img/board.jpg");
 }
 
 .counters {
@@ -582,6 +584,79 @@ body > .card {
   font-size: 20pt;
   font-family: "komika parch";
 }
+.player-table .boat {
+  position: relative;
+  width: 309px;
+  height: 149px;
+  background-size: 100% auto;
+}
+.player-table .boat.normal {
+  background-image: url("img/boats-normal.png");
+}
+.player-table .boat.advanced {
+  background-image: url("img/boats-advanced.png");
+}
+.player-table .boat[data-color="7c5654"] {
+  background-position-y: 0%;
+}
+.player-table .boat[data-color=d6d6d7] {
+  background-position-y: 33.3333333333%;
+}
+.player-table .boat[data-color=b79d86] {
+  background-position-y: 66.6666666667%;
+}
+.player-table .boat[data-color="1e2c36"] {
+  background-position-y: 100%;
+}
+.player-table .boat[data-recruits="0"] .recruit[data-number="1"], .player-table .boat[data-recruits="0"] .recruit[data-number="2"], .player-table .boat[data-recruits="0"] .recruit[data-number="3"] {
+  display: none;
+}
+.player-table .boat[data-recruits="1"] .recruit[data-number="2"], .player-table .boat[data-recruits="1"] .recruit[data-number="3"] {
+  display: none;
+}
+.player-table .boat[data-recruits="2"] .recruit[data-number="3"] {
+  display: none;
+}
+.player-table .boat[data-bracelets="0"] .bracelet[data-number="1"], .player-table .boat[data-bracelets="0"] .bracelet[data-number="2"], .player-table .boat[data-bracelets="0"] .bracelet[data-number="3"] {
+  display: none;
+}
+.player-table .boat[data-bracelets="1"] .bracelet[data-number="2"], .player-table .boat[data-bracelets="1"] .bracelet[data-number="3"] {
+  display: none;
+}
+.player-table .boat[data-bracelets="2"] .bracelet[data-number="3"] {
+  display: none;
+}
+.player-table .boat .token {
+  position: absolute;
+  box-shadow: 0 0 2px 1px black;
+}
+.player-table .boat .token[data-number="3"] {
+  top: 13px;
+}
+.player-table .boat .token[data-number="3"].recruit {
+  left: 20px;
+}
+.player-table .boat .token[data-number="3"].bracelet {
+  right: 20px;
+}
+.player-table .boat .token[data-number="2"] {
+  top: 53px;
+}
+.player-table .boat .token[data-number="2"].recruit {
+  left: 11px;
+}
+.player-table .boat .token[data-number="2"].bracelet {
+  right: 11px;
+}
+.player-table .boat .token[data-number="1"] {
+  top: 92px;
+}
+.player-table .boat .token[data-number="1"].recruit {
+  left: 2px;
+}
+.player-table .boat .token[data-number="1"].bracelet {
+  right: 2px;
+}
 .player-table .block-with-text {
   display: flex;
 }
@@ -602,83 +677,6 @@ body > .card {
   background: rgba(255, 255, 255, 0.5333333333);
   border-radius: 10px;
 }
-.player-table .chief-and-tokens {
-  display: grid;
-  grid-template-columns: 156px 120px;
-}
-.player-table .chief-and-tokens .tokens-free {
-  align-content: flex-start;
-}
-.player-table .chief-and-tokens .chief-card {
-  position: relative;
-}
-.player-table .chief-and-tokens .chief-card .tokens-chief {
-  position: absolute;
-  left: -38px;
-  top: 0;
-  bottom: 0;
-  z-index: 1;
-}
-.player-table .chief-and-tokens .chief-card .tokens-chief .slot {
-  width: 68px;
-  height: 68px;
-}
-.player-table .storage-stock {
-  align-items: center;
-  align-content: center;
-}
-.player-table.can-store .visible-cards .storage-actions {
-  display: flex;
-}
-.player-table .storage-actions {
-  position: absolute;
-  top: -60px;
-  height: 68px;
-  display: none;
-  justify-content: center;
-  align-items: stretch;
-  gap: 10px;
-  left: 0;
-  right: 0;
-}
-.player-table .storage-actions[data-used=true] .storage-action {
-  display: none;
-}
-.player-table .storage-actions[data-used=false] .storage-stock {
-  display: none;
-}
-.player-table .storage-actions .storage-action, .player-table .storage-actions .storage-stock {
-  position: relative;
-  width: 68px;
-  display: flex;
-  justify-content: center;
-  align-content: center;
-}
-.player-table .storage-actions .storage-action button, .player-table .storage-actions .storage-stock button {
-  white-space: break-spaces;
-  width: 100%;
-  height: 100%;
-  /*&.hidden {
-    display: none;
-  }*/
-}
-.player-table .storage-actions .storage-action button.cancel, .player-table .storage-actions .storage-stock button.cancel {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  background: white;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 24px;
-  z-index: 1;
-  box-shadow: 0 0 3px 1px black;
-  right: 0;
-  top: -10px;
-  cursor: pointer;
-}
-.player-table .storage-actions .storage-action .token, .player-table .storage-actions .storage-stock .token {
-  opacity: 0.7;
-}
 
 /* make space between buttons on touch devices */
 @media (hover: none) {
@@ -694,9 +692,10 @@ body > .card {
   font-style: normal;
 }
 html, .mode_3d #game_play_area_background {
-  background: url("img/background.jpg");
+  background: url("img/background.jpg") #b5b4b4;
   background-size: 100% auto;
-  background-repeat: repeat;
+  background-repeat: no-repeat;
+  background-position: top;
 }
 
 #zoom-wrapper {
@@ -739,6 +738,23 @@ html, .mode_3d #game_play_area_background {
   border-radius: 10px;
   text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
   color: white;
+}
+
+.token {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url("img/tokens.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+.token.bracelet {
+  background-position-x: 0%;
+}
+.token.recruit {
+  background-position-x: 100%;
 }
 
 #tables-and-center {

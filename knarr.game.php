@@ -159,7 +159,7 @@ class Knarr extends Table {
             $player['fame'] = intval($player['fame']);
             $player['recruit'] = intval($player['recruit']);
             $player['bracelet'] = intval($player['bracelet']);
-            $player['played'] = $this->getPlayedCardWithStoredResources($playerId);
+            $player['playedCards'] = $this->getCardsByLocation('played'.$playerId);
             $player['tokens'] = $this->getDestinationsByLocation('player', $playerId);
             $player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 

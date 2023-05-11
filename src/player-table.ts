@@ -30,24 +30,26 @@ class PlayerTable {
             </div>`;
         }
         html += `
+            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}", data-bracelets="${player.bracelet}">`;
+        for (let i = 1; i <= 3; i++) {
+            html += `
+            <div class="token bracelet" data-number="${i}"></div>
+            <div class="token recruit" data-number="${i}"></div>
+            `;
+        }
+        html += `
+            </div>
             <div class="visible-cards">
-                <div id="player-table-${this.playerId}-played" class="cards">
-                    <div class="chief-and-tokens">
-                        <div id="player-table-${this.playerId}-tokens-free" class="tokens-free"></div>
-                        <div id="player-table-${this.playerId}-chief" class="chief-card">
-                            <div id="player-table-${this.playerId}-tokens-chief" class="tokens-chief"></div>
-                        </div>
-                    </div>
-                </div>
+                <div id="player-table-${this.playerId}-played" class="cards"></div>
             </div>
         </div>
         `;
         dojo.place(html, document.getElementById('tables'));
 
-        /*if (this.currentPlayer) {
+        if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
             this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
-                sort: (a: Card, b: Card) => a.number - b.number,
+                sort: (a: Card, b: Card) => a.color == b.color ? a.gain - b.gain : a.color - b.color,
             });
             this.hand.onCardClick = (card: Card) => {
                 //if (handDiv.classList.contains('selectable')) {
@@ -59,37 +61,19 @@ class PlayerTable {
             this.hand.addCards(player.hand);
 
         }
-        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
-
-        this.chief = new LineStock<number>(this.game.chiefsManager, document.getElementById(`player-table-${this.playerId}-chief`));
-        this.chief.addCard(player.chief);
+        //this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
         
         this.played = new LineStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-played`), {
             center: false,
         });
-        this.played.addCards(player.played);
-        
-        this.tokensFree = new LineStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-free`), {
-            center: false,
-            sort: (a: Destination, b: Destination) => a.type - b.type,
-        });
-        this.tokensFree.onSelectionChange = (selection: Destination[], lastChange: Destination) => this.game.onTokenSelectionChange(selection);
-        this.tokensChief = new SlotStock<Destination>(this.game.tokensManager, document.getElementById(`player-table-${this.playerId}-tokens-chief`), {
-            gap: `${this.game.getVariantOption() == 2 ? 15 : 4}px`,
-            direction: 'column',
-            slotsIds: this.game.getVariantOption() == 2 ? [0, 1, 2] : [0, 1, 2, 3],
-        });
-        if (this.playerId == (this.game as any).getActivePlayerId()) {
-            this.tokensFree.addCards(player.tokens);
-        } else {
-            player.tokens.forEach((token, index) => this.tokensChief.addCard(token, undefined, { slot: index }));
-        }*/
+        this.played.addCards(player.playedCards);
     }
 
-    /*public freeResources() {
-        //this.tokensFree.addCards(this.tokensChief.getCards());
+    public updateCounter(type: 'recruits' | 'bracelets', count: number) {
+        document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
     }
-    
+
+    /*    
     public setCardsSelectable(selectable: boolean, selectableCards: Card[] | null = null) {
         this.hand.setSelectionMode(selectable ? 'single' : 'none');
         this.hand.getCards().forEach(card => {

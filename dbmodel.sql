@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS `destination` (
 
 -- Example 2: add a custom field to the standard "player" table
 ALTER TABLE `player` ADD `player_fame` tinyint UNSIGNED NOT NULL DEFAULT 0;
-ALTER TABLE `player` ADD `player_recruit` tinyint UNSIGNED NOT NULL DEFAULT 3;
-ALTER TABLE `player` ADD `player_bracelet` tinyint UNSIGNED NOT NULL DEFAULT 3;
+ALTER TABLE `player` ADD `player_recruit` tinyint UNSIGNED NOT NULL DEFAULT 1;
+ALTER TABLE `player` ADD `player_bracelet` tinyint UNSIGNED NOT NULL DEFAULT 1;
 
 CREATE TABLE IF NOT EXISTS `global_variables` (
   `name` varchar(50) NOT NULL,

@@ -144,6 +144,13 @@ trait UtilTrait {
         }
 
         foreach ($playersIds as $playerId) {
+            $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
+            while ($playedCards[0]->color == $playedCards[1]->color) {
+                $this->cards->moveAllCardsInLocation('played'.$playerId, 'deck');
+                $this->cards->shuffle('deck');
+                $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
+            }
+
             $this->cards->pickCardsForLocation(3, 'deck', 'hand', $playerId);
         }
     }
