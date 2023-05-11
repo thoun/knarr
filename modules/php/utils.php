@@ -284,7 +284,7 @@ trait UtilTrait {
     function canTakeDestination(Destination $destination, array $handColors, int $recruits) {
         $missingCards = 0;
 
-        foreach ($destination as $color => $required) {
+        foreach ($destination->cost as $color => $required) {
             $available = 0;
             if ($color == DIFFERENT) {
                 $available = count(array_filter($handColors, fn($count) => $count > 0));
@@ -293,7 +293,7 @@ trait UtilTrait {
             }
 
             if ($available < $required) {
-                // TODO $missingCards += ($required - $available);
+                $missingCards += ($required - $available);
             }
         }
 

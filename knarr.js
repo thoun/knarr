@@ -1341,7 +1341,7 @@ var PlayerTable = /** @class */ (function () {
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
-        html += "\n            <div id=\"player-table-".concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\", data-bracelets=\"").concat(player.bracelet, "\">");
+        html += "\n            <div id=\"player-table-".concat(this.playerId, "-destinations\" class=\"destinations\"></div>\n            <div id=\"player-table-").concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\", data-bracelets=\"").concat(player.bracelet, "\">");
         for (var i = 1; i <= 3; i++) {
             html += "\n            <div class=\"token bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"token recruit\" data-number=\"").concat(i, "\"></div>\n            ");
         }
@@ -1369,6 +1369,12 @@ var PlayerTable = /** @class */ (function () {
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
+        var destinationsDiv = document.getElementById("player-table-".concat(this.playerId, "-destinations"));
+        this.destinations = new LineStock(this.game.destinationsManager, destinationsDiv, {
+            center: false,
+        });
+        destinationsDiv.style.setProperty('--card-overlap', '92px');
+        this.destinations.addCards(player.destinations);
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;

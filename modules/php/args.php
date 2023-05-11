@@ -18,7 +18,6 @@ trait ArgsTrait {
 
         $bracelets = $player->bracelet;
         $recruits = $player->recruit;
-        $hand = $this->getCardsByLocation('hand', $playerId);
 
         $handColors = [
             RED => 0,
@@ -27,8 +26,8 @@ trait ArgsTrait {
             BLUE => 0,
             PURPLE => 0,
         ];
-        foreach ($hand as $card) {
-            $handColors[$card->color]++;
+        foreach ([1,2,3,4,5] as $color) {
+            $handColors[$color] = count($this->getCardsByLocation('played'.$playerId.'-'.$color));
         }
 
         $actionDone = boolval($this->getGameStateValue(ACTION_DONE));

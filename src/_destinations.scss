@@ -3,7 +3,7 @@
   position: relative;
   width: 221px;
   height: 120px;
-  border-radius: 5px;
+  border-radius: 8px;
 
   &.disabled {
     cursor: not-allowed;
@@ -12,7 +12,7 @@
 
   .card-sides {
       .card-side {
-          border-radius: 5px;
+          border-radius: 8px;
 
           &>* {
               pointer-events: none;

@@ -6,6 +6,7 @@ class PlayerTable {
     public voidStock: VoidStock<Card>;
     public hand?: LineStock<Card>;
     public played: LineStock<Card>[] = [];
+    public destinations: LineStock<Destination>;
 
     private currentPlayer: boolean;
 
@@ -25,6 +26,7 @@ class PlayerTable {
             </div>`;
         }
         html += `
+            <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
             <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}", data-bracelets="${player.bracelet}">`;
         for (let i = 1; i <= 3; i++) {
             html += `
@@ -67,6 +69,14 @@ class PlayerTable {
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
+        
+        const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
+        this.destinations = new LineStock<Destination>(this.game.destinationsManager, destinationsDiv, {
+            center: false,
+        });
+        destinationsDiv.style.setProperty('--card-overlap', '92px');
+        
+        this.destinations.addCards(player.destinations);
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {

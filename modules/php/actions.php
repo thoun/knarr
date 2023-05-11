@@ -29,7 +29,7 @@ trait ActionTrait {
             throw new BgaUserException("You can't play this card");
         }
 
-        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)) - 1);
+        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
 
         $cardsOfColor = $this->getCardsByLocation('played'.$playerId.'-'.$card->color);
         $gains = array_map(fn($card) => $card->gain, $cardsOfColor);
@@ -85,7 +85,7 @@ trait ActionTrait {
             throw new BgaUserException("You can't take this destination");
         }
 
-        $this->destinations->moveCard($destination->id, 'played'.$playerId, intval($this->destinations->countCardInLocation('played'.$playerId)) - 1);
+        $this->destinations->moveCard($destination->id, 'played'.$playerId, intval($this->destinations->countCardInLocation('played'.$playerId)));
         // TODO notif take destination
 
         // TODO pay cost

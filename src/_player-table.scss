@@ -9,6 +9,9 @@
   margin: 5px;
   font-size: 16pt;
   color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .name-wrapper {
     color: var(--player-color);
@@ -26,6 +29,7 @@
     width: 309px;
     height: 149px;
     background-size: 100% auto;
+    margin-top: -4px;
 
     &.normal {
       background-image: url('img/boats-normal.png');
@@ -121,6 +125,8 @@
     margin: 5px;
     background: #FFFFFF88;
     border-radius: 10px;
+    align-self: stretch;
+    margin-bottom: 10px;
   }
 
   .visible-cards {
@@ -136,6 +142,17 @@
         &:not(:first-child) {
             margin-top: calc(-1 * var(--card-overlap));
         }
+      }
+    }
+  }
+
+  .destinations {
+    flex-direction: column-reverse;
+    width: 221px;
+
+    .card {
+      &:not(:last-child) {
+          margin-top: calc(-1 * var(--card-overlap));
       }
     }
   }
