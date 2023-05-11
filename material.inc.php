@@ -87,5 +87,5 @@ $this->CARDS = [
     new CardType(RED, VP, [2 => 3, 3 => 3, 4 => 4]),
     new CardType(RED, BRACELET, [2 => 2, 3 => 3, 4 => 3]),
     new CardType(RED, RECRUIT, [2 => 1, 3 => 1, 4 => 2]),
-    new CardType(RED, FAME, [2 => 1, 3 => 1, 4 => 1]),
+    new CardType(RED, FAME, [2 => 0, 3 => 1, 4 => 1]),
 ];

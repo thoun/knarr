@@ -1294,82 +1294,6 @@ var DestinationsManager = /** @class */ (function (_super) {
     };
     return DestinationsManager;
 }(CardManager));
-var CARD_OVERLAP = 40;
-var FIRST_ANIMAL_SHIFT = 28;
-var CenterSpot = /** @class */ (function () {
-    function CenterSpot(game, tableCenter, pile, card, cardCount, token, tokenCount) {
-        var _this = this;
-        this.game = game;
-        this.tableCenter = tableCenter;
-        this.pile = pile;
-        var html = "\n        <div id=\"center-spot-".concat(pile, "\" class=\"center-spot\" style=\"--angle: ").concat(this.getSpotAngle(), "\">\n            <div id=\"center-spot-").concat(pile, "-token\" class=\"center-spot-token\">\n                <div id=\"center-spot-").concat(pile, "-token-counter\" class=\"center-spot-counter token-counter\"></div>\n            </div>\n            <div id=\"center-spot-").concat(pile, "-card\" class=\"center-spot-card\">\n            <div id=\"center-spot-").concat(pile, "-card-counter\" class=\"center-spot-counter card-counter\"></div>\n            </div>\n        ");
-        html += "</div>";
-        dojo.place(html, 'table-center');
-        var cardDeck = document.getElementById("center-spot-".concat(pile, "-card"));
-        this.visibleCard = new VisibleDeck(game.cardsManager, cardDeck, {
-            width: 202,
-            height: 282,
-            cardNumber: cardCount,
-            autoUpdateCardNumber: false,
-        });
-        if (card) {
-            this.visibleCard.addCard(card);
-        }
-        cardDeck.addEventListener('click', function () { return _this.game.onCenterCardClick(pile); });
-        cardDeck.addEventListener('mouseenter', function () {
-            var _a;
-            var card = _this.visibleCard.getCards()[0];
-            tableCenter.showLinkedTokens(pile, (_a = card === null || card === void 0 ? void 0 : card.tokens) !== null && _a !== void 0 ? _a : 0);
-        });
-        cardDeck.addEventListener('mouseleave', function () { return tableCenter.showLinkedTokens(pile, 0); });
-        this.cardCounter = new ebg.counter();
-        this.cardCounter.create("center-spot-".concat(pile, "-card-counter"));
-        this.cardCounter.setValue(cardCount);
-        this.visibleToken = new VisibleDeck(game.tokensManager, document.getElementById("center-spot-".concat(pile, "-token")), {
-            width: 68,
-            height: 68,
-            cardNumber: tokenCount,
-            autoUpdateCardNumber: false,
-        });
-        if (token) {
-            this.visibleToken.addCard(token);
-        }
-        this.tokenCounter = new ebg.counter();
-        this.tokenCounter.create("center-spot-".concat(pile, "-token-counter"));
-        this.tokenCounter.setValue(tokenCount);
-        this.tableCenter.setShadow("center-spot-".concat(pile, "-token"), tokenCount);
-    }
-    CenterSpot.prototype.getSpotAngle = function () {
-        var angle = 60 * this.pile + 90;
-        return "".concat(angle > 180 ? angle - 360 : angle, "deg");
-    };
-    CenterSpot.prototype.setNewCard = function (newCard, newCount) {
-        if (newCard) {
-            this.visibleCard.addCard(newCard);
-        }
-        this.visibleCard.setCardNumber(newCount);
-        this.cardCounter.toValue(newCount);
-    };
-    CenterSpot.prototype.setNewToken = function (newToken, newCount) {
-        if (newToken) {
-            this.visibleToken.addCard(newToken);
-        }
-        this.visibleToken.setCardNumber(newCount);
-        this.tokenCounter.toValue(newCount);
-        this.tableCenter.setShadow("center-spot-".concat(this.pile, "-token"), newCount);
-    };
-    CenterSpot.prototype.setCardSelectable = function (selectable) {
-        this.visibleCard.setSelectionMode(selectable && this.cardCounter.getValue() > 0 ? 'single' : 'none');
-    };
-    CenterSpot.prototype.showLinked = function (linked) {
-        var _a;
-        var card = this.visibleToken.getCards()[0];
-        if (card) {
-            (_a = this.visibleToken.getCardElement(card)) === null || _a === void 0 ? void 0 : _a.classList.toggle('selected', linked);
-        }
-    };
-    return CenterSpot;
-}());
 var SHADOW_COLORS = [
     'transparent',
     'orangered',
@@ -1479,6 +1403,15 @@ var Knarr = /** @class */ (function () {
         "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
     */
     Knarr.prototype.setup = function (gamedatas) {
+        if (!gamedatas.variantOption) {
+            this.dontPreloadImage('artefacts.jpg');
+        }
+        if (gamedatas.boatSideOption == 2) {
+            this.dontPreloadImage('boats-normal.png');
+        }
+        else {
+            this.dontPreloadImage('boats-advanced.png');
+        }
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);

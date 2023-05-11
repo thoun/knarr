@@ -43,6 +43,15 @@ class Knarr implements KnarrGame {
     */
 
     public setup(gamedatas: KnarrGamedatas) {
+        if (!gamedatas.variantOption) {
+            (this as any).dontPreloadImage('artefacts.jpg');
+        }
+        if (gamedatas.boatSideOption == 2) {
+            (this as any).dontPreloadImage('boats-normal.png');
+        } else {
+            (this as any).dontPreloadImage('boats-advanced.png');
+        }
+
         log( "Starting game setup" );
         
         this.gamedatas = gamedatas;
