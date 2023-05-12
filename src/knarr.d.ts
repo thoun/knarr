@@ -94,7 +94,7 @@ interface EnteringTradeArgs {
 // playCard
 interface NotifPlayCardArgs {
     playerId: number;
-    playedCard: Card;
+    card: Card;
     newHandCard: Card;
     effectiveGains: { [type: number]: number };
 }

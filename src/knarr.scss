@@ -92,16 +92,19 @@ html, .mode_3d #game_play_area_background {
   border-radius: 50%;
   
   &.vp, &[data-type="1"] {
-    background-position-x: #{0 * 100% / 3};
+    background-position-x: #{0 * 100% / 4};
   }  
   &.fame, &[data-type="4"] {
-    background-position-x: #{1 * 100% / 3};
+    background-position-x: #{1 * 100% / 4};
   }  
   &.bracelet, &[data-type="2"] {
-    background-position-x: #{2 * 100% / 3};
+    background-position-x: #{2 * 100% / 4};
   }
   &.recruit, &[data-type="3"] {
-    background-position-x: #{3 * 100% / 3};
+    background-position-x: #{3 * 100% / 4};
+  }
+  &[data-type="5"] {
+    background-position-x: #{4 * 100% / 4};
   }
 }
 

@@ -39,7 +39,7 @@ trait ActionTrait {
         self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays a ${card_color} ${card_type} card from their hand and gains ${gains}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
-            'playedCard' => $card,
+            'card' => $card,
             'effectiveGains' => $effectiveGains,
             'gains' => $effectiveGains, // for logs
             'card_type' => $this->getGainName($card->gain), // for logs
@@ -83,6 +83,7 @@ trait ActionTrait {
             'card_color' => $this->getColorName($card->color), // for logs
         ]);
 
+        // TODO handle case both deck & discards are empty
         $newTableCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'slot', $slotColor));
         $newTableCard->location = 'slot';
         $newTableCard->locationArg = $slotColor;
@@ -146,6 +147,8 @@ trait ActionTrait {
         }
 
         if (count($cardsToDiscard)) {
+            $this->cards->moveCards(array_map(fn($card) => $card->id, $cardsToDiscard), 'discard');
+
             self::notifyAllPlayers('discardCards', clienttranslate('${player_name} discards ${number} cards(s) for the selected destination'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),

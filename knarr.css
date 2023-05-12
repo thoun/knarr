@@ -878,12 +878,15 @@ html, .mode_3d #game_play_area_background {
   background-position-x: 0%;
 }
 .icon.fame, .icon[data-type="4"] {
-  background-position-x: 33.3333333333%;
+  background-position-x: 25%;
 }
 .icon.bracelet, .icon[data-type="2"] {
-  background-position-x: 66.6666666667%;
+  background-position-x: 50%;
 }
 .icon.recruit, .icon[data-type="3"] {
+  background-position-x: 75%;
+}
+.icon[data-type="5"] {
   background-position-x: 100%;
 }
 

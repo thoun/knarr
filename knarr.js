@@ -1481,8 +1481,10 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
     };
-    PlayerTable.prototype.playCard = function (playedCard) {
-        this.played[playedCard.color].addCard(playedCard);
+    PlayerTable.prototype.playCard = function (card, fromElement) {
+        this.played[card.color].addCard(card, {
+            fromElement: fromElement
+        });
     };
     PlayerTable.prototype.setHandSelectable = function (selectable) {
         this.hand.setSelectionMode(selectable ? 'single' : 'none');
@@ -1983,6 +1985,7 @@ var Knarr = /** @class */ (function () {
             ['discardCards', ANIMATION_MS],
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
+            ['takeDeckCard', ANIMATION_MS],
             ['score', 1],
             ['bracelet', 1],
             ['recruit', 1],
@@ -1996,7 +1999,7 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_playCard = function (notif) {
         var playerId = notif.args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.playCard(notif.args.playedCard);
+        playerTable.playCard(notif.args.card);
         this.updateGains(playerId, notif.args.effectiveGains);
     };
     Knarr.prototype.notif_takeCard = function (notif) {
@@ -2031,6 +2034,11 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_trade = function (notif) {
         var playerId = notif.args.playerId;
         this.updateGains(playerId, notif.args.effectiveGains);
+    };
+    Knarr.prototype.notif_takeDeckCard = function (notif) {
+        var playerId = notif.args.playerId;
+        var playerTable = this.getPlayerTable(playerId);
+        playerTable.playCard(notif.args.card, document.getElementById('board'));
     };
     /**
      * Show last turn banner.

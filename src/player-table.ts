@@ -84,8 +84,10 @@ class PlayerTable {
         document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
     }
 
-    public playCard(playedCard: Card) {
-        this.played[playedCard.color].addCard(playedCard);
+    public playCard(card: Card, fromElement?: HTMLElement) {
+        this.played[card.color].addCard(card, {
+            fromElement
+        });
     }
 
     public setHandSelectable(selectable: boolean) {

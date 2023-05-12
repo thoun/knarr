@@ -283,7 +283,7 @@ trait UtilTrait {
         foreach ($groupGains as $type => $amount) {
             switch ($type) {
                 case VP: 
-                    $effectiveGains[VP] = min($amount, 40 - $player->score);
+                    $effectiveGains[VP] = $amount;
                     $this->DbQuery("UPDATE player SET `player_score` = `player_score` + ".$effectiveGains[VP]." WHERE player_id = $playerId");
                     break;
                 case BRACELET: 
@@ -299,7 +299,10 @@ trait UtilTrait {
                     $this->DbQuery("UPDATE player SET `player_fame` = `player_fame` + ".$effectiveGains[FAME]." WHERE player_id = $playerId");
                     break;
                 case CARD: 
-                    // TODO
+                    $effectiveGains[CARD] = $amount;
+                    for ($i = 0; $i < $amount; $i++) {
+                        $this->powerTakeCard($playerId);
+                    }
                     break;
             }
         }
@@ -344,5 +347,22 @@ trait UtilTrait {
             case RED: return clienttranslate("Red");
             case PURPLE: return clienttranslate("Purple");
         }
+    }
+
+    function powerTakeCard(int $playerId) {
+        // TODO handle case both deck & discards are empty
+
+        $card = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
+        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
+
+        // TODO notif
+        self::notifyAllPlayers('takeDeckCard', clienttranslate('${player_name} takes a ${card_color} ${card_type} card from the deck'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'card' => $card,
+            'card_type' => $this->getGainName($card->gain), // for logs
+            'card_color' => $this->getColorName($card->color), // for logs
+        ]);
+
     }
 }
