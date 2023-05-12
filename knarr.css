@@ -1,3 +1,4 @@
+@charset "UTF-8";
 #bga-zoom-wrapper {
   position: relative;
 }
@@ -527,9 +528,56 @@ body > .card {
 }
 
 #board {
+  position: relative;
   width: 690px;
   height: 256px;
   background: url("img/board.jpg");
+}
+#board .marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 28px;
+  transition: transform 0.5s;
+  pointer-events: none;
+}
+#board .marker.vp {
+  background-image: url("img/vp-pawns.png");
+}
+#board .marker.fame {
+  background-image: url("img/fame-pawns.png");
+}
+#board .marker[data-color="7c5654"] {
+  background-position-x: 0%;
+}
+#board .marker[data-color=d6d6d7] {
+  background-position-x: 33.3333333333%;
+}
+#board .marker[data-color=b79d86] {
+  background-position-x: 66.6666666667%;
+}
+#board .marker[data-color="1e2c36"] {
+  background-position-x: 100%;
+}
+#board .marker.color-blind::after {
+  font-size: 120%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  margin-top: -4px;
+}
+#board .marker.color-blind[data-player-no="1"]::after {
+  content: "●";
+}
+#board .marker.color-blind[data-player-no="2"]::after {
+  content: "▲";
+}
+#board .marker.color-blind[data-player-no="3"]::after {
+  content: "■";
+}
+#board .marker.color-blind[data-player-no="4"]::after {
+  content: "◆";
 }
 
 .player-board .icon {

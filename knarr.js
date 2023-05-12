@@ -1294,17 +1294,15 @@ var DestinationsManager = /** @class */ (function (_super) {
     };
     return DestinationsManager;
 }(CardManager));
-var SHADOW_COLORS = [
-    'transparent',
-    'orangered',
-    'darkred',
-    'black',
-];
+var POINT_CASE_SIZE_LEFT = 38.8;
+var POINT_CASE_SIZE_TOP = 37.6;
 var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
         var _this = this;
         this.game = game;
         this.destinations = [];
+        this.vp = new Map();
+        this.fame = new Map();
         ['A', 'B'].forEach(function (letter) {
             _this.destinations[letter] = new SlotStock(game.destinationsManager, document.getElementById("table-destinations-".concat(letter)), {
                 slotsIds: [1, 2, 3],
@@ -1319,6 +1317,19 @@ var TableCenter = /** @class */ (function () {
             gap: '12px',
         });
         this.cards.addCards(gamedatas.centerCards);
+        var players = Object.values(gamedatas.players);
+        var html = '';
+        // points
+        players.forEach(function (player) {
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"vp marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"fame marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            ");
+        });
+        dojo.place(html, 'board');
+        players.forEach(function (player) {
+            _this.vp.set(Number(player.id), Number(player.score));
+            _this.fame.set(Number(player.id), Math.min(14, Number(player.fame)));
+        });
+        this.moveVP();
+        this.moveFame();
     }
     TableCenter.prototype.newTableCard = function (card) {
         this.cards.addCard(card, {
@@ -1342,6 +1353,62 @@ var TableCenter = /** @class */ (function () {
                 element.classList.toggle('selectable', selectable && !disabled);
             });
         });
+    };
+    TableCenter.prototype.getVPCoordinates = function (points) {
+        var cases = points % 40;
+        var top = cases >= 16 ? (cases > 36 ? (40 - cases) : Math.min(4, cases - 16)) * POINT_CASE_SIZE_TOP : 0;
+        var left = cases > 20 ? (36 - Math.min(cases, 36)) * POINT_CASE_SIZE_LEFT : Math.min(16, cases) * POINT_CASE_SIZE_LEFT;
+        return [22 + left, 39 + top];
+    };
+    TableCenter.prototype.moveVP = function () {
+        var _this = this;
+        this.vp.forEach(function (points, playerId) {
+            var markerDiv = document.getElementById("player-".concat(playerId, "-vp-marker"));
+            var coordinates = _this.getVPCoordinates(points);
+            var left = coordinates[0];
+            var top = coordinates[1];
+            var topShift = 0;
+            var leftShift = 0;
+            _this.vp.forEach(function (iPoints, iPlayerId) {
+                if (iPoints % 40 === points % 40 && iPlayerId < playerId) {
+                    topShift += 5;
+                    //leftShift += 5;
+                }
+            });
+            markerDiv.style.transform = "translateX(".concat(left + leftShift, "px) translateY(").concat(top + topShift, "px)");
+        });
+    };
+    TableCenter.prototype.setScore = function (playerId, points) {
+        this.vp.set(playerId, points);
+        this.moveVP();
+    };
+    TableCenter.prototype.getFameCoordinates = function (points) {
+        var cases = points;
+        var top = cases % 2 ? -14 : 0;
+        var left = cases * 16.9;
+        return [368 + left, 123 + top];
+    };
+    TableCenter.prototype.moveFame = function () {
+        var _this = this;
+        this.fame.forEach(function (points, playerId) {
+            var markerDiv = document.getElementById("player-".concat(playerId, "-fame-marker"));
+            var coordinates = _this.getFameCoordinates(points);
+            var left = coordinates[0];
+            var top = coordinates[1];
+            var topShift = 0;
+            var leftShift = 0;
+            _this.fame.forEach(function (iPoints, iPlayerId) {
+                if (iPoints === points && iPlayerId < playerId) {
+                    topShift += 5;
+                    //leftShift += 5;
+                }
+            });
+            markerDiv.style.transform = "translateX(".concat(left + leftShift, "px) translateY(").concat(top + topShift, "px)");
+        });
+    };
+    TableCenter.prototype.setFame = function (playerId, fame) {
+        this.fame.set(playerId, Math.min(14, fame));
+        this.moveFame();
     };
     return TableCenter;
 }());

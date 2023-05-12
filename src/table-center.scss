@@ -8,7 +8,60 @@
 }
 
 #board {
+  position: relative;
   width: 690px;
   height: 256px;
   background: url('img/board.jpg');
+
+  
+
+  .marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    height: 28px;
+    transition: transform 0.5s; 
+    pointer-events: none;
+
+    &.vp {
+      background-image: url('img/vp-pawns.png');
+    }
+    &.fame {
+      background-image: url('img/fame-pawns.png');
+    }
+    
+    @each $playerColor in $playerColors {
+      $i: index($playerColors, $playerColor) - 1;
+      &[data-color="#{$playerColor}"] { 
+        background-position-x: #{$i * 100% / 3};
+      }
+    }
+    
+    &.color-blind {
+      &::after {
+        font-size: 120%;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        margin-top: -4px;
+      }
+
+      &[data-player-no="1"]::after {
+        content: '●'; // circle
+      }
+
+      &[data-player-no="2"]::after {
+        content: '▲'; // triangle
+      }
+
+      &[data-player-no="3"]::after {
+        content: '■'; // square
+      }
+
+      &[data-player-no="4"]::after {
+        content: '◆'; // diamond
+      }
+    }
+  }
 }
