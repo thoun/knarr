@@ -462,7 +462,9 @@ class Knarr implements KnarrGame {
             ['newTableCard', ANIMATION_MS],
             ['takeDestination', ANIMATION_MS],
             ['newTableDestination', ANIMATION_MS],
+            ['trade', ANIMATION_MS],
             ['score', 1],
+            ['bracelet', 1],
             ['lastTurn', 1],
         ];
     
@@ -507,6 +509,16 @@ class Knarr implements KnarrGame {
     notif_score(notif: Notif<NotifScoreArgs>) {
         this.setScore(notif.args.playerId, +notif.args.newScore);
     }
+
+    notif_bracelet(notif: Notif<NotifScoreArgs>) {
+        this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    }
+
+    notif_trade(notif: Notif<NotifTradeArgs>) {
+        const playerId = notif.args.playerId;
+
+        this.updateGains(playerId, notif.args.effectiveGains);
+    }
     
     /** 
      * Show last turn banner.
@@ -527,7 +539,7 @@ class Knarr implements KnarrGame {
                 }
 
                 for (const property in args) {
-                    if (['color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }

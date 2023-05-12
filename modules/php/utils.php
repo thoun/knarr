@@ -110,6 +110,19 @@ trait UtilTrait {
         ] + $args);
     }
 
+    function incPlayerBracelet(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + $amount WHERE player_id = $playerId");
+        }
+
+        $this->notifyAllPlayers('bracelet', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->bracelet,
+            'incScore' => $amount,
+        ] + $args);
+    }
+
     function getCardFromDb(/*array|null*/ $dbCard) {
         if ($dbCard == null) {
             return null;

@@ -104,6 +104,12 @@ interface NotifNewTableDestinationArgs {
     letter: string;
 }
 
+// trade
+interface NotifTradeArgs {
+    playerId: number;
+    effectiveGains: { [type: number]: number };
+}
+
 // score
 interface NotifScoreArgs {
     playerId: number;

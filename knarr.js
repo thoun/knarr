@@ -1742,7 +1742,9 @@ var Knarr = /** @class */ (function () {
             ['newTableCard', ANIMATION_MS],
             ['takeDestination', ANIMATION_MS],
             ['newTableDestination', ANIMATION_MS],
+            ['trade', ANIMATION_MS],
             ['score', 1],
+            ['bracelet', 1],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
@@ -1776,6 +1778,13 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_score = function (notif) {
         this.setScore(notif.args.playerId, +notif.args.newScore);
     };
+    Knarr.prototype.notif_bracelet = function (notif) {
+        this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    };
+    Knarr.prototype.notif_trade = function (notif) {
+        var playerId = notif.args.playerId;
+        this.updateGains(playerId, notif.args.effectiveGains);
+    };
     /**
      * Show last turn banner.
      */
@@ -1792,7 +1801,7 @@ var Knarr = /** @class */ (function () {
                     args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[0], "<strong> <div class=\"token-icon\" data-type=\"").concat(entry[1], "\"></div>"); }).join(', ');
                 }
                 for (var property in args) {
-                    if (['color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }

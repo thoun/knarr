@@ -121,10 +121,11 @@ trait ActionTrait {
             throw new BgaUserException("Not enough bracelets");
         }
 
-        $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` - $number WHERE player_id = $playerId");
-        // TODO notif pay bracelets
+        $this->incPlayerBracelet($playerId, -$number, clienttranslate('${player_name} chooses to pay ${number} bracelet(s) to trade'), [
+            'number' => $number, // for logs
+        ]);
 
-        $destinations = $this->getDestinationsByLocation('player'.$playerId);
+        $destinations = $this->getDestinationsByLocation('played'.$playerId);
 
         $gains = [];
 
@@ -141,7 +142,13 @@ trait ActionTrait {
         }
         $groupGains = $this->groupGains($gains);
         $effectiveGains = $this->gainResources($playerId, $groupGains);
-        // TODO notif gain destination & boats for $number rows
+
+        self::notifyAllPlayers('trade', clienttranslate('${player_name} gains ${gains} with traded bracelet(s)'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'effectiveGains' => $effectiveGains,
+            'gains' => $effectiveGains, // for logs
+        ]);
 
         $this->setGameStateValue(TRADE_DONE, 1);
         $this->redirectAfterAction();
