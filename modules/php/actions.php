@@ -74,8 +74,6 @@ trait ActionTrait {
     public function takeDestination(int $id) {
         self::checkAction('takeDestination');
 
-        $playerId = intval($this->getActivePlayerId());
-
         $args = $this->argPlayAction();
         $destination = $this->array_find($args['possibleDestinations'], fn($c) => $c->id == $id);
 
@@ -83,9 +81,56 @@ trait ActionTrait {
             throw new BgaUserException("You can't take this destination");
         }
 
-        $this->destinations->moveCard($destination->id, 'played'.$playerId, intval($this->destinations->countCardInLocation('played'.$playerId)));
+        $this->setGameStateValue(SELECTED_DESTINATION, $id);
 
-        // TODO pay cost
+        $this->gamestate->nextState('payDestination');
+    }
+
+    public function payDestination(array $ids, int $recruits) {
+        self::checkAction('payDestination');
+
+        $playerId = intval($this->getActivePlayerId());
+        
+        if ($recruits > 0 && $this->getPlayer($playerId)->recruit < $recruits) {
+            throw new BgaUserException("Not enough recruits");
+        }
+
+        $destination = $this->getDestinationFromDb($this->destinations->getCard($this->getGameStateValue(SELECTED_DESTINATION)));
+        
+        // will contain only selected cards of player
+        $playedCardsByColor = [];
+        $selectedPlayedCardsColors = [];
+        $cardsToDiscard = [];
+        if (count($ids) > 0) {
+            foreach ([1,2,3,4,5] as $color) {
+                $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+                $playedCardsByColor[$color] = array_values(array_filter($playedCardsByColor[$color], fn($card) => in_array($card->id, $ids)));
+                $selectedPlayedCardsColors[$color] = count($playedCardsByColor[$color]);
+                $cardsToDiscard = array_merge($cardsToDiscard, $playedCardsByColor[$color]);
+            }
+        }
+
+        $valid = $this->canTakeDestination($destination, $selectedPlayedCardsColors, $recruits, true);
+        if (!$valid) {
+            throw new BgaUserException("Invalid payment for this destination");
+        }
+
+        if ($recruits > 0) {
+            $this->incPlayerRecruit($playerId, -$recruits, clienttranslate('${player_name} pays ${number} recruit(s) for the selected destination'), [
+                'number' => $recruits, // for logs
+            ]);
+        }
+
+        if (count($cardsToDiscard)) {
+            self::notifyAllPlayers('discardCards', clienttranslate('${player_name} discards ${number} cards(s) for the selected destination'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+                'cards' => $cardsToDiscard,
+                'number' => $recruits, // for logs
+            ]);
+        }
+
+        $this->destinations->moveCard($destination->id, 'played'.$playerId, intval($this->destinations->countCardInLocation('played'.$playerId)));
 
         $effectiveGains = $this->gainResources($playerId, $destination->immediateGains);
         $type = $destination->number > 20 ? 'B' : 'A';

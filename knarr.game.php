@@ -50,6 +50,7 @@ class Knarr extends Table {
             LAST_TURN => LAST_TURN,
             ACTION_DONE => ACTION_DONE,
             TRADE_DONE => TRADE_DONE,
+            SELECTED_DESTINATION => SELECTED_DESTINATION,
 
             BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
             VARIANT_OPTION => VARIANT_OPTION,

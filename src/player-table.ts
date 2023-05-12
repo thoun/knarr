@@ -66,6 +66,7 @@ class PlayerTable {
                 direction: 'column',
                 center: false,
             });
+            this.played[i].onSelectionChange = () => this.game.onPlayedCardClick();
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -87,14 +88,43 @@ class PlayerTable {
         this.played[playedCard.color].addCard(playedCard);
     }
 
-    /*    
-    public setCardsSelectable(selectable: boolean, selectableCards: Card[] | null = null) {
+    public setHandSelectable(selectable: boolean) {
         this.hand.setSelectionMode(selectable ? 'single' : 'none');
-        this.hand.getCards().forEach(card => {
-            const element = this.hand.getCardElement(card);
-            const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
-            element.classList.toggle('disabled', disabled);
-            element.classList.toggle('selectable', selectable && !disabled);
-        });
-    }*/
+    }
+
+    public setCardsSelectable(selectable: boolean, cost: { [color: number]: number } | null = null) {
+        const colors = cost == null ? [] : Object.keys(cost).map(key => Number(key));
+
+        for (let i = 1; i <= 5; i++) {
+            this.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
+            this.played[i].getCards().forEach(card => {
+                const element = this.played[i].getCardElement(card);
+                let disabled = !selectable || cost == null;
+                if (!disabled) {
+                    if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
+                        disabled = !colors.includes(card.color);
+                        console.log(colors, card.color, disabled);
+                    }
+                }
+                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('selectable', selectable && !disabled);
+            });
+        }
+    }
+
+    public getSelectedCards(): Card[] {
+        const cards = [];
+
+        for (let i = 1; i <= 5; i++) {
+            cards.push(...this.played[i].getSelection());
+        }
+
+        return cards;
+    }
+    
+    public discardCards(cards: Card[]) {
+        for (let i = 1; i <= 5; i++) {
+            this.played[i].removeCards(cards);
+        }
+    }
 }

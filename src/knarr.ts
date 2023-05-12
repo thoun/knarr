@@ -18,6 +18,8 @@ const VP_BY_FAME = {
     14: 5,
 };
 
+const DIFFERENT = 0;
+
 const VP = 1;
 const BRACELET = 2;
 const RECRUIT = 3;
@@ -120,6 +122,9 @@ class Knarr implements KnarrGame {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
+            case 'payDestination':
+                this.onEnteringPayDestination(args.args);
+                break;
         }
     }
     
@@ -135,8 +140,17 @@ class Knarr implements KnarrGame {
             this.setGamestateDescription('TradeOnly');
         }
 
+        if ((this as any).isCurrentPlayerActive() && args.canDoAction) {
+            this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
+            this.getCurrentPlayerTable()?.setHandSelectable(true);
+        }
+    }
+
+    private onEnteringPayDestination(args: EnteringPayDestinationArgs) {
         if ((this as any).isCurrentPlayerActive()) {
-            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
+            this.getCurrentPlayerTable()?.setCardsSelectable(true, args.selectedDestination.cost);
+            const selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
+            selectedCardDiv.classList.add('selected-pay-destination');
         }
     }
 
@@ -147,11 +161,47 @@ class Knarr implements KnarrGame {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
+            case 'payDestination':
+                this.onLeavingPayDestination();
+                break;
         }
     }
 
     private onLeavingPlayAction() {
-        //this.getCurrentPlayerTable()?.setCardsSelectable(false);
+        this.tableCenter.setDestinationsSelectable(false);
+        this.getCurrentPlayerTable()?.setHandSelectable(false);
+    }
+
+    private onLeavingPayDestination() {
+        document.querySelectorAll('.selected-pay-destination').forEach(elem => elem.classList.remove('selected-pay-destination'));
+        this.getCurrentPlayerTable()?.setCardsSelectable(false);
+    }
+
+    private setPayDestinationLabelAndState(args?: EnteringPayDestinationArgs) {
+        if (!args) {
+            args = this.gamedatas.gamestate.args;
+        }
+
+        const selectedCards = this.getCurrentPlayerTable().getSelectedCards();
+
+        const button = document.getElementById(`payDestination_button`);
+
+        const total = Object.values(args.selectedDestination.cost).reduce((a, b) => a + b, 0);
+        let invalidSelectedCard = false; // TODO
+        const cards = selectedCards.length;
+        const recruits = total - cards;
+        let message = '';
+        if (recruits > 0 && cards > 0) {
+            message = _("Pay the ${cards} selected card(s) and ${recruits} recruit(s)")
+        } else if (cards > 0) {
+            message = _("Pay the ${cards} selected card(s)");
+        } else if (recruits > 0) {
+            message = _("Pay ${recruits} recruit(s)");
+        }
+
+        button.innerHTML = message.replace('${recruits}', ''+recruits).replace('${cards}', ''+cards);
+        button.classList.toggle('disabled', invalidSelectedCard || args.recruits < recruits);
+        button.dataset.recruits = ''+recruits;
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
@@ -170,6 +220,12 @@ class Knarr implements KnarrGame {
                     if (!args.canDoAction) {
                         (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
                     }
+                    break;
+                case 'payDestination':
+                    (this as any).addActionButton(`payDestination_button`, '', () => this.payDestination());
+                    this.setPayDestinationLabelAndState(args);
+
+                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
                     break;
                 case 'trade':
                     const tradeArgs = args as EnteringTradeArgs;
@@ -261,6 +317,9 @@ class Knarr implements KnarrGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);   
 
+            document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div class="vp icon"></div>`);
+            document.getElementById(`icon_point_${player.id}`).remove();
+
             let html = `<div class="counters">
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div> 
@@ -275,12 +334,12 @@ class Knarr implements KnarrGame {
             </div><div class="counters">
             
                 <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
-                    <div class="recruit token"></div>
+                    <div class="recruit icon"></div>
                     <span id="recruit-counter-${player.id}"></span>
                 </div>
             
                 <div id="bracelet-counter-wrapper-${player.id}" class="bracelet-counter">
-                    <div class="bracelet token"></div>
+                    <div class="bracelet icon"></div>
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
                 
@@ -380,6 +439,10 @@ class Knarr implements KnarrGame {
     public onHandCardClick(card: Card): void {
         this.playCard(card.id);
     }
+
+    public onPlayedCardClick(): void {
+        this.setPayDestinationLabelAndState();
+    }
   	
     public goTrade() {
         if(!(this as any).checkAction('goTrade')) {
@@ -406,6 +469,20 @@ class Knarr implements KnarrGame {
 
         this.takeAction('takeDestination', {
             id
+        });
+    }
+  	
+    public payDestination() {
+        if(!(this as any).checkAction('payDestination')) {
+            return;
+        }
+
+        const ids = this.getCurrentPlayerTable().getSelectedCards().map(card => card.id);
+        const recruits = Number(document.getElementById(`payDestination_button`).dataset.recruits);
+
+        this.takeAction('payDestination', {
+            ids: ids.join(','),
+            recruits
         });
     }
   	
@@ -461,10 +538,12 @@ class Knarr implements KnarrGame {
             ['takeCard', ANIMATION_MS],
             ['newTableCard', ANIMATION_MS],
             ['takeDestination', ANIMATION_MS],
+            ['discardCards', ANIMATION_MS],
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['score', 1],
             ['bracelet', 1],
+            ['recruit', 1],
             ['lastTurn', 1],
         ];
     
@@ -502,6 +581,10 @@ class Knarr implements KnarrGame {
         this.updateGains(playerId, notif.args.effectiveGains);
     }
 
+    notif_discardCards(notif: Notif<NotifDiscardCardsArgs>) {
+        this.getPlayerTable(notif.args.playerId).discardCards(notif.args.cards);
+    }
+
     notif_newTableDestination(notif: Notif<NotifNewTableDestinationArgs>) {
         this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
     }
@@ -512,6 +595,10 @@ class Knarr implements KnarrGame {
 
     notif_bracelet(notif: Notif<NotifScoreArgs>) {
         this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    }
+
+    notif_recruit(notif: Notif<NotifScoreArgs>) {
+        this.setRecruits(notif.args.playerId, +notif.args.newScore);
     }
 
     notif_trade(notif: Notif<NotifTradeArgs>) {
@@ -535,7 +622,7 @@ class Knarr implements KnarrGame {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[0]}<strong> <div class="token-icon" data-type="${entry[1]}"></div>`).join(', ');
+                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[1]}<strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ');
                 }
 
                 for (const property in args) {

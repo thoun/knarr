@@ -10,7 +10,7 @@ class TableCenter {
     public cards: SlotStock<Card>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
-        ['A', 'B'].forEach(letter => {            
+        ['A', 'B'].forEach(letter => {
             this.destinations[letter] = new SlotStock<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}`), {
                 slotsIds: [1, 2, 3],
                 mapCardToSlot: card => card.locationArg,
@@ -36,6 +36,18 @@ class TableCenter {
     public newTableDestination(destination: Destination, letter: string) {
         this.destinations[letter].addCard(destination, {
             fromElement: document.getElementById(`board`)
+        });
+    } 
+    
+    public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {
+        ['A', 'B'].forEach(letter => {
+            this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
+            this.destinations[letter].getCards().forEach(card => {
+                const element = this.destinations[letter].getCardElement(card);
+                const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
+                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('selectable', selectable && !disabled);
+            });
         });
     }
 }

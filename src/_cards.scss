@@ -49,14 +49,6 @@
             box-shadow: unset;
         }
     }
-    
-    &.selected-discard {
-        outline: 4px solid orange;
-
-        .card-side {
-            box-shadow: unset;
-        }
-    }
 
     @for $color from 1 through 5 {
         @for $gain from 1 through 4 {

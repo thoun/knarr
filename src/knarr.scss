@@ -80,21 +80,28 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
-.token {
+.icon {
   display: inline-block;
   width: 32px;
   height: 32px;
-  background-image: url('img/tokens.png');
+  background-image: url('img/icons.png');
   background-size: auto 100%;
   background-repeat: no-repeat;
+  background-position: center;
   vertical-align: middle;
   border-radius: 50%;
   
-  &.bracelet {
-    background-position-x: 0%;
+  &.vp, &[data-type="1"] {
+    background-position-x: #{0 * 100% / 3};
+  }  
+  &.fame, &[data-type="4"] {
+    background-position-x: #{1 * 100% / 3};
+  }  
+  &.bracelet, &[data-type="2"] {
+    background-position-x: #{2 * 100% / 3};
   }
-  &.recruit {
-    background-position-x: 100%;
+  &.recruit, &[data-type="3"] {
+    background-position-x: #{3 * 100% / 3};
   }
 }
 

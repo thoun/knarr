@@ -34,6 +34,8 @@ define('ST_SCORE_FAME', 10);
 
 define('ST_PLAYER_PLAY_ACTION', 20);
 
+define('ST_PLAYER_PAY_DESTINATION', 30);
+
 define('ST_PLAYER_TRADE', 50);
 
 define('ST_NEXT_PLAYER', 80);
@@ -49,6 +51,7 @@ define('END_SCORE', 100);
 define('LAST_TURN', 10);
 define('ACTION_DONE', 11);
 define('TRADE_DONE', 12);
+define('SELECTED_DESTINATION', 13);
 
 /*
  * Options

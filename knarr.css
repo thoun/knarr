@@ -282,12 +282,6 @@ body > .card {
 .knarr-card.selected:not(.disabled) .card-side {
   box-shadow: unset;
 }
-.knarr-card.selected-discard {
-  outline: 4px solid orange;
-}
-.knarr-card.selected-discard .card-side {
-  box-shadow: unset;
-}
 .knarr-card .front[data-color="1"][data-gain="1"] {
   background-position-x: 5%;
 }
@@ -398,10 +392,10 @@ body > .card {
 .knarr-destination.selected:not(.disabled) .card-side {
   box-shadow: unset;
 }
-.knarr-destination.selected-discard {
-  outline: 4px solid orange;
+.knarr-destination.selected-pay-destination {
+  outline: 5px solid orange;
 }
-.knarr-destination.selected-discard .card-side {
+.knarr-destination.selected-pay-destination .card-side {
   box-shadow: unset;
 }
 .knarr-destination .front[data-type="1"] {
@@ -524,15 +518,12 @@ body > .card {
     box-shadow: 0 0 5px 3px orange;
   }
 }
-#table-center-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 #table-center {
-  width: 690px;
   min-width: 690px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
 #board {
@@ -541,19 +532,18 @@ body > .card {
   background: url("img/board.jpg");
 }
 
-.counters {
+.player-board .icon {
+  margin-right: 5px;
+}
+.player-board .counters {
   display: flex;
   align-items: center;
   margin: 5px 0;
 }
-.counters > div {
+.player-board .counters > div {
   flex: 1;
 }
-.counters .icon {
-  margin-right: 5px;
-}
-
-.player-hand-card {
+.player-board .player-hand-card {
   display: inline-block;
   width: 32px;
   height: 32px;
@@ -563,19 +553,7 @@ body > .card {
   background-position: center;
   vertical-align: middle;
 }
-
-.fame.icon {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  background-image: url("img/fame-icon.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  vertical-align: middle;
-}
-
-.fame-legend {
+.player-board .fame-legend {
   font-size: 80%;
 }
 
@@ -645,35 +623,35 @@ body > .card {
 .player-table .boat[data-bracelets="2"] .bracelet[data-number="3"] {
   display: none;
 }
-.player-table .boat .token {
+.player-table .boat .icon {
   position: absolute;
   box-shadow: 0 0 2px 1px black;
 }
-.player-table .boat .token[data-number="3"] {
+.player-table .boat .icon[data-number="3"] {
   top: 13px;
 }
-.player-table .boat .token[data-number="3"].recruit {
+.player-table .boat .icon[data-number="3"].recruit {
   left: 20px;
 }
-.player-table .boat .token[data-number="3"].bracelet {
+.player-table .boat .icon[data-number="3"].bracelet {
   right: 20px;
 }
-.player-table .boat .token[data-number="2"] {
+.player-table .boat .icon[data-number="2"] {
   top: 53px;
 }
-.player-table .boat .token[data-number="2"].recruit {
+.player-table .boat .icon[data-number="2"].recruit {
   left: 11px;
 }
-.player-table .boat .token[data-number="2"].bracelet {
+.player-table .boat .icon[data-number="2"].bracelet {
   right: 11px;
 }
-.player-table .boat .token[data-number="1"] {
+.player-table .boat .icon[data-number="1"] {
   top: 92px;
 }
-.player-table .boat .token[data-number="1"].recruit {
+.player-table .boat .icon[data-number="1"].recruit {
   left: 2px;
 }
-.player-table .boat .token[data-number="1"].bracelet {
+.player-table .boat .icon[data-number="1"].bracelet {
   right: 2px;
 }
 .player-table .block-with-text {
@@ -780,20 +758,27 @@ html, .mode_3d #game_play_area_background {
   color: white;
 }
 
-.token {
+.icon {
   display: inline-block;
   width: 32px;
   height: 32px;
-  background-image: url("img/tokens.png");
+  background-image: url("img/icons.png");
   background-size: auto 100%;
   background-repeat: no-repeat;
+  background-position: center;
   vertical-align: middle;
   border-radius: 50%;
 }
-.token.bracelet {
+.icon.vp, .icon[data-type="1"] {
   background-position-x: 0%;
 }
-.token.recruit {
+.icon.fame, .icon[data-type="4"] {
+  background-position-x: 33.3333333333%;
+}
+.icon.bracelet, .icon[data-type="2"] {
+  background-position-x: 66.6666666667%;
+}
+.icon.recruit, .icon[data-type="3"] {
   background-position-x: 100%;
 }
 

@@ -89,9 +89,27 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
+            "payDestination" => ST_PLAYER_PAY_DESTINATION,
             "trade" => ST_PLAYER_TRADE,
             "endTurn" => ST_NEXT_PLAYER,
         ],
+    ],
+
+    ST_PLAYER_PAY_DESTINATION => [
+        "name" => "payDestination",
+        "description" => clienttranslate('${actplayer} must choose the cards to pay for the selected destination'),
+        "descriptionmyturn" => clienttranslate('${you} must choose the cards to pay for the selected destination'),
+        "type" => "activeplayer",
+        "args" => "argPayDestination",
+        "possibleactions" => [ 
+            "payDestination",
+            "cancel",
+        ],
+        "transitions" => [
+            "next" => ST_PLAYER_PLAY_ACTION,
+            "endTurn" => ST_NEXT_PLAYER,
+            "cancel" => ST_PLAYER_PLAY_ACTION,
+        ]
     ],
 
     ST_PLAYER_TRADE => [

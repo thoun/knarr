@@ -1330,6 +1330,19 @@ var TableCenter = /** @class */ (function () {
             fromElement: document.getElementById("board")
         });
     };
+    TableCenter.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
+        var _this = this;
+        if (selectableCards === void 0) { selectableCards = null; }
+        ['A', 'B'].forEach(function (letter) {
+            _this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
+            _this.destinations[letter].getCards().forEach(function (card) {
+                var element = _this.destinations[letter].getCardElement(card);
+                var disabled = selectable && selectableCards != null && !selectableCards.some(function (s) { return s.id == card.id; });
+                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('selectable', selectable && !disabled);
+            });
+        });
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -1371,6 +1384,7 @@ var PlayerTable = /** @class */ (function () {
                 direction: 'column',
                 center: false,
             });
+            this.played[i].onSelectionChange = function () { return _this.game.onPlayedCardClick(); };
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -1387,6 +1401,45 @@ var PlayerTable = /** @class */ (function () {
     PlayerTable.prototype.playCard = function (playedCard) {
         this.played[playedCard.color].addCard(playedCard);
     };
+    PlayerTable.prototype.setHandSelectable = function (selectable) {
+        this.hand.setSelectionMode(selectable ? 'single' : 'none');
+    };
+    PlayerTable.prototype.setCardsSelectable = function (selectable, cost) {
+        var _this = this;
+        if (cost === void 0) { cost = null; }
+        var colors = cost == null ? [] : Object.keys(cost).map(function (key) { return Number(key); });
+        var _loop_2 = function (i) {
+            this_1.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
+            this_1.played[i].getCards().forEach(function (card) {
+                var element = _this.played[i].getCardElement(card);
+                var disabled = !selectable || cost == null;
+                if (!disabled) {
+                    if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
+                        disabled = !colors.includes(card.color);
+                        console.log(colors, card.color, disabled);
+                    }
+                }
+                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('selectable', selectable && !disabled);
+            });
+        };
+        var this_1 = this;
+        for (var i = 1; i <= 5; i++) {
+            _loop_2(i);
+        }
+    };
+    PlayerTable.prototype.getSelectedCards = function () {
+        var cards = [];
+        for (var i = 1; i <= 5; i++) {
+            cards.push.apply(cards, this.played[i].getSelection());
+        }
+        return cards;
+    };
+    PlayerTable.prototype.discardCards = function (cards) {
+        for (var i = 1; i <= 5; i++) {
+            this.played[i].removeCards(cards);
+        }
+    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -1399,6 +1452,7 @@ var VP_BY_FAME = {
     10: 3,
     14: 5,
 };
+var DIFFERENT = 0;
 var VP = 1;
 var BRACELET = 2;
 var RECRUIT = 3;
@@ -1477,6 +1531,9 @@ var Knarr = /** @class */ (function () {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
+            case 'payDestination':
+                this.onEnteringPayDestination(args.args);
+                break;
         }
     };
     Knarr.prototype.setGamestateDescription = function (property) {
@@ -1487,11 +1544,21 @@ var Knarr = /** @class */ (function () {
         this.updatePageTitle();
     };
     Knarr.prototype.onEnteringPlayAction = function (args) {
+        var _a;
         if (!args.canDoAction) {
             this.setGamestateDescription('TradeOnly');
         }
+        if (this.isCurrentPlayerActive() && args.canDoAction) {
+            this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
+            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(true);
+        }
+    };
+    Knarr.prototype.onEnteringPayDestination = function (args) {
+        var _a;
         if (this.isCurrentPlayerActive()) {
-            //this.getCurrentPlayerTable()?.setCardsSelectable(true, args.playableCards);
+            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.selectedDestination.cost);
+            var selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
+            selectedCardDiv.classList.add('selected-pay-destination');
         }
     };
     Knarr.prototype.onLeavingState = function (stateName) {
@@ -1500,10 +1567,44 @@ var Knarr = /** @class */ (function () {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
+            case 'payDestination':
+                this.onLeavingPayDestination();
+                break;
         }
     };
     Knarr.prototype.onLeavingPlayAction = function () {
-        //this.getCurrentPlayerTable()?.setCardsSelectable(false);
+        var _a;
+        this.tableCenter.setDestinationsSelectable(false);
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+    };
+    Knarr.prototype.onLeavingPayDestination = function () {
+        var _a;
+        document.querySelectorAll('.selected-pay-destination').forEach(function (elem) { return elem.classList.remove('selected-pay-destination'); });
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+    };
+    Knarr.prototype.setPayDestinationLabelAndState = function (args) {
+        if (!args) {
+            args = this.gamedatas.gamestate.args;
+        }
+        var selectedCards = this.getCurrentPlayerTable().getSelectedCards();
+        var button = document.getElementById("payDestination_button");
+        var total = Object.values(args.selectedDestination.cost).reduce(function (a, b) { return a + b; }, 0);
+        var invalidSelectedCard = false; // TODO
+        var cards = selectedCards.length;
+        var recruits = total - cards;
+        var message = '';
+        if (recruits > 0 && cards > 0) {
+            message = _("Pay the ${cards} selected card(s) and ${recruits} recruit(s)");
+        }
+        else if (cards > 0) {
+            message = _("Pay the ${cards} selected card(s)");
+        }
+        else if (recruits > 0) {
+            message = _("Pay ${recruits} recruit(s)");
+        }
+        button.innerHTML = message.replace('${recruits}', '' + recruits).replace('${cards}', '' + cards);
+        button.classList.toggle('disabled', invalidSelectedCard || args.recruits < recruits);
+        button.dataset.recruits = '' + recruits;
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
@@ -1521,6 +1622,11 @@ var Knarr = /** @class */ (function () {
                     if (!args.canDoAction) {
                         this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
                     }
+                    break;
+                case 'payDestination':
+                    this.addActionButton("payDestination_button", '', function () { return _this.payDestination(); });
+                    this.setPayDestinationLabelAndState(args);
+                    this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
                     break;
                 case 'trade':
                     var tradeArgs_1 = args;
@@ -1594,7 +1700,9 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\">").concat(_('VP / round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit token\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet token\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
+            document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div class=\"vp icon\"></div>");
+            document.getElementById("icon_point_".concat(player.id)).remove();
+            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\">").concat(_('VP / round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             var handCounter = new ebg.counter();
             handCounter.create("playerhand-counter-".concat(playerId));
@@ -1675,6 +1783,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onHandCardClick = function (card) {
         this.playCard(card.id);
     };
+    Knarr.prototype.onPlayedCardClick = function () {
+        this.setPayDestinationLabelAndState();
+    };
     Knarr.prototype.goTrade = function () {
         if (!this.checkAction('goTrade')) {
             return;
@@ -1695,6 +1806,17 @@ var Knarr = /** @class */ (function () {
         }
         this.takeAction('takeDestination', {
             id: id
+        });
+    };
+    Knarr.prototype.payDestination = function () {
+        if (!this.checkAction('payDestination')) {
+            return;
+        }
+        var ids = this.getCurrentPlayerTable().getSelectedCards().map(function (card) { return card.id; });
+        var recruits = Number(document.getElementById("payDestination_button").dataset.recruits);
+        this.takeAction('payDestination', {
+            ids: ids.join(','),
+            recruits: recruits
         });
     };
     Knarr.prototype.trade = function (number) {
@@ -1741,10 +1863,12 @@ var Knarr = /** @class */ (function () {
             ['takeCard', ANIMATION_MS],
             ['newTableCard', ANIMATION_MS],
             ['takeDestination', ANIMATION_MS],
+            ['discardCards', ANIMATION_MS],
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['score', 1],
             ['bracelet', 1],
+            ['recruit', 1],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
@@ -1772,6 +1896,9 @@ var Knarr = /** @class */ (function () {
         this.getPlayerTable(playerId).destinations.addCard(notif.args.destination);
         this.updateGains(playerId, notif.args.effectiveGains);
     };
+    Knarr.prototype.notif_discardCards = function (notif) {
+        this.getPlayerTable(notif.args.playerId).discardCards(notif.args.cards);
+    };
     Knarr.prototype.notif_newTableDestination = function (notif) {
         this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
     };
@@ -1780,6 +1907,9 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.notif_bracelet = function (notif) {
         this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    };
+    Knarr.prototype.notif_recruit = function (notif) {
+        this.setRecruits(notif.args.playerId, +notif.args.newScore);
     };
     Knarr.prototype.notif_trade = function (notif) {
         var playerId = notif.args.playerId;
@@ -1798,7 +1928,7 @@ var Knarr = /** @class */ (function () {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[0], "<strong> <div class=\"token-icon\" data-type=\"").concat(entry[1], "\"></div>"); }).join(', ');
+                    args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[1], "<strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ');
                 }
                 for (var property in args) {
                     if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {

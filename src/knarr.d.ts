@@ -66,11 +66,18 @@ interface KnarrGame extends Game {
     setTooltip(id: string, html: string): void;
     onTableDestinationClick(destination: Destination): void;
     onHandCardClick(card: Card): void;
+    onPlayedCardClick(): void;
 }
 
 interface EnteringPlayActionArgs {
     canDoAction: boolean;
     canTrade: boolean;
+    possibleDestinations: Destination[];
+}
+
+interface EnteringPayDestinationArgs {
+    selectedDestination: Destination;
+    recruits: number;
 }
 
 interface EnteringTradeArgs {
@@ -108,6 +115,12 @@ interface NotifNewTableDestinationArgs {
 interface NotifTradeArgs {
     playerId: number;
     effectiveGains: { [type: number]: number };
+}
+
+// discardCards
+interface NotifDiscardCardsArgs {
+    playerId: number;
+    cards: Card[];
 }
 
 // score

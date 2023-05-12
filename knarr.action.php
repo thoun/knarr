@@ -65,6 +65,17 @@
         self::ajaxResponse();
     }
 
+    public function payDestination() {
+        self::setAjaxMode();   
+
+        $idsStr = self::getArg( "ids", AT_numberlist, true );
+        $ids = array_map(fn($str) => intval($str), explode(',', $idsStr));
+        $recruits = self::getArg("recruits", AT_posint, true);
+        $this->game->payDestination($ids, $recruits);
+
+        self::ajaxResponse();
+    }
+
     public function trade() {
         self::setAjaxMode();     
 

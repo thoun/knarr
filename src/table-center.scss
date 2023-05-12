@@ -1,12 +1,10 @@
-#table-center-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 #table-center {
-  width: 690px;
   min-width: 690px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
 #board {

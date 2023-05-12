@@ -110,6 +110,19 @@ trait UtilTrait {
         ] + $args);
     }
 
+    function incPlayerRecruit(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + $amount WHERE player_id = $playerId");
+        }
+
+        $this->notifyAllPlayers('recruit', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->recruit,
+            'incScore' => $amount,
+        ] + $args);
+    }
+
     function incPlayerBracelet(int $playerId, int $amount, $message = '', $args = []) {
         if ($amount != 0) {
             $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + $amount WHERE player_id = $playerId");
@@ -294,15 +307,15 @@ trait UtilTrait {
         return $effectiveGains;
     }
 
-    function canTakeDestination(Destination $destination, array $handColors, int $recruits) {
+    function canTakeDestination(Destination $destination, array $playedCardsColors, int $recruits, bool $strict) {
         $missingCards = 0;
 
         foreach ($destination->cost as $color => $required) {
             $available = 0;
             if ($color == DIFFERENT) {
-                $available = count(array_filter($handColors, fn($count) => $count > 0));
+                $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
             } else {
-                $available = $handColors[$color]; 
+                $available = $playedCardsColors[$color]; 
             }
 
             if ($available < $required) {
@@ -310,7 +323,7 @@ trait UtilTrait {
             }
         }
 
-        return $recruits >= $missingCards;
+        return $strict ? $recruits == $missingCards : $recruits >= $missingCards;
     }
 
     function getGainName(int $gain) {
