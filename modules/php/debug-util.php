@@ -10,22 +10,28 @@ trait DebugUtilTrait {
         if ($this->getBgaEnvironment() != 'studio') { 
             return;
         } 
+
+        //$this->debugSetPlayerScore(2343492, 10);
+        $this->debugSetScore(39);
+        $this->debugSetFame(8);
         
         //$this->debugLastTurn();
     }
 
-    function debugPickResources($playerId = 2343492) {
-		$this->destinations->pickCardsForLocation(20, 'deck', 'player', $playerId);
+    function debugSetScore($score) {
+		$this->DbQuery("UPDATE player SET `player_score` = $score");
+    }
+    
+    function debugSetPlayerScore($playerId, $score) {
+		$this->DbQuery("UPDATE player SET `player_score` = $score WHERE player_id = $playerId");
     }
 
-    function debugAlmostEmptyPile($pile) {
-		$tokenCount = intval($this->destinations->countCardInLocation('pile'.$pile));
-        $this->destinations->pickCardsForLocation($tokenCount - 1, 'pile'.$pile, 'discard');
+    function debugSetFame($score) {
+		$this->DbQuery("UPDATE player SET `player_fame` = $score");
     }
-
-    function debugEmptyFire($remaining = 1) {
-		$fireTokenCount = intval($this->destinations->countCardInLocation('center'));
-        $this->destinations->pickCardsForLocation($fireTokenCount - $remaining, 'center', 'discard');
+    
+    function debugSetPlayerFame($playerId, $score) {
+		$this->DbQuery("UPDATE player SET `player_fame` = $score WHERE player_id = $playerId");
     }
 
     function debugLastTurn() {
@@ -51,21 +57,12 @@ trait DebugUtilTrait {
 			// basic tables
 			$this->DbQuery("UPDATE player SET player_id=$sid WHERE player_id = $id" );
 			$this->DbQuery("UPDATE global SET global_value=$sid WHERE global_value = $id" );
-			$this->DbQuery("UPDATE card SET card_location_arg=$sid WHERE card_location_arg = $id" );
 
 			// 'other' game specific tables. example:
 			// tables specific to your schema that use player_ids
-			$this->DbQuery("UPDATE card SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE card SET card_location='bag$sid' WHERE card_location='bag$id'" );
-			$this->DbQuery("UPDATE card SET card_location='reserve$sid' WHERE card_location='reserve$id'" );
-			$this->DbQuery("UPDATE card SET card_location='highCommand$sid' WHERE card_location='highCommand$id'" );
-			$this->DbQuery("UPDATE discover_tile SET card_location_arg=$sid WHERE card_location_arg = $id" );
-			$this->DbQuery("UPDATE objective_token SET card_location_arg=$sid WHERE card_location_arg = $id" );
-			$this->DbQuery("UPDATE link SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE circle SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE operation SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE realized_objective SET player_id=$sid WHERE player_id = $id" );
-			$this->DbQuery("UPDATE realized_objective SET realized_by=$sid WHERE realized_by = $id" );
+			$this->DbQuery("UPDATE card SET card_location_arg=$sid WHERE card_location_arg = $id" );
+			foreach ([1,2,3,4,5] as $i) { $this->DbQuery("UPDATE card SET card_location='played$sid-$i' WHERE card_location='played$id-$i'" ); }
+			$this->DbQuery("UPDATE destination SET card_location='played$sid' WHERE card_location='played$id'" );
             
 			++$sid;
 		}

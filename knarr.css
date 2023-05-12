@@ -580,6 +580,15 @@ body > .card {
   content: "◆";
 }
 
+.player-board {
+  background-color: white;
+}
+.player-board.spectator-mode {
+  color: black;
+}
+.player-board.spectator-mode * {
+  background: white !important;
+}
 .player-board .icon {
   margin-right: 5px;
 }
@@ -606,6 +615,7 @@ body > .card {
 }
 
 .player-table {
+  min-width: 640px;
   width: 100%;
   position: relative;
   background: rgba(255, 255, 255, 0.2);

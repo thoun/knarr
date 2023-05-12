@@ -41,11 +41,20 @@ trait StateTrait {
     }
 
     function stNextPlayer() {
-        //$playerId = intval($this->getActivePlayerId());
+        $playerId = intval($this->getActivePlayerId());
 
         //$this->deleteGlobalVariables([UNDO, POWER_PAY_ONE_LESS]);
         $this->setGameStateValue(ACTION_DONE, 0);
         $this->setGameStateValue(TRADE_DONE, 0);
+
+        if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
+            $this->setGameStateValue(LAST_TURN, 1);
+
+            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} took the last token on the fire, triggering the end of the game !'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+        }
 
         $this->activeNextPlayer();       
         $playerId = $this->getActivePlayerId();
@@ -53,12 +62,12 @@ trait StateTrait {
         $this->giveExtraTime($playerId);
 
         $endGame = false;
-        /* TODO check if first player if ($this->getPlayer($playerId)->chief == intval($this->getUniqueValueFromDB("SELECT min(player_chief) FROM player"))) {
+        if ($this->getPlayer($playerId)->no == 1) {
             $this->incStat(1, 'roundNumber');
             if (boolval($this->getGameStateValue(LAST_TURN))) {
                 $endGame = true;
             }
-        }*/
+        }
 
         $this->gamestate->nextState($endGame ? 'endScore' : 'nextPlayer');
     }

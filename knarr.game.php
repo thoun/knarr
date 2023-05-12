@@ -129,7 +129,7 @@ class Knarr extends Table {
         $this->activeNextPlayer();
 
         // TODO TEMP
-        //$this->debugSetup();
+        $this->debugSetup();
 
         /************ End of the game initialization *****/
     }

@@ -1,4 +1,13 @@
 .player-board {
+  background-color: white;
+
+  &.spectator-mode {
+    color: black;
+    * {
+      background: white !important;
+    }
+  }
+
   .icon {
     margin-right: 5px;
   }
