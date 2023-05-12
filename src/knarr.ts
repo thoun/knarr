@@ -460,6 +460,8 @@ class Knarr implements KnarrGame {
             ['playCard', ANIMATION_MS],
             ['takeCard', ANIMATION_MS],
             ['newTableCard', ANIMATION_MS],
+            ['takeDestination', ANIMATION_MS],
+            ['newTableDestination', ANIMATION_MS],
             ['score', 1],
             ['lastTurn', 1],
         ];
@@ -489,6 +491,17 @@ class Knarr implements KnarrGame {
 
     notif_newTableCard(notif: Notif<NotifNewCardArgs>) {
         this.tableCenter.newTableCard(notif.args.card);
+    }
+
+    notif_takeDestination(notif: Notif<NotifTakeDestinationArgs>) {
+        const playerId = notif.args.playerId;
+        this.getPlayerTable(playerId).destinations.addCard(notif.args.destination);
+
+        this.updateGains(playerId, notif.args.effectiveGains);
+    }
+
+    notif_newTableDestination(notif: Notif<NotifNewTableDestinationArgs>) {
+        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
     }
 
     notif_score(notif: Notif<NotifScoreArgs>) {

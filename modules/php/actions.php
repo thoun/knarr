@@ -64,8 +64,6 @@ trait ActionTrait {
         $newTableCard->locationArg = $slotId;
 
         self::notifyAllPlayers('newTableCard', '', [
-            'playerId' => $playerId,
-            'player_name' => $this->getPlayerName($playerId),
             'card' => $newTableCard,
         ]);
 
@@ -86,16 +84,29 @@ trait ActionTrait {
         }
 
         $this->destinations->moveCard($destination->id, 'played'.$playerId, intval($this->destinations->countCardInLocation('played'.$playerId)));
-        // TODO notif take destination
 
         // TODO pay cost
 
         $effectiveGains = $this->gainResources($playerId, $destination->immediateGains);
-        // TODO notif immediate gain
-
         $type = $destination->number > 20 ? 'B' : 'A';
+
+        self::notifyAllPlayers('takeDestination', clienttranslate('${player_name} takes a destination from line ${letter} and gains ${gains}'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'destination' => $destination,
+            'effectiveGains' => $effectiveGains,
+            'gains' => $effectiveGains, // for logs
+            'letter' => $type, // for logs
+        ]);
+
         $newDestination = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $destination->locationArg));
-        // TODO notif refill destinations
+        $newDestination->location = 'slot'.$type;
+        $newDestination->locationArg = $destination->locationArg;
+
+        self::notifyAllPlayers('newTableDestination', '', [
+            'destination' => $newDestination,
+            'letter' => $type,
+        ]);
 
         $this->setGameStateValue(ACTION_DONE, 1);
         $this->redirectAfterAction();

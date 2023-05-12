@@ -32,4 +32,10 @@ class TableCenter {
             fromElement: document.getElementById(`board`)
         });
     }
+    
+    public newTableDestination(destination: Destination, letter: string) {
+        this.destinations[letter].addCard(destination, {
+            fromElement: document.getElementById(`board`)
+        });
+    }
 }

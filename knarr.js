@@ -1325,6 +1325,11 @@ var TableCenter = /** @class */ (function () {
             fromElement: document.getElementById("board")
         });
     };
+    TableCenter.prototype.newTableDestination = function (destination, letter) {
+        this.destinations[letter].addCard(destination, {
+            fromElement: document.getElementById("board")
+        });
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -1735,6 +1740,8 @@ var Knarr = /** @class */ (function () {
             ['playCard', ANIMATION_MS],
             ['takeCard', ANIMATION_MS],
             ['newTableCard', ANIMATION_MS],
+            ['takeDestination', ANIMATION_MS],
+            ['newTableDestination', ANIMATION_MS],
             ['score', 1],
             ['lastTurn', 1],
         ];
@@ -1757,6 +1764,14 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.notif_newTableCard = function (notif) {
         this.tableCenter.newTableCard(notif.args.card);
+    };
+    Knarr.prototype.notif_takeDestination = function (notif) {
+        var playerId = notif.args.playerId;
+        this.getPlayerTable(playerId).destinations.addCard(notif.args.destination);
+        this.updateGains(playerId, notif.args.effectiveGains);
+    };
+    Knarr.prototype.notif_newTableDestination = function (notif) {
+        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
     };
     Knarr.prototype.notif_score = function (notif) {
         this.setScore(notif.args.playerId, +notif.args.newScore);

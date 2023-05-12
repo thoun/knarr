@@ -91,6 +91,19 @@ interface NotifNewCardArgs {
     card: Card;
 }
 
+// takeDestination
+interface NotifTakeDestinationArgs {
+    playerId: number;
+    destination: Destination;
+    effectiveGains: { [type: number]: number };
+}
+
+// newTableDestination
+interface NotifNewTableDestinationArgs {
+    destination: Destination;
+    letter: string;
+}
+
 // score
 interface NotifScoreArgs {
     playerId: number;
