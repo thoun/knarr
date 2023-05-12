@@ -526,14 +526,17 @@ body > .card {
   gap: 8px;
   align-items: center;
 }
-
-#board {
+#table-center #table-destinations-A .slot, #table-center #table-destinations-B .slot {
+  width: 221px;
+  height: 120px;
+}
+#table-center #board {
   position: relative;
   width: 690px;
   height: 256px;
   background: url("img/board.jpg");
 }
-#board .marker {
+#table-center #board .marker {
   position: absolute;
   top: 0;
   left: 0;
@@ -542,42 +545,46 @@ body > .card {
   transition: transform 0.5s;
   pointer-events: none;
 }
-#board .marker.vp {
+#table-center #board .marker.vp {
   background-image: url("img/vp-pawns.png");
 }
-#board .marker.fame {
+#table-center #board .marker.fame {
   background-image: url("img/fame-pawns.png");
 }
-#board .marker[data-color="7c5654"] {
+#table-center #board .marker[data-color="7c5654"] {
   background-position-x: 0%;
 }
-#board .marker[data-color=d6d6d7] {
+#table-center #board .marker[data-color=d6d6d7] {
   background-position-x: 33.3333333333%;
 }
-#board .marker[data-color=b79d86] {
+#table-center #board .marker[data-color=b79d86] {
   background-position-x: 66.6666666667%;
 }
-#board .marker[data-color="1e2c36"] {
+#table-center #board .marker[data-color="1e2c36"] {
   background-position-x: 100%;
 }
-#board .marker.color-blind::after {
+#table-center #board .marker.color-blind::after {
   font-size: 120%;
   display: flex;
   align-content: center;
   justify-content: center;
   margin-top: -4px;
 }
-#board .marker.color-blind[data-player-no="1"]::after {
+#table-center #board .marker.color-blind[data-player-no="1"]::after {
   content: "●";
 }
-#board .marker.color-blind[data-player-no="2"]::after {
+#table-center #board .marker.color-blind[data-player-no="2"]::after {
   content: "▲";
 }
-#board .marker.color-blind[data-player-no="3"]::after {
+#table-center #board .marker.color-blind[data-player-no="3"]::after {
   content: "■";
 }
-#board .marker.color-blind[data-player-no="4"]::after {
+#table-center #board .marker.color-blind[data-player-no="4"]::after {
   content: "◆";
+}
+#table-center #table-cards .slot {
+  width: 120px;
+  height: 221px;
 }
 
 .player-board {
@@ -600,6 +607,9 @@ body > .card {
 .player-board .counters > div {
   flex: 1;
 }
+.player-board .counters > div:last-child {
+  flex: 2;
+}
 .player-board .player-hand-card {
   display: inline-block;
   width: 32px;
@@ -611,7 +621,13 @@ body > .card {
   vertical-align: middle;
 }
 .player-board .fame-legend {
-  font-size: 80%;
+  font-size: 75%;
+  vertical-align: middle;
+}
+.player-board .fame-legend .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
 }
 
 .player-table {
@@ -663,27 +679,58 @@ body > .card {
 .player-table .boat[data-color="1e2c36"] {
   background-position-y: 100%;
 }
-.player-table .boat[data-recruits="0"] .recruit[data-number="1"], .player-table .boat[data-recruits="0"] .recruit[data-number="2"], .player-table .boat[data-recruits="0"] .recruit[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="0"] .icon.recruit[data-number="1"] {
+  top: 100px;
+  left: 50px;
 }
-.player-table .boat[data-recruits="1"] .recruit[data-number="2"], .player-table .boat[data-recruits="1"] .recruit[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="0"] .icon.recruit[data-number="2"] {
+  top: 100px;
+  left: 55px;
 }
-.player-table .boat[data-recruits="2"] .recruit[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="0"] .icon.recruit[data-number="3"] {
+  top: 100px;
+  left: 60px;
 }
-.player-table .boat[data-bracelets="0"] .bracelet[data-number="1"], .player-table .boat[data-bracelets="0"] .bracelet[data-number="2"], .player-table .boat[data-bracelets="0"] .bracelet[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="1"] .icon.recruit[data-number="2"] {
+  top: 100px;
+  left: 55px;
 }
-.player-table .boat[data-bracelets="1"] .bracelet[data-number="2"], .player-table .boat[data-bracelets="1"] .bracelet[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="1"] .icon.recruit[data-number="3"] {
+  top: 100px;
+  left: 60px;
 }
-.player-table .boat[data-bracelets="2"] .bracelet[data-number="3"] {
-  display: none;
+.player-table .boat[data-recruits="2"] .icon.recruit[data-number="3"] {
+  top: 100px;
+  left: 60px;
+}
+.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="1"] {
+  top: 100px;
+  right: 50px;
+}
+.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="2"] {
+  top: 100px;
+  right: 55px;
+}
+.player-table .boat[data-bracelets="0"] .icon.bracelet[data-number="3"] {
+  top: 100px;
+  right: 60px;
+}
+.player-table .boat[data-bracelets="1"] .icon.bracelet[data-number="2"] {
+  top: 100px;
+  right: 55px;
+}
+.player-table .boat[data-bracelets="1"] .icon.bracelet[data-number="3"] {
+  top: 100px;
+  right: 60px;
+}
+.player-table .boat[data-bracelets="2"] .icon.bracelet[data-number="3"] {
+  top: 100px;
+  right: 60px;
 }
 .player-table .boat .icon {
   position: absolute;
   box-shadow: 0 0 2px 1px black;
+  transition: left 0.5s, right 0.5s, top 0.5s;
 }
 .player-table .boat .icon[data-number="3"] {
   top: 13px;
@@ -838,6 +885,38 @@ html, .mode_3d #game_play_area_background {
 }
 .icon.recruit, .icon[data-type="3"] {
   background-position-x: 100%;
+}
+
+.color {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url("img/colors.png");
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.color[data-color="1"] {
+  background-position-x: 0%;
+}
+.color[data-color="2"] {
+  background-position-x: 25%;
+}
+.color[data-color="3"] {
+  background-position-x: 50%;
+}
+.color[data-color="4"] {
+  background-position-x: 75%;
+}
+.color[data-color="5"] {
+  background-position-x: 100%;
+}
+
+.action-button .icon, .action-button .color, .log .icon, .log .color {
+  width: 24px;
+  height: 24px;
 }
 
 #tables-and-center {

@@ -66,6 +66,7 @@ interface KnarrGame extends Game {
     setTooltip(id: string, html: string): void;
     onTableDestinationClick(destination: Destination): void;
     onHandCardClick(card: Card): void;
+    onTableCardClick(card: Card): void;
     onPlayedCardClick(): void;
 }
 
@@ -73,6 +74,12 @@ interface EnteringPlayActionArgs {
     canDoAction: boolean;
     canTrade: boolean;
     possibleDestinations: Destination[];
+}
+
+interface EnteringChooseNewCardArgs {
+    centerCards: Card[];
+    freeColor: number;
+    recruits: number;
 }
 
 interface EnteringPayDestinationArgs {

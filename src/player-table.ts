@@ -27,11 +27,11 @@ class PlayerTable {
         }
         html += `
             <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
-            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}", data-bracelets="${player.bracelet}">`;
+            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}">`;
         for (let i = 1; i <= 3; i++) {
             html += `
-            <div class="token bracelet" data-number="${i}"></div>
-            <div class="token recruit" data-number="${i}"></div>
+            <div class="icon bracelet" data-number="${i}"></div>
+            <div class="icon recruit" data-number="${i}"></div>
             `;
         }
         html += `

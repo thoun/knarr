@@ -46,6 +46,20 @@ trait ArgsTrait {
         ];
     }
 
+    function argChooseNewCard() {
+        $playerId = intval($this->getActivePlayerId());
+        $player = $this->getPlayer($playerId);
+
+        $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+        $centerCards = $this->getCardsByLocation('slot');
+
+        return [
+            'centerCards' => $centerCards,
+            'freeColor' => $freeColor,
+            'recruits' => $player->recruit,
+        ];
+    }
+
     function argPayDestination() {
         $playerId = intval($this->getActivePlayerId());
 

@@ -105,6 +105,31 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
+.color {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url('img/colors.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+  border-radius: 2px;
+  
+  @for $color from 1 through 5 {
+    &[data-color="#{$color}"] {
+        background-position-x: #{($color - 1) * 100% / 4};
+    }
+  }
+}
+
+.action-button, .log {
+  .icon, .color {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 
 #tables-and-center {
   position: relative;

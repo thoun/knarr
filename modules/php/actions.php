@@ -46,22 +46,46 @@ trait ActionTrait {
             'card_color' => $this->getColorName($card->color), // for logs
         ]);
 
-        $slotId = $card->color;
-        $newHandCard = $this->getCardsByLocation('slot', $slotId)[0];
-        $this->cards->moveCard($newHandCard->id, 'hand', $playerId);
+        $this->setGameStateValue(PLAYED_CARD_COLOR, $card->color);
+
+        $this->gamestate->nextState('chooseNewCard');
+    }
+
+    public function chooseNewCard(int $id) {
+        self::checkAction('chooseNewCard');
+
+        $playerId = intval($this->getActivePlayerId());
+
+        $args = $this->argChooseNewCard();
+        $card = $this->array_find($args['centerCards'], fn($card) => $card->id == $id);
+
+        if ($card == null || $card->location != 'slot') {
+            throw new BgaUserException("You can't play this card");
+        }
+        $slotColor = $card->locationArg;
+
+        if ($slotColor != $args['freeColor']) {
+            if ($args['recruits'] < 1) {
+                throw new BgaUserException("Not enough recruits");
+            } else {
+                $this->incPlayerRecruit($playerId, -1, clienttranslate('${player_name} pays a recruit to choose the new card'), []);
+            }
+        }
+        
+        $this->cards->moveCard($card->id, 'hand', $playerId);
 
         self::notifyAllPlayers('takeCard', clienttranslate('${player_name} takes the ${card_color} ${card_type} card from the table (${color} column)'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
-            'card' => $newHandCard,
-            'color' => $this->getColorName($slotId), // for logs
-            'card_type' => $this->getGainName($newHandCard->gain), // for logs
-            'card_color' => $this->getColorName($newHandCard->color), // for logs
+            'card' => $card,
+            'color' => $this->getColorName($slotColor), // for logs
+            'card_type' => $this->getGainName($card->gain), // for logs
+            'card_color' => $this->getColorName($card->color), // for logs
         ]);
 
-        $newTableCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'slot', $slotId));
+        $newTableCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'slot', $slotColor));
         $newTableCard->location = 'slot';
-        $newTableCard->locationArg = $slotId;
+        $newTableCard->locationArg = $slotColor;
 
         self::notifyAllPlayers('newTableCard', '', [
             'card' => $newTableCard,

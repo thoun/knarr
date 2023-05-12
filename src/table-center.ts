@@ -22,6 +22,7 @@ class TableCenter {
             mapCardToSlot: card => card.locationArg,
             gap: '12px',
         });
+        this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
 
         const players = Object.values(gamedatas.players);
@@ -134,5 +135,19 @@ class TableCenter {
     setFame(playerId: number, fame: number) {
         this.fame.set(playerId, Math.min(14, fame));
         this.moveFame();
+    }
+
+    public setCardsSelectable(selectable: boolean, freeColor: number | null = null, recruits: number | null = null) {
+        this.cards.setSelectionMode(selectable ? 'single' : 'none');
+
+        this.cards.getCards().forEach(card => {
+            const element = this.cards.getCardElement(card);
+            let disabled = !selectable;
+            if (!disabled) {
+                    disabled = card.locationArg != freeColor && recruits < 1;
+            }
+            element.classList.toggle('disabled', disabled);
+            element.classList.toggle('selectable', selectable && !disabled);
+        });
     }
 }

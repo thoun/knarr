@@ -122,6 +122,9 @@ class Knarr implements KnarrGame {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
+            case 'chooseNewCard':
+                this.onEnteringChooseNewCard(args.args);
+                break;
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
@@ -146,6 +149,12 @@ class Knarr implements KnarrGame {
         }
     }
 
+    private onEnteringChooseNewCard(args: EnteringChooseNewCardArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, args.freeColor, args.recruits);
+        }
+    }
+
     private onEnteringPayDestination(args: EnteringPayDestinationArgs) {
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setCardsSelectable(true, args.selectedDestination.cost);
@@ -161,6 +170,9 @@ class Knarr implements KnarrGame {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
+            case 'chooseNewCard':
+                this.onLeavingChooseNewCard();
+                break;
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
@@ -170,6 +182,10 @@ class Knarr implements KnarrGame {
     private onLeavingPlayAction() {
         this.tableCenter.setDestinationsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
+    }
+    
+    private onLeavingChooseNewCard() {
+        this.tableCenter.setCardsSelectable(false);
     }
 
     private onLeavingPayDestination() {
@@ -220,6 +236,15 @@ class Knarr implements KnarrGame {
                     if (!args.canDoAction) {
                         (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
                     }
+                    break;
+                case 'chooseNewCard':
+                    const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
+                    [1, 2, 3, 4, 5].forEach(color => {
+                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${color == chooseNewCardArgs.freeColor ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id));
+                        if (color != chooseNewCardArgs.freeColor && chooseNewCardArgs.recruits < 1) {
+                            document.getElementById(`chooseNewCard${color}_button`).classList.add('disabled');
+                        }
+                    });
                     break;
                 case 'payDestination':
                     (this as any).addActionButton(`payDestination_button`, '', () => this.payDestination());
@@ -328,7 +353,7 @@ class Knarr implements KnarrGame {
             
                 <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
                     <div class="fame icon"></div>
-                    <span id="fame-counter-${player.id}"></span> <span class="fame-legend">${_('VP / round')}</span>
+                    <span id="fame-counter-${player.id}"></span> <span class="fame-legend"><div class="vp icon"></div> / ${_('round')}</span>
                 </div>
 
             </div><div class="counters">
@@ -440,6 +465,10 @@ class Knarr implements KnarrGame {
         this.playCard(card.id);
     }
 
+    public onTableCardClick(card: Card): void {
+        this.chooseNewCard(card.id);
+    }
+
     public onPlayedCardClick(): void {
         this.setPayDestinationLabelAndState();
     }
@@ -468,6 +497,16 @@ class Knarr implements KnarrGame {
         }
 
         this.takeAction('takeDestination', {
+            id
+        });
+    }
+  	
+    public chooseNewCard(id: number) {
+        if(!(this as any).checkAction('chooseNewCard')) {
+            return;
+        }
+
+        this.takeAction('chooseNewCard', {
             id
         });
     }

@@ -65,6 +65,15 @@
         self::ajaxResponse();
     }
 
+    public function chooseNewCard() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->chooseNewCard($id);
+
+        self::ajaxResponse();
+    }
+
     public function payDestination() {
         self::setAjaxMode();   
 

@@ -1316,6 +1316,7 @@ var TableCenter = /** @class */ (function () {
             mapCardToSlot: function (card) { return card.locationArg; },
             gap: '12px',
         });
+        this.cards.onCardClick = function (card) { return _this.game.onTableCardClick(card); };
         this.cards.addCards(gamedatas.centerCards);
         var players = Object.values(gamedatas.players);
         var html = '';
@@ -1410,6 +1411,21 @@ var TableCenter = /** @class */ (function () {
         this.fame.set(playerId, Math.min(14, fame));
         this.moveFame();
     };
+    TableCenter.prototype.setCardsSelectable = function (selectable, freeColor, recruits) {
+        var _this = this;
+        if (freeColor === void 0) { freeColor = null; }
+        if (recruits === void 0) { recruits = null; }
+        this.cards.setSelectionMode(selectable ? 'single' : 'none');
+        this.cards.getCards().forEach(function (card) {
+            var element = _this.cards.getCardElement(card);
+            var disabled = !selectable;
+            if (!disabled) {
+                disabled = card.locationArg != freeColor && recruits < 1;
+            }
+            element.classList.toggle('disabled', disabled);
+            element.classList.toggle('selectable', selectable && !disabled);
+        });
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -1426,9 +1442,9 @@ var PlayerTable = /** @class */ (function () {
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
-        html += "\n            <div id=\"player-table-".concat(this.playerId, "-destinations\" class=\"destinations\"></div>\n            <div id=\"player-table-").concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\", data-bracelets=\"").concat(player.bracelet, "\">");
+        html += "\n            <div id=\"player-table-".concat(this.playerId, "-destinations\" class=\"destinations\"></div>\n            <div id=\"player-table-").concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\" data-bracelets=\"").concat(player.bracelet, "\">");
         for (var i = 1; i <= 3; i++) {
-            html += "\n            <div class=\"token bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"token recruit\" data-number=\"").concat(i, "\"></div>\n            ");
+            html += "\n            <div class=\"icon bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"icon recruit\" data-number=\"").concat(i, "\"></div>\n            ");
         }
         html += "\n            </div>\n            <div class=\"visible-cards\">";
         for (var i = 1; i <= 5; i++) {
@@ -1598,6 +1614,9 @@ var Knarr = /** @class */ (function () {
             case 'playAction':
                 this.onEnteringPlayAction(args.args);
                 break;
+            case 'chooseNewCard':
+                this.onEnteringChooseNewCard(args.args);
+                break;
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
@@ -1620,6 +1639,11 @@ var Knarr = /** @class */ (function () {
             (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(true);
         }
     };
+    Knarr.prototype.onEnteringChooseNewCard = function (args) {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, args.freeColor, args.recruits);
+        }
+    };
     Knarr.prototype.onEnteringPayDestination = function (args) {
         var _a;
         if (this.isCurrentPlayerActive()) {
@@ -1634,6 +1658,9 @@ var Knarr = /** @class */ (function () {
             case 'playAction':
                 this.onLeavingPlayAction();
                 break;
+            case 'chooseNewCard':
+                this.onLeavingChooseNewCard();
+                break;
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
@@ -1643,6 +1670,9 @@ var Knarr = /** @class */ (function () {
         var _a;
         this.tableCenter.setDestinationsSelectable(false);
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+    };
+    Knarr.prototype.onLeavingChooseNewCard = function () {
+        this.tableCenter.setCardsSelectable(false);
     };
     Knarr.prototype.onLeavingPayDestination = function () {
         var _a;
@@ -1689,6 +1719,15 @@ var Knarr = /** @class */ (function () {
                     if (!args.canDoAction) {
                         this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
                     }
+                    break;
+                case 'chooseNewCard':
+                    var chooseNewCardArgs_1 = args;
+                    [1, 2, 3, 4, 5].forEach(function (color) {
+                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(color == chooseNewCardArgs_1.freeColor ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); });
+                        if (color != chooseNewCardArgs_1.freeColor && chooseNewCardArgs_1.recruits < 1) {
+                            document.getElementById("chooseNewCard".concat(color, "_button")).classList.add('disabled');
+                        }
+                    });
                     break;
                 case 'payDestination':
                     this.addActionButton("payDestination_button", '', function () { return _this.payDestination(); });
@@ -1769,7 +1808,7 @@ var Knarr = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div class=\"vp icon\"></div>");
             document.getElementById("icon_point_".concat(player.id)).remove();
-            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\">").concat(_('VP / round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
+            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
             var handCounter = new ebg.counter();
             handCounter.create("playerhand-counter-".concat(playerId));
@@ -1850,6 +1889,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onHandCardClick = function (card) {
         this.playCard(card.id);
     };
+    Knarr.prototype.onTableCardClick = function (card) {
+        this.chooseNewCard(card.id);
+    };
     Knarr.prototype.onPlayedCardClick = function () {
         this.setPayDestinationLabelAndState();
     };
@@ -1872,6 +1914,14 @@ var Knarr = /** @class */ (function () {
             return;
         }
         this.takeAction('takeDestination', {
+            id: id
+        });
+    };
+    Knarr.prototype.chooseNewCard = function (id) {
+        if (!this.checkAction('chooseNewCard')) {
+            return;
+        }
+        this.takeAction('chooseNewCard', {
             id: id
         });
     };

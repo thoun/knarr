@@ -12,8 +12,8 @@ trait DebugUtilTrait {
         } 
 
         //$this->debugSetPlayerScore(2343492, 10);
-        $this->debugSetScore(39);
-        $this->debugSetFame(8);
+        //$this->debugSetScore(39);
+        //$this->debugSetFame(8);
         
         //$this->debugLastTurn();
     }
