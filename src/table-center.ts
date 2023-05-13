@@ -5,7 +5,10 @@ class TableCenter {
     public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
-    private fame = new Map<number, number>();
+    private fame = new Map<number, number>(); 
+
+    private artifactsManager: ArtifactsManager;
+    private artifacts: LineStock<number>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
         ['A', 'B'].forEach(letter => {
@@ -41,6 +44,14 @@ class TableCenter {
         });
         this.moveVP();
         this.moveFame();
+
+        if (gamedatas.variantOption >= 2) {
+            document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div id="artifacts"></div>`);
+        
+            this.artifactsManager = new ArtifactsManager(this.game);
+            this.artifacts = new LineStock<number>(this.artifactsManager, document.getElementById(`artifacts`));
+            this.artifacts.addCards(gamedatas.artifacts);
+        }
     }
     
     public newTableCard(card: Card) {

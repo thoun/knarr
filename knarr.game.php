@@ -124,7 +124,10 @@ class Knarr extends Table {
         // setup the initial game situation here
         $this->setupCards(array_keys($players));
         $this->setupDestinations();
-       
+        $variantOption = $this->getVariantOption();
+        if ($variantOption >= 2) {
+            $this->setupArtifacts($variantOption, count($players));
+        }
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -182,6 +185,9 @@ class Knarr extends Table {
         ];
         $result['boatSideOption'] = $this->getBoatSideOption();
         $result['variantOption'] = $this->getVariantOption();
+        if ($result['variantOption'] >= 2) {
+            $result['artifacts'] = $this->getGlobalVariable(ARTIFACTS, true);
+        }
 
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   

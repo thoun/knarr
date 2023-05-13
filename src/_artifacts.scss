@@ -1,0 +1,31 @@
+.card.artifact {
+    display: inline-block;
+    position: relative;
+    width: 221px;
+    height: 120px;
+    border-radius: 8px;
+
+    .card-sides {
+        .card-side {
+            border-radius: 8px;
+
+            &>* {
+                pointer-events: none;
+                user-select: none;
+            }
+
+            &.front {
+                background-size: 100% auto;
+                background-image: url('img/artefacts.jpg');
+
+                @for $number from 1 through 7 {
+                    &[data-number="#{$number}"] {
+                        background-position-y: #{($number - 1) * 100% / 6};
+                    }
+                }
+
+                box-shadow: 0px 0px 3px 2px black;
+            }
+        }
+    } 
+}

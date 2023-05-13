@@ -4,6 +4,7 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 @import '../node_modules/bga-cards/bga-cards';
 @import 'cards';
 @import 'destinations';
+@import 'artifacts';
 @import 'table-center';
 @import 'playerboards';
 @import 'player-table';
@@ -160,6 +161,16 @@ html, .mode_3d #game_play_area_background {
 
     &>div {
       flex: 1;
+    }
+  }
+}
+
+.artifact-tooltip {
+  &>div {
+    padding: 5px;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #2F81A4;
     }
   }
 }

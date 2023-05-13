@@ -365,4 +365,19 @@ trait UtilTrait {
         ]);
 
     }
+
+    function setupArtifacts(int $option, int $playerCount) {
+        $availableArtifacts = [1, 2, 3, 4, 5, 6, 7];
+        $artifacts = [];
+
+        if ($option == 2 && $playerCount == 2) {
+            $artifacts[] = array_shift($availableArtifacts);
+        }
+
+        $index = bga_rand(1, count($availableArtifacts)) - 1;
+        $artifacts[] = $availableArtifacts[$index];
+        array_splice($availableArtifacts, $index, 1);
+
+        $this->setGlobalVariable(ARTIFACTS, $artifacts);
+    }
 }

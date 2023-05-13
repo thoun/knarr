@@ -63,6 +63,7 @@ define('VARIANT_OPTION', 110);
 /*
  * Global variables
  */
+define('ARTIFACTS', 'Artifacts');
 //define('UNDO', 'undo');
 
 ?>

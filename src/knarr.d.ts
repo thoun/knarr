@@ -49,6 +49,7 @@ interface KnarrGamedatas {
     centerDestinations: { [letter: string]: Destination[] };
     boatSideOption: number;
     variantOption: number;
+    artifacts?: number[];
     lastTurn: boolean;
 }
 
