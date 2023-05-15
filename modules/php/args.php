@@ -19,21 +19,18 @@ trait ArgsTrait {
         $bracelets = $player->bracelet;
         $recruits = $player->recruit;
 
-        $playedCardsByColor = [];
-        $playedCardsColors = [];
-        foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
-            $playedCardsColors[$color] = count($playedCardsByColor[$color]);
-        }
+        $playedCardsColors = $this->getPlayedCardsColor($playerId);
 
-        $actionDone = boolval($this->getGameStateValue(ACTION_DONE));
+        $recruitDone = boolval($this->getGameStateValue(RECRUIT_DONE));
+        $exploreDone = boolval($this->getGameStateValue(EXPLORE_DONE));
         $tradeDone = boolval($this->getGameStateValue(TRADE_DONE));
 
         $possibleDestinations = [];
-        if (!$actionDone) {
+        if (!$exploreDone) {
             $possibleDestinations = array_merge(
                 $this->getDestinationsByLocation('slotA'),
                 $this->getDestinationsByLocation('slotB'),
+                $this->getDestinationsByLocation('reserved', $playerId),
             );
 
             $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
@@ -41,7 +38,8 @@ trait ArgsTrait {
 
         return [
             'possibleDestinations' => $possibleDestinations,
-            'canDoAction' => !$actionDone,
+            'canRecruit' => !$recruitDone,
+            'canExplore' => !$exploreDone,
             'canTrade' => !$tradeDone && $bracelets > 0,
         ];
     }
@@ -53,10 +51,23 @@ trait ArgsTrait {
         $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
         $centerCards = $this->getCardsByLocation('slot');
 
+        $allFree = false;
+        if ($this->getVariantOption() >= 2) {
+            $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+            if (in_array(ARTIFACT_CALDRON, $artifacts)) {
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    $allFree = $playedCardsColors[$playedCardColor] == 2;
+                }
+            }
+        }
+
         return [
             'centerCards' => $centerCards,
             'freeColor' => $freeColor,
             'recruits' => $player->recruit,
+            'allFree' => $allFree,
         ];
     }
 

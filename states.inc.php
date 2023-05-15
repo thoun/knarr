@@ -76,11 +76,15 @@ $playerActionsGameStates = [
         "name" => "playAction",
         "description" => clienttranslate('${actplayer} must recruit (play a card) or explore (take a destination)'),
         "descriptionmyturn" => clienttranslate('${you} must recruit (play a card) or explore (take a destination)'),
+        "descriptionRecruitOnly" => clienttranslate('${actplayer} can recruit (play a card)'),
+        "descriptionmyturnRecruitOnly" => clienttranslate('${you} must recruit (play a card)'),
+        "descriptionExploreOnly" => clienttranslate('${actplayer} can explore (take a destination)'),
+        "descriptionmyturnExploreOnly" => clienttranslate('${you} can explore (take a destination)'),
         "descriptionTradeOnly" => clienttranslate('${actplayer} can trade'),
         "descriptionmyturnTradeOnly" => clienttranslate('${you} can trade'),
         "type" => "activeplayer",    
         "args" => "argPlayAction",
-        "action" => "stPlayAction",
+        //"action" => "stPlayAction",
         "possibleactions" => [ 
             "playCard",
             "takeDestination",
@@ -108,6 +112,9 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
+            "discardCardsForDeck" => ST_MULTIPLAYER_DISCARD_CARD,
+            "reserve" => ST_PLAYER_RESERVE_DESTINATION,
+            "discardTableCard" => ST_PLAYER_DISCARD_TABLE_CARD,
             "endTurn" => ST_NEXT_PLAYER,
             "cancel" => ST_PLAYER_PLAY_ACTION,
         ]
@@ -125,8 +132,41 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
+            "discardCardsForDeck" => ST_MULTIPLAYER_DISCARD_CARD,
+            "reserve" => ST_PLAYER_RESERVE_DESTINATION,
+            "discardTableCard" => ST_PLAYER_DISCARD_TABLE_CARD,
             "endTurn" => ST_NEXT_PLAYER,
             "cancel" => ST_PLAYER_PLAY_ACTION,
+        ]
+    ],
+
+    ST_PLAYER_RESERVE_DESTINATION => [
+        "name" => "reserveDestination",
+        "description" => clienttranslate('${actplayer} can reserve a destination'),
+        "descriptionmyturn" => clienttranslate('${you} can reserve a destination'),
+        "type" => "activeplayer",
+        "possibleactions" => [ 
+            "reserveDestination",
+            "pass",
+        ],
+        "transitions" => [
+            "next" => ST_PLAYER_PLAY_ACTION,
+            "endTurn" => ST_NEXT_PLAYER,
+        ]
+    ],
+
+    ST_PLAYER_DISCARD_TABLE_CARD => [
+        "name" => "discardTableCard",
+        "description" => clienttranslate('${actplayer} can discard a card from the table'),
+        "descriptionmyturn" => clienttranslate('${you} can discard a card from the table'),
+        "type" => "activeplayer",
+        "possibleactions" => [ 
+            "discardTableCard",
+            "pass",
+        ],
+        "transitions" => [
+            "next" => ST_PLAYER_PLAY_ACTION,
+            "endTurn" => ST_NEXT_PLAYER,
         ]
     ],
 
@@ -142,9 +182,24 @@ $playerActionsGameStates = [
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
+            "discardCardsForDeck" => ST_MULTIPLAYER_DISCARD_CARD,
             "endTurn" => ST_NEXT_PLAYER,
             "cancel" => ST_PLAYER_PLAY_ACTION,
         ]
+    ],
+
+    ST_MULTIPLAYER_DISCARD_CARD => [
+        "name" => "discardCard",
+        "description" => clienttranslate('Waiting for other players'),
+        "descriptionmyturn" => clienttranslate('${you} must discard a card to refill the deck'),
+        "type" => "multipleactiveplayer",
+        "action" => "stDiscardCard",
+        "possibleactions" => [ 
+            "discardCard",
+        ],
+        "transitions" => [
+            "next" => ST_AFTER_DISCARD_CARD,
+        ],
     ],
 ];
 
@@ -158,6 +213,20 @@ $gameGameStates = [
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
         ]
+    ],
+
+    ST_AFTER_DISCARD_CARD => [
+        "name" => "afterDiscardCard",
+        "description" => "",
+        "type" => "game",
+        "action" => "stAfterDiscardCard",
+        "transitions" => [
+            "next" => ST_PLAYER_PLAY_ACTION,
+            "discardCardsForDeck" => ST_MULTIPLAYER_DISCARD_CARD,
+            "reserve" => ST_PLAYER_RESERVE_DESTINATION,
+            "discardTableCard" => ST_PLAYER_DISCARD_TABLE_CARD,
+            "endTurn" => ST_NEXT_PLAYER,
+        ],
     ],
 
     ST_NEXT_PLAYER => [

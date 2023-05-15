@@ -7,10 +7,11 @@ class PlayerTable {
     public hand?: LineStock<Card>;
     public played: LineStock<Card>[] = [];
     public destinations: LineStock<Destination>;
+    public reservedDestinations?: LineStock<Destination>;
 
     private currentPlayer: boolean;
 
-    constructor(private game: KnarrGame, player: KnarrPlayer) {
+    constructor(private game: KnarrGame, player: KnarrPlayer, reservePossible: boolean) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
 
@@ -44,8 +45,19 @@ class PlayerTable {
             }
             html += `
             </div>
+        `;
+
+        if (reservePossible) {
+            html += `
+            <div class="block-with-text hand-wrapper">
+                <div class="block-label">${_('Reserved destinations')}</div>
+                <div id="player-table-${this.playerId}-reserved-destinations"></div>
+            </div>`;
+        }
+        html += `
         </div>
         `;
+
         dojo.place(html, document.getElementById('tables'));
 
         if (this.currentPlayer) {
@@ -66,7 +78,7 @@ class PlayerTable {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onSelectionChange = () => this.game.onPlayedCardClick();
+            this.played[i].onCardClick = card => this.game.onPlayedCardClick(card);
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -78,6 +90,13 @@ class PlayerTable {
         destinationsDiv.style.setProperty('--card-overlap', '92px');
         
         this.destinations.addCards(player.destinations);
+
+        if (reservePossible) {
+            this.reservedDestinations = new LineStock<Destination>(this.game.destinationsManager, document.getElementById(`player-table-${this.playerId}-reserved-destinations`), {
+                center: false,
+            });            
+            this.reservedDestinations.addCards(player.reservedDestinations);
+        }
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {
@@ -105,10 +124,9 @@ class PlayerTable {
                 if (!disabled) {
                     if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
                         disabled = !colors.includes(card.color);
-                        console.log(colors, card.color, disabled);
                     }
                 }
-                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('disabled', selectable && disabled);
                 element.classList.toggle('selectable', selectable && !disabled);
             });
         }
@@ -128,5 +146,23 @@ class PlayerTable {
         for (let i = 1; i <= 5; i++) {
             this.played[i].removeCards(cards);
         }
+    }
+    
+    public reserveDestination(destination: Destination) {
+        this.reservedDestinations.addCard(destination);
+    }
+    
+    public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {
+        if (!this.reservedDestinations) {
+            return;
+        }
+
+        this.reservedDestinations.setSelectionMode(selectable ? 'single' : 'none');
+        this.reservedDestinations.getCards().forEach(card => {
+            const element = this.reservedDestinations.getCardElement(card);
+            const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
+            element.classList.toggle('disabled', selectable && disabled);
+            element.classList.toggle('selectable', selectable && !disabled);
+        });
     }
 }

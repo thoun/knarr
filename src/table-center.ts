@@ -72,7 +72,7 @@ class TableCenter {
             this.destinations[letter].getCards().forEach(card => {
                 const element = this.destinations[letter].getCardElement(card);
                 const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
-                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('disabled', selectable && disabled);
                 element.classList.toggle('selectable', selectable && !disabled);
             });
         });
@@ -155,9 +155,9 @@ class TableCenter {
             const element = this.cards.getCardElement(card);
             let disabled = !selectable;
             if (!disabled) {
-                    disabled = card.locationArg != freeColor && recruits < 1;
+                    disabled = freeColor !== null && card.locationArg != freeColor && recruits < 1;
             }
-            element.classList.toggle('disabled', disabled);
+            element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
     }

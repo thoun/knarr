@@ -39,7 +39,7 @@ class Knarr implements KnarrGame {
     private gamedatas: KnarrGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
-    private handCounters: Counter[] = [];
+    //private handCounters: Counter[] = [];
     private fameCounters: Counter[] = [];
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
@@ -128,6 +128,9 @@ class Knarr implements KnarrGame {
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
+            case 'discardCard':
+                this.onEnteringDiscardCard(args.args);
+                break;
         }
     }
     
@@ -139,19 +142,34 @@ class Knarr implements KnarrGame {
     }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
-        if (!args.canDoAction) {
+        if (!args.canExplore && !args.canRecruit) {
             this.setGamestateDescription('TradeOnly');
+        } else if (!args.canExplore) {
+            this.setGamestateDescription('RecruitOnly');
+        } else if (!args.canRecruit) {
+            this.setGamestateDescription('ExploreOnly');
         }
 
-        if ((this as any).isCurrentPlayerActive() && args.canDoAction) {
-            this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
-            this.getCurrentPlayerTable()?.setHandSelectable(true);
+        if ((this as any).isCurrentPlayerActive()) {
+            if (args.canExplore) {
+                this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
+                this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
+            }
+            if (args.canRecruit) {
+                this.getCurrentPlayerTable()?.setHandSelectable(true);
+            }
         }
     }
 
     private onEnteringChooseNewCard(args: EnteringChooseNewCardArgs) {
         if ((this as any).isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, args.freeColor, args.recruits);
+            this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
+        }
+    }
+
+    private onEnteringDiscardCard(args: EnteringPayDestinationArgs) {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.getCurrentPlayerTable()?.setCardsSelectable(true, [0]);
         }
     }
 
@@ -176,12 +194,16 @@ class Knarr implements KnarrGame {
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
+            case 'discardCard':
+                this.onLeavingDiscardCard();
+                break;
         }
     }
 
     private onLeavingPlayAction() {
         this.tableCenter.setDestinationsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
+        this.getCurrentPlayerTable()?.setDestinationsSelectable(false);
     }
     
     private onLeavingChooseNewCard() {
@@ -190,6 +212,10 @@ class Knarr implements KnarrGame {
 
     private onLeavingPayDestination() {
         document.querySelectorAll('.selected-pay-destination').forEach(elem => elem.classList.remove('selected-pay-destination'));
+        this.getCurrentPlayerTable()?.setCardsSelectable(false);
+    }
+
+    private onLeavingDiscardCard() {
         this.getCurrentPlayerTable()?.setCardsSelectable(false);
     }
 
@@ -233,15 +259,15 @@ class Knarr implements KnarrGame {
                     if (!playActionArgs.canTrade) {
                         document.getElementById(`goTrade_button`).classList.add('disabled');
                     }
-                    if (!args.canDoAction) {
+                    if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
                     }
                     break;
                 case 'chooseNewCard':
                     const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
                     [1, 2, 3, 4, 5].forEach(color => {
-                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${color == chooseNewCardArgs.freeColor ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id));
-                        if (color != chooseNewCardArgs.freeColor && chooseNewCardArgs.recruits < 1) {
+                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id));
+                        if (!chooseNewCardArgs.allFree && color != chooseNewCardArgs.freeColor && chooseNewCardArgs.recruits < 1) {
                             document.getElementById(`chooseNewCard${color}_button`).classList.add('disabled');
                         }
                     });
@@ -345,11 +371,12 @@ class Knarr implements KnarrGame {
             document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div class="vp icon"></div>`);
             document.getElementById(`icon_point_${player.id}`).remove();
 
-            let html = `<div class="counters">
+            /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div> 
                     <span id="playerhand-counter-${player.id}"></span>
-                </div>
+                </div>*/
+            let html = `<div class="counters">
             
                 <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
                     <div class="fame icon"></div>
@@ -372,10 +399,10 @@ class Knarr implements KnarrGame {
 
             dojo.place(html, `player_board_${player.id}`);
 
-            const handCounter = new ebg.counter();
+            /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
             handCounter.setValue(player.handCount);
-            this.handCounters[playerId] = handCounter;
+            this.handCounters[playerId] = handCounter;*/
 
             this.fameCounters[playerId] = new ebg.counter();
             this.fameCounters[playerId].create(`fame-counter-${playerId}`);
@@ -405,7 +432,7 @@ class Knarr implements KnarrGame {
     }
 
     private createPlayerTable(gamedatas: KnarrGamedatas, playerId: number) {
-        const table = new PlayerTable(this, gamedatas.players[playerId]);
+        const table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.reservePossible);
         this.playersTables.push(table);
     }
 
@@ -438,12 +465,12 @@ class Knarr implements KnarrGame {
 
     private setScore(playerId: number, score: number) {
         (this as any).scoreCtrl[playerId]?.toValue(score);
-        // TODO move on board
+        this.tableCenter.setScore(playerId, score);
     }
 
     private setFame(playerId: number, count: number) {
         this.fameCounters[playerId].toValue(getVpByFame(count));
-        // TODO move on board
+        this.tableCenter.setFame(playerId, count);
     }
 
     private setRecruits(playerId: number, count: number) {
@@ -469,8 +496,12 @@ class Knarr implements KnarrGame {
         this.chooseNewCard(card.id);
     }
 
-    public onPlayedCardClick(): void {
-        this.setPayDestinationLabelAndState();
+    public onPlayedCardClick(card: Card): void {
+        if (this.gamedatas.gamestate.name == 'discardCard') {
+            this.discardCard(card.id);
+        } else {
+            this.setPayDestinationLabelAndState();
+        }
     }
   	
     public goTrade() {
@@ -550,6 +581,16 @@ class Knarr implements KnarrGame {
 
         this.takeAction('endTurn');
     }
+  	
+    public discardCard(id: number) {
+        if(!(this as any).checkAction('discardCard')) {
+            return;
+        }
+
+        this.takeAction('discardCard', {
+            id
+        });
+    }
 
     public takeAction(action: string, data?: any) {
         data = data || {};
@@ -581,6 +622,8 @@ class Knarr implements KnarrGame {
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['takeDeckCard', ANIMATION_MS],
+            ['discardTableCard', ANIMATION_MS],
+            ['reserveDestination', ANIMATION_MS],
             ['score', 1],
             ['bracelet', 1],
             ['recruit', 1],
@@ -653,6 +696,17 @@ class Knarr implements KnarrGame {
 
         playerTable.playCard(notif.args.card, document.getElementById('board'));
     }
+
+    notif_discardTableCard(notif: Notif<NotifDiscardTableCardArgs>) {
+        this.tableCenter.cards.removeCard(notif.args.card);
+    }
+
+    notif_reserveDestination(notif: Notif<NotifReserveDestinationArgs>) {
+        const playerId = notif.args.playerId;
+        const playerTable = this.getPlayerTable(playerId);
+
+        playerTable.reserveDestination(notif.args.destination);
+    }
     
     /** 
      * Show last turn banner.
@@ -673,7 +727,7 @@ class Knarr implements KnarrGame {
                 }
 
                 for (const property in args) {
-                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }

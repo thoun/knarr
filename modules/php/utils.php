@@ -253,10 +253,33 @@ trait UtilTrait {
         return $this->getBoatSideOption() == 2 ? [VP, null, BRACELET] : [null, RECRUIT, null];
     } 
     
-    function redirectAfterAction() {
+    function redirectAfterAction(int $playerId, bool $checkArtifacts) {
+        if (boolval($this->getGameStateValue(GO_RESERVE))) {
+            $this->incGameStateValue(GO_RESERVE, -1);
+            $reserved = $this->getDestinationsByLocation('reserved', $playerId);
+            if (count($reserved) >= 2) {
+                self::notifyAllPlayers('log', clienttranslate('${player_name} cannot reserve a destination because he already has 2'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                ]);
+            } else {
+                $this->gamestate->nextState('reserve');
+                return;
+            }
+        }
+        if (boolval($this->getGameStateValue(GO_DISCARD_TABLE_CARD))) {
+            $this->incGameStateValue(GO_DISCARD_TABLE_CARD, -1);
+            $this->gamestate->nextState('discardTableCard');
+            return;
+        }
+
+        if ($checkArtifacts && $this->getVariantOption() >= 2) {
+            $this->checkArtifacts($playerId);
+        }
+
         $args = $this->argPlayAction();
 
-        $canPlay = $args['canDoAction'] || $args['canTrade'];
+        $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'];
 
         $this->gamestate->nextState($canPlay ? 'next' : 'endTurn');
     }
@@ -275,7 +298,7 @@ trait UtilTrait {
         return $groupGains;
     }
     
-    function gainResources(int $playerId, array $groupGains) {
+    function gainResources(int $playerId, array $groupGains, string $phase) {
         $player = $this->getPlayer($playerId);
 
         $effectiveGains = [];
@@ -299,9 +322,17 @@ trait UtilTrait {
                     $this->DbQuery("UPDATE player SET `player_fame` = `player_fame` + ".$effectiveGains[FAME]." WHERE player_id = $playerId");
                     break;
                 case CARD: 
-                    $effectiveGains[CARD] = $amount;
-                    for ($i = 0; $i < $amount; $i++) {
+                    $available = $this->getAvailableDeckCards();
+                    $effectiveGains[CARD] = min($amount, $available);
+                    for ($i = 0; $i < $effectiveGains[CARD]; $i++) {
                         $this->powerTakeCard($playerId);
+                    }
+                    if ($effectiveGains[CARD] < $amount) {
+                        $this->setGlobalVariable(REMAINING_CARDS_TO_TAKE, [
+                            'playerId' => $playerId,
+                            'phase' => $phase,
+                            'remaining' => $amount - $effectiveGains[CARD],
+                        ]);
                     }
                     break;
             }
@@ -349,13 +380,22 @@ trait UtilTrait {
         }
     }
 
-    function powerTakeCard(int $playerId) {
-        // TODO handle case both deck & discards are empty
+    function getArtifactName(int $artifact) {
+        switch ($artifact) {
+            case ARTIFACT_HYDROMEL_CUP: return clienttranslate("Hydromel cup");
+            case ARTIFACT_SILVER_COINS: return clienttranslate("Silver coins");
+            case ARTIFACT_CALDRON: return clienttranslate("Caldron");
+            case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
+            case ARTIFACT_HELMET: return clienttranslate("Helmet");
+            case ARTIFACT_AMULET: return clienttranslate("Amulet");
+            case ARTIFACT_WEATHERCLOCK: return clienttranslate("Weatherclock");
+        }
+    }
 
+    function powerTakeCard(int $playerId) {
         $card = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
         $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
 
-        // TODO notif
         self::notifyAllPlayers('takeDeckCard', clienttranslate('${player_name} takes a ${card_color} ${card_type} card from the deck'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
@@ -364,6 +404,24 @@ trait UtilTrait {
             'card_color' => $this->getColorName($card->color), // for logs
         ]);
 
+    }
+
+    function getPlayedCardsByColor(int $playerId) {
+        $playedCardsByColor = [];
+        foreach ([1,2,3,4,5] as $color) {
+            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+        }
+        return $playedCardsByColor;
+    }
+
+    function getPlayedCardsColor(int $playerId, /*array | null*/ $playedCardsByColor = null) {
+        if ($playedCardsByColor === null) {
+            $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
+        }
+        foreach ([1,2,3,4,5] as $color) {
+            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+        }
+        return array_map(fn($cards) => count($cards), $playedCardsByColor);
     }
 
     function setupArtifacts(int $option, int $playerCount) {
@@ -379,5 +437,93 @@ trait UtilTrait {
         array_splice($availableArtifacts, $index, 1);
 
         $this->setGlobalVariable(ARTIFACTS, $artifacts);
+    }
+
+    function checkArtifacts(int $playerId) {
+        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+
+        foreach ($artifacts as $artifact) {
+            $this->checkArtifact($playerId, $artifact);
+        }
+    }
+
+    function completedAPlayedLine(int $playerId) {
+        $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+        if ($playedCardColor > 0) {
+            $playedCardsColors = $this->getPlayedCardsColor($playerId);
+            return $playedCardsColors[$playedCardColor] == min($playedCardsColors);
+        }
+        return false;
+    }
+
+    function checkArtifact(int $playerId, int $artifact) {
+        switch ($artifact) {
+            case ARTIFACT_SILVER_COINS:
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    if ($playedCardsColors[$playedCardColor] > 3) {
+                        $groupGains = [
+                            VP => $playedCardsColors[$playedCardColor] - 3,
+                        ];
+                        $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:silver-coins');
+    
+                        self::notifyAllPlayers('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
+                            'playerId' => $playerId,
+                            'player_name' => $this->getPlayerName($playerId),
+                            'effectiveGains' => $effectiveGains,
+                            'gains' => $effectiveGains, // for logs
+                            'artifact_name' => $this->getArtifactName($artifact), // for logs
+                            'i18n' => ['artifact_name'],
+                        ]);
+                    }
+                }
+                break;
+            case ARTIFACT_GOLDEN_BRACELET: // TODO
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    if ($playedCardsColors[$playedCardColor] == 3) {
+                        $this->setGameStateValue(GO_RESERVE, 1);
+                    }
+                }
+                break;
+            case ARTIFACT_AMULET:
+                if ($this->completedAPlayedLine($playerId) > 0) {
+                    $groupGains = [
+                        BRACELET => 1,
+                        RECRUIT => 1,
+                        FAME => 1,
+                    ];
+                    $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:amulet');
+
+                    self::notifyAllPlayers('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerName($playerId),
+                        'effectiveGains' => $effectiveGains,
+                        'gains' => $effectiveGains, // for logs
+                        'artifact_name' => $this->getArtifactName($artifact), // for logs
+                        'i18n' => ['artifact_name'],
+                    ]);
+                }
+                break;
+            case ARTIFACT_WEATHERCLOCK:
+                if ($this->completedAPlayedLine($playerId) > 0) {
+                    $this->setGameStateValue(EXPLORE_DONE, 0);
+
+                    self::notifyAllPlayers('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerName($playerId),
+                        'artifact_name' => $this->getArtifactName($artifact), // for logs
+                        'i18n' => ['artifact_name'],
+                    ]);
+                }
+                break;
+
+        }
+    }
+
+    function getAvailableDeckCards() {
+        return intval($this->cards->countCardInLocation('deck')) + intval($this->cards->countCardInLocation('discard'));
     }
 }

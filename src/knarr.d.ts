@@ -26,10 +26,11 @@ interface KnarrPlayer extends Player {
     fame: number;
     recruit: number;
     bracelet: number;
-    handCount: number;
+    //handCount: number;
     hand?: Card[];
     playedCards: { [color: number]: Card[] };
     destinations: Destination[];
+    reservedDestinations?: Destination[];
 }
 
 interface KnarrGamedatas {
@@ -51,6 +52,7 @@ interface KnarrGamedatas {
     variantOption: number;
     artifacts?: number[];
     lastTurn: boolean;
+    reservePossible: boolean;
 }
 
 interface KnarrGame extends Game {
@@ -68,11 +70,12 @@ interface KnarrGame extends Game {
     onTableDestinationClick(destination: Destination): void;
     onHandCardClick(card: Card): void;
     onTableCardClick(card: Card): void;
-    onPlayedCardClick(): void;
+    onPlayedCardClick(card: Card): void;
 }
 
 interface EnteringPlayActionArgs {
-    canDoAction: boolean;
+    canRecruit: boolean;
+    canExplore: boolean;
     canTrade: boolean;
     possibleDestinations: Destination[];
 }
@@ -81,6 +84,7 @@ interface EnteringChooseNewCardArgs {
     centerCards: Card[];
     freeColor: number;
     recruits: number;
+    allFree: boolean;
 }
 
 interface EnteringPayDestinationArgs {
@@ -129,6 +133,17 @@ interface NotifTradeArgs {
 interface NotifDiscardCardsArgs {
     playerId: number;
     cards: Card[];
+}
+
+// discardTableCard
+interface NotifDiscardTableCardArgs {
+    card: Card;
+}
+
+// reserveDestination
+interface NotifReserveDestinationArgs {
+    playerId: number;
+    destination: Destination;
 }
 
 // score

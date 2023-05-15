@@ -48,8 +48,11 @@ class Knarr extends Table {
         
         self::initGameStateLabels([
             LAST_TURN => LAST_TURN,
-            ACTION_DONE => ACTION_DONE,
+            RECRUIT_DONE => RECRUIT_DONE,
+            EXPLORE_DONE => EXPLORE_DONE,
             TRADE_DONE => TRADE_DONE,
+            GO_DISCARD_TABLE_CARD => GO_DISCARD_TABLE_CARD,
+            GO_RESERVE => GO_RESERVE,
             PLAYED_CARD_COLOR => PLAYED_CARD_COLOR,
             SELECTED_DESTINATION => SELECTED_DESTINATION,
 
@@ -59,7 +62,7 @@ class Knarr extends Table {
 		
         $this->cards = $this->getNew("module.common.deck");
         $this->cards->init("card");
-        $this->cards->autoreshuffle = false;     
+        $this->cards->autoreshuffle = true;     
 		
         $this->destinations = $this->getNew("module.common.deck");
         $this->destinations->init("destination");
@@ -104,8 +107,12 @@ class Knarr extends Table {
 
         // Init global values with their initial values
         $this->setGameStateInitialValue(LAST_TURN, 0);
-        $this->setGameStateInitialValue(ACTION_DONE, 0);
+        $this->setGameStateInitialValue(RECRUIT_DONE, 0);
+        $this->setGameStateInitialValue(EXPLORE_DONE, 0);
         $this->setGameStateInitialValue(TRADE_DONE, 0);
+        $this->setGameStateInitialValue(PLAYED_CARD_COLOR, 0);
+        $this->setGameStateInitialValue(GO_DISCARD_TABLE_CARD, 0);
+        $this->setGameStateInitialValue(GO_RESERVE, 0);
         
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -160,6 +167,14 @@ class Knarr extends Table {
         // Gather all information about current game situation (visible by player $current_player_id).
 
         $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
+
+        $result['boatSideOption'] = $this->getBoatSideOption();
+        $result['variantOption'] = $this->getVariantOption();
+        $result['reservePossible'] = false;
+        if ($result['variantOption'] >= 2) {
+            $result['artifacts'] = $this->getGlobalVariable(ARTIFACTS, true);
+            $result['reservePossible'] = in_array(ARTIFACT_GOLDEN_BRACELET, $result['artifacts']);
+        }
         
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
@@ -171,10 +186,14 @@ class Knarr extends Table {
                 $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
             }
             $player['destinations'] = $this->getDestinationsByLocation('played'.$playerId);
-            $player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
+            //$player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
                 $player['hand'] = $this->getCardsByLocation('hand', $playerId);
+            }
+
+            if ($result['reservePossible']) {
+                $player['reservedDestinations'] = $this->getDestinationsByLocation('reserved', $playerId);
             }
         }
 
@@ -183,12 +202,6 @@ class Knarr extends Table {
             'A' => $this->getDestinationsByLocation('slotA'),
             'B' => $this->getDestinationsByLocation('slotB'),
         ];
-        $result['boatSideOption'] = $this->getBoatSideOption();
-        $result['variantOption'] = $this->getVariantOption();
-        if ($result['variantOption'] >= 2) {
-            $result['artifacts'] = $this->getGlobalVariable(ARTIFACTS, true);
-        }
-
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   
         return $result;
@@ -233,21 +246,14 @@ class Knarr extends Table {
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
                 default:
-                    $this->gamestate->nextState( "next" );
-                	break;
+                    $this->gamestate->jumpToState(ST_NEXT_PLAYER);
+                    break;
             }
 
             return;
         }
 
         if ($state['type'] === "multipleactiveplayer") {
-            $playerId = intval($active_player);
-            // randomly play a card
-            $playerHand = $this->getCardsByLocation('hand', $playerId);
-            $id = $playerHand[bga_rand(0, count($playerHand) - 1)]->id;
-
-            $this->setPlayerSelectedCard($playerId, $id);
-
             // Make sure player is in a non blocking status for role turn
             $this->gamestate->setPlayerNonMultiactive( $active_player, 'next');
             

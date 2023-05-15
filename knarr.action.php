@@ -85,6 +85,32 @@
         self::ajaxResponse();
     }
 
+    public function reserveDestination() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->reserveDestination($id);
+
+        self::ajaxResponse();
+    }
+
+    public function discardTableCard() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->discardTableCard($id);
+
+        self::ajaxResponse();
+    }
+
+    public function pass() {
+        self::setAjaxMode();     
+
+        $this->game->pass();
+
+        self::ajaxResponse();
+    }
+
     public function trade() {
         self::setAjaxMode();     
 
@@ -106,6 +132,15 @@
         self::setAjaxMode();     
 
         $this->game->endTurn();
+
+        self::ajaxResponse();
+    }
+
+    public function discardCard() {
+        self::setAjaxMode();     
+
+        $id = self::getArg("id", AT_posint, true);
+        $this->game->discardCard($id);
 
         self::ajaxResponse();
     }

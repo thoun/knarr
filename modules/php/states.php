@@ -28,24 +28,70 @@ trait StateTrait {
         $this->gamestate->nextState('next');
     }
 
-    function stPlayAction() {
+    /*function stPlayAction() {
         $playerId = intval($this->getActivePlayerId());
 
-        /*if (count($this->getCardsByLocation('hand', $playerId)) == 0) {
-            $this->gamestate->nextState('next');
-        } else {*/
-            /*if ($this->getGlobalVariable(UNDO) == null) {
-                $this->saveForUndo($playerId, false);
-            }*/
-        /*}*/
+        if ($this->getGlobalVariable(UNDO) == null) {
+            $this->saveForUndo($playerId, false);
+        }
+    }*/
+
+    function stDiscardCard() {
+        $playersIds = $this->getPlayersIds();
+
+        $max = -1;
+        $maxPlayersIds = [];
+
+        foreach ($playersIds as $playerId) {
+            $playerCardCount = intval($this->getUniqueValueFromDB("SELECT count(*) FROM card WHERE card_location LIKE 'played$playerId%'"));
+            if ($playerCardCount > $max) {
+                $max = $playerCardCount;
+                $maxPlayersIds = [$playerId];
+            } else if ($playerCardCount == $max) {
+                $maxPlayersIds[] = $playerId;
+            }
+        }
+
+        $this->gamestate->setPlayersMultiactive($maxPlayersIds, 'next', true);
+    }
+
+    function stAfterDiscardCard() {
+        $remainingCardsToTake = $this->getGlobalVariable(REMAINING_CARDS_TO_TAKE);
+
+        if ($remainingCardsToTake->phase == 'recruit') {
+            $this->deleteGlobalVariable(REMAINING_CARDS_TO_TAKE);
+            $this->endOfRecruit($remainingCardsToTake->playerId, $remainingCardsToTake->slotColor);
+        } else {
+            $available = $this->getAvailableDeckCards();
+            $effectiveGain = min($remainingCardsToTake->remaining, $available);
+            for ($i = 0; $i < $effectiveGain; $i++) {
+                $this->powerTakeCard($remainingCardsToTake->playerId);
+            }
+            if ($effectiveGain < $remainingCardsToTake->remaining) {
+                $remainingCardsToTake->remaining = $remainingCardsToTake->remaining - $effectiveGain;
+                $this->setGlobalVariable(REMAINING_CARDS_TO_TAKE, $remainingCardsToTake);
+                $this->gamestate->nextState('discardCardsForDeck');
+            } else {
+                $this->deleteGlobalVariable(REMAINING_CARDS_TO_TAKE);
+                if ($remainingCardsToTake->phase == 'explore') {
+                    $this->endExplore($remainingCardsToTake->playerId, $remainingCardsToTake->fromReserve, $remainingCardsToTake->destination, $remainingCardsToTake->destinationIndex);
+                } else if ($remainingCardsToTake->phase == 'trade') {
+                    $this->endTrade($remainingCardsToTake->playerId);
+                }
+            }
+        }
     }
 
     function stNextPlayer() {
         $playerId = intval($this->getActivePlayerId());
 
         //$this->deleteGlobalVariables([UNDO, POWER_PAY_ONE_LESS]);
-        $this->setGameStateValue(ACTION_DONE, 0);
+        $this->setGameStateValue(RECRUIT_DONE, 0);
+        $this->setGameStateValue(EXPLORE_DONE, 0);
         $this->setGameStateValue(TRADE_DONE, 0);
+        $this->setGameStateValue(PLAYED_CARD_COLOR, 0);
+        $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 0);
+        $this->setGameStateValue(GO_RESERVE, 0);
 
         if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
             $this->setGameStateValue(LAST_TURN, 1);

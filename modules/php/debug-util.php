@@ -14,6 +14,9 @@ trait DebugUtilTrait {
         //$this->debugSetPlayerScore(2343492, 10);
         //$this->debugSetScore(39);
         //$this->debugSetFame(8);
+
+        $this->debugAddDestinations(2343492, 'A', 15);
+        $this->debugAddDestinations(2343492, 'B', 10);
         
         //$this->debugLastTurn();
     }
@@ -36,6 +39,18 @@ trait DebugUtilTrait {
 
     function debugLastTurn() {
         $this->setGameStateValue(LAST_TURN, 1);
+    }
+    
+    function debugEmpty() {
+		$this->cards->moveAllCardsInLocation('deck', 'void');
+        $this->cards->moveAllCardsInLocation('discard', 'void');
+    }
+
+    function debugAddDestinations($playerId, $letter, $number) {
+        for ($i = 0; $i < $number; $i++) {
+            $destinationIndex = intval($this->destinations->countCardInLocation('played'.$playerId));
+            $this->destinations->pickCardForLocation('deck'.$letter, 'played'.$playerId, $destinationIndex);
+        }
     }
 
     public function debugReplacePlayersIds() {

@@ -1399,7 +1399,7 @@ var TableCenter = /** @class */ (function () {
             _this.destinations[letter].getCards().forEach(function (card) {
                 var element = _this.destinations[letter].getCardElement(card);
                 var disabled = selectable && selectableCards != null && !selectableCards.some(function (s) { return s.id == card.id; });
-                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('disabled', selectable && disabled);
                 element.classList.toggle('selectable', selectable && !disabled);
             });
         });
@@ -1469,9 +1469,9 @@ var TableCenter = /** @class */ (function () {
             var element = _this.cards.getCardElement(card);
             var disabled = !selectable;
             if (!disabled) {
-                disabled = card.locationArg != freeColor && recruits < 1;
+                disabled = freeColor !== null && card.locationArg != freeColor && recruits < 1;
             }
-            element.classList.toggle('disabled', disabled);
+            element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
     };
@@ -1481,7 +1481,7 @@ var isDebug = window.location.host == 'studio.boardgamearena.com' || window.loca
 ;
 var log = isDebug ? console.log.bind(window.console) : function () { };
 var PlayerTable = /** @class */ (function () {
-    function PlayerTable(game, player) {
+    function PlayerTable(game, player, reservePossible) {
         var _this = this;
         this.game = game;
         this.played = [];
@@ -1499,7 +1499,11 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             html += "\n                <div id=\"player-table-".concat(this.playerId, "-played-").concat(i, "\" class=\"cards\"></div>\n                ");
         }
-        html += "\n            </div>\n        </div>\n        ";
+        html += "\n            </div>\n        ";
+        if (reservePossible) {
+            html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Reserved destinations'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-reserved-destinations\"></div>\n            </div>");
+        }
+        html += "\n        </div>\n        ";
         dojo.place(html, document.getElementById('tables'));
         if (this.currentPlayer) {
             var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
@@ -1516,7 +1520,7 @@ var PlayerTable = /** @class */ (function () {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onSelectionChange = function () { return _this.game.onPlayedCardClick(); };
+            this.played[i].onCardClick = function (card) { return _this.game.onPlayedCardClick(card); };
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -1526,6 +1530,12 @@ var PlayerTable = /** @class */ (function () {
         });
         destinationsDiv.style.setProperty('--card-overlap', '92px');
         this.destinations.addCards(player.destinations);
+        if (reservePossible) {
+            this.reservedDestinations = new LineStock(this.game.destinationsManager, document.getElementById("player-table-".concat(this.playerId, "-reserved-destinations")), {
+                center: false,
+            });
+            this.reservedDestinations.addCards(player.reservedDestinations);
+        }
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
@@ -1550,10 +1560,9 @@ var PlayerTable = /** @class */ (function () {
                 if (!disabled) {
                     if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
                         disabled = !colors.includes(card.color);
-                        console.log(colors, card.color, disabled);
                     }
                 }
-                element.classList.toggle('disabled', disabled);
+                element.classList.toggle('disabled', selectable && disabled);
                 element.classList.toggle('selectable', selectable && !disabled);
             });
         };
@@ -1573,6 +1582,23 @@ var PlayerTable = /** @class */ (function () {
         for (var i = 1; i <= 5; i++) {
             this.played[i].removeCards(cards);
         }
+    };
+    PlayerTable.prototype.reserveDestination = function (destination) {
+        this.reservedDestinations.addCard(destination);
+    };
+    PlayerTable.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
+        var _this = this;
+        if (selectableCards === void 0) { selectableCards = null; }
+        if (!this.reservedDestinations) {
+            return;
+        }
+        this.reservedDestinations.setSelectionMode(selectable ? 'single' : 'none');
+        this.reservedDestinations.getCards().forEach(function (card) {
+            var element = _this.reservedDestinations.getCardElement(card);
+            var disabled = selectable && selectableCards != null && !selectableCards.some(function (s) { return s.id == card.id; });
+            element.classList.toggle('disabled', selectable && disabled);
+            element.classList.toggle('selectable', selectable && !disabled);
+        });
     };
     return PlayerTable;
 }());
@@ -1598,7 +1624,7 @@ function getVpByFame(fame) {
 var Knarr = /** @class */ (function () {
     function Knarr() {
         this.playersTables = [];
-        this.handCounters = [];
+        //private handCounters: Counter[] = [];
         this.fameCounters = [];
         this.recruitCounters = [];
         this.braceletCounters = [];
@@ -1671,6 +1697,9 @@ var Knarr = /** @class */ (function () {
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
+            case 'discardCard':
+                this.onEnteringDiscardCard(args.args);
+                break;
         }
     };
     Knarr.prototype.setGamestateDescription = function (property) {
@@ -1681,18 +1710,35 @@ var Knarr = /** @class */ (function () {
         this.updatePageTitle();
     };
     Knarr.prototype.onEnteringPlayAction = function (args) {
-        var _a;
-        if (!args.canDoAction) {
+        var _a, _b;
+        if (!args.canExplore && !args.canRecruit) {
             this.setGamestateDescription('TradeOnly');
         }
-        if (this.isCurrentPlayerActive() && args.canDoAction) {
-            this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
-            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(true);
+        else if (!args.canExplore) {
+            this.setGamestateDescription('RecruitOnly');
+        }
+        else if (!args.canRecruit) {
+            this.setGamestateDescription('ExploreOnly');
+        }
+        if (this.isCurrentPlayerActive()) {
+            if (args.canExplore) {
+                this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
+                (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setDestinationsSelectable(true, args.possibleDestinations);
+            }
+            if (args.canRecruit) {
+                (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setHandSelectable(true);
+            }
         }
     };
     Knarr.prototype.onEnteringChooseNewCard = function (args) {
         if (this.isCurrentPlayerActive()) {
-            this.tableCenter.setCardsSelectable(true, args.freeColor, args.recruits);
+            this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
+        }
+    };
+    Knarr.prototype.onEnteringDiscardCard = function (args) {
+        var _a;
+        if (this.isCurrentPlayerActive()) {
+            (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, [0]);
         }
     };
     Knarr.prototype.onEnteringPayDestination = function (args) {
@@ -1715,12 +1761,16 @@ var Knarr = /** @class */ (function () {
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
+            case 'discardCard':
+                this.onLeavingDiscardCard();
+                break;
         }
     };
     Knarr.prototype.onLeavingPlayAction = function () {
-        var _a;
+        var _a, _b;
         this.tableCenter.setDestinationsSelectable(false);
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setHandSelectable(false);
+        (_b = this.getCurrentPlayerTable()) === null || _b === void 0 ? void 0 : _b.setDestinationsSelectable(false);
     };
     Knarr.prototype.onLeavingChooseNewCard = function () {
         this.tableCenter.setCardsSelectable(false);
@@ -1728,6 +1778,10 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onLeavingPayDestination = function () {
         var _a;
         document.querySelectorAll('.selected-pay-destination').forEach(function (elem) { return elem.classList.remove('selected-pay-destination'); });
+        (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+    };
+    Knarr.prototype.onLeavingDiscardCard = function () {
+        var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
     };
     Knarr.prototype.setPayDestinationLabelAndState = function (args) {
@@ -1767,15 +1821,15 @@ var Knarr = /** @class */ (function () {
                     if (!playActionArgs.canTrade) {
                         document.getElementById("goTrade_button").classList.add('disabled');
                     }
-                    if (!args.canDoAction) {
+                    if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
                     }
                     break;
                 case 'chooseNewCard':
                     var chooseNewCardArgs_1 = args;
                     [1, 2, 3, 4, 5].forEach(function (color) {
-                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(color == chooseNewCardArgs_1.freeColor ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); });
-                        if (color != chooseNewCardArgs_1.freeColor && chooseNewCardArgs_1.recruits < 1) {
+                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(chooseNewCardArgs_1.allFree || color == chooseNewCardArgs_1.freeColor ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); });
+                        if (!chooseNewCardArgs_1.allFree && color != chooseNewCardArgs_1.freeColor && chooseNewCardArgs_1.recruits < 1) {
                             document.getElementById("chooseNewCard".concat(color, "_button")).classList.add('disabled');
                         }
                     });
@@ -1859,12 +1913,17 @@ var Knarr = /** @class */ (function () {
             var playerId = Number(player.id);
             document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div class=\"vp icon\"></div>");
             document.getElementById("icon_point_".concat(player.id)).remove();
-            var html = "<div class=\"counters\">\n                <div id=\"playerhand-counter-wrapper-".concat(player.id, "\" class=\"playerhand-counter\">\n                    <div class=\"player-hand-card\"></div> \n                    <span id=\"playerhand-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"fame-counter-wrapper-").concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
+            /*
+                <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
+                    <div class="player-hand-card"></div>
+                    <span id="playerhand-counter-${player.id}"></span>
+                </div>*/
+            var html = "<div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-".concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
             dojo.place(html, "player_board_".concat(player.id));
-            var handCounter = new ebg.counter();
-            handCounter.create("playerhand-counter-".concat(playerId));
+            /*const handCounter = new ebg.counter();
+            handCounter.create(`playerhand-counter-${playerId}`);
             handCounter.setValue(player.handCount);
-            _this.handCounters[playerId] = handCounter;
+            this.handCounters[playerId] = handCounter;*/
             _this.fameCounters[playerId] = new ebg.counter();
             _this.fameCounters[playerId].create("fame-counter-".concat(playerId));
             _this.fameCounters[playerId].setValue(getVpByFame(player.fame));
@@ -1888,7 +1947,7 @@ var Knarr = /** @class */ (function () {
         });
     };
     Knarr.prototype.createPlayerTable = function (gamedatas, playerId) {
-        var table = new PlayerTable(this, gamedatas.players[playerId]);
+        var table = new PlayerTable(this, gamedatas.players[playerId], gamedatas.reservePossible);
         this.playersTables.push(table);
     };
     Knarr.prototype.updateGains = function (playerId, gains) {
@@ -1920,11 +1979,11 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.setScore = function (playerId, score) {
         var _a;
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
-        // TODO move on board
+        this.tableCenter.setScore(playerId, score);
     };
     Knarr.prototype.setFame = function (playerId, count) {
         this.fameCounters[playerId].toValue(getVpByFame(count));
-        // TODO move on board
+        this.tableCenter.setFame(playerId, count);
     };
     Knarr.prototype.setRecruits = function (playerId, count) {
         this.recruitCounters[playerId].toValue(count);
@@ -1943,8 +2002,13 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onTableCardClick = function (card) {
         this.chooseNewCard(card.id);
     };
-    Knarr.prototype.onPlayedCardClick = function () {
-        this.setPayDestinationLabelAndState();
+    Knarr.prototype.onPlayedCardClick = function (card) {
+        if (this.gamedatas.gamestate.name == 'discardCard') {
+            this.discardCard(card.id);
+        }
+        else {
+            this.setPayDestinationLabelAndState();
+        }
     };
     Knarr.prototype.goTrade = function () {
         if (!this.checkAction('goTrade')) {
@@ -2007,6 +2071,14 @@ var Knarr = /** @class */ (function () {
         }
         this.takeAction('endTurn');
     };
+    Knarr.prototype.discardCard = function (id) {
+        if (!this.checkAction('discardCard')) {
+            return;
+        }
+        this.takeAction('discardCard', {
+            id: id
+        });
+    };
     Knarr.prototype.takeAction = function (action, data) {
         data = data || {};
         data.lock = true;
@@ -2035,6 +2107,8 @@ var Knarr = /** @class */ (function () {
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['takeDeckCard', ANIMATION_MS],
+            ['discardTableCard', ANIMATION_MS],
+            ['reserveDestination', ANIMATION_MS],
             ['score', 1],
             ['bracelet', 1],
             ['recruit', 1],
@@ -2089,6 +2163,14 @@ var Knarr = /** @class */ (function () {
         var playerTable = this.getPlayerTable(playerId);
         playerTable.playCard(notif.args.card, document.getElementById('board'));
     };
+    Knarr.prototype.notif_discardTableCard = function (notif) {
+        this.tableCenter.cards.removeCard(notif.args.card);
+    };
+    Knarr.prototype.notif_reserveDestination = function (notif) {
+        var playerId = notif.args.playerId;
+        var playerTable = this.getPlayerTable(playerId);
+        playerTable.reserveDestination(notif.args.destination);
+    };
     /**
      * Show last turn banner.
      */
@@ -2105,7 +2187,7 @@ var Knarr = /** @class */ (function () {
                     args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[1], "<strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ');
                 }
                 for (var property in args) {
-                    if (['number', 'color', 'card_color', 'card_type'].includes(property) && args[property][0] != '<') {
+                    if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }
