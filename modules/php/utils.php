@@ -489,7 +489,7 @@ trait UtilTrait {
                 }
                 break;
             case ARTIFACT_AMULET:
-                if ($this->completedAPlayedLine($playerId) > 0) {
+                if ($this->completedAPlayedLine($playerId)) {
                     $groupGains = [
                         BRACELET => 1,
                         RECRUIT => 1,
@@ -508,7 +508,7 @@ trait UtilTrait {
                 }
                 break;
             case ARTIFACT_WEATHERCLOCK:
-                if ($this->completedAPlayedLine($playerId) > 0) {
+                if ($this->completedAPlayedLine($playerId)) {
                     $this->setGameStateValue(EXPLORE_DONE, 0);
 
                     self::notifyAllPlayers('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [

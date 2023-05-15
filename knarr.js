@@ -1312,28 +1312,28 @@ var ArtifactsManager = /** @class */ (function (_super) {
     }
     ArtifactsManager.prototype.getArtifactName = function (number) {
         switch (number) {
-            case 1: return _("Mobile phone");
-            case 2: return _("Minibar");
-            case 3: return _("Ghetto blaster");
-            case 4: return _("Game console");
-            case 5: return _("Pinball Machine");
-            case 6: return _("Computer");
-            case 7: return _("Moped");
+            case 1: return _("Hydromel cup");
+            case 2: return _("Silver coins");
+            case 3: return _("Caldron");
+            case 4: return _("Golden bracelet");
+            case 5: return _("Helmet");
+            case 6: return _("Amulet");
+            case 7: return _("Weatherclock");
         }
     };
     ArtifactsManager.prototype.getArtifactEffect = function (number) {
-        switch (number) {
-            case 1: return _("before arranging your Primate Assembly, return 1 of the cards you just drew (level 1 or 2) to the bottom of its corresponding deck on the main board. Next, draw the top card from a deck of your choice (same level as the card you removed) and add it to your Primate Assembly. This card permanently replaces the card you removed from your draw deck. The required [Energy] cost depends on the level of the card you removed: 2 [Energy] for a card of level 1, and 3 [Energy] for a card of level 2. You don't receive the rage bonus in the top right corner of the card you removed.");
-            case 2: return _("swap 1 of your resources with 1 resource from the general supply. You may swap resources of any type") + '  ([Flower], [Fruit], ' + _("${a} or ${b}").replace('${a}', '[Grain]').replace('${b}', '[Energy]') + ').';
-            case 3: return _("before assigning your Primate Assembly, place 1 of the cards you just draw on your discard pile and draw 1 card from your draw pile to replace it.");
-            case 4: return _("when discarding the cards in your Primate Assembly, place 1 of these card back on top of your draw pile instead of discarding it.  This costs 3 [Energy] for an ape of level 1, and 5 [Energy] for an ape of level 2.");
-            case 5: return _("before assigning your Primate Assembly, draw a 5th card. You have access to an extra card this round.");
-            case 6: return _("immediately score 5 [Point].");
-            case 7: return _("attract an ape of your choice and place it on top of your draw pile. This costs 6 [Energy] for an ape of level 1, and 9 [Energy] for an ape of level 2.");
+        switch (number) { // TODO
+            case 1: return _("Si vous effectuez l’action Explorer, vous pouvez défausser un viking du plateau et le remplacer par le 1er de la pioche.");
+            case 2: return _("Pour chaque viking recruté au-delà du 3e viking de même couleur, vous gagnez 1 point de victoire.");
+            case 3: return _("Si vous recrutez le 2nd viking de même couleur, vous pouvez prendre la carte viking de votre choix au lieu de celle imposée par la carte jouée.");
+            case 4: return _("Si vous recrutez le 3e viking de même couleur, vous pouvez réserver une carte destination de votre choix. Prenez-la parmi les cartes visibles et posez-la à côté de votre aire de jeu. Lorsque vous faites l’action Explorer, vous pouvez désormais choisir d’explorer une destination réservée à la place d’une destination visible. Vous pouvez avoir jusqu’à deux cartes destination réservées.");
+            case 5: return _("Si vous placez la carte terre d’influence que vous venez d’explorer, directement sur une carte terre d’échange, vous pouvez effectuer immédiatement l’action Recruter.");
+            case 6: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez prendre un bracelet en argent, une recrue et un point de renommée.");
+            case 7: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez effectuer immédiatement l’action Explorer. Vous devez toujours payer le coût d’exploration.");
         }
     };
     ArtifactsManager.prototype.getTooltip = function (number) {
-        return "\n            <div class=\"artifact-tooltip\">\n                <div class=\"title\">".concat(this.getArtifactName(number), "</div>\n                <div class=\"effect\"><span class=\"label\">").concat(_('Effect:'), "</span> ").concat(this.getArtifactEffect(number), "</div>\n            </div>\n        ");
+        return "\n            <div class=\"artifact-tooltip\">\n                <div class=\"title\">".concat(this.getArtifactName(number), "</div>\n                <div class=\"effect\">").concat(this.getArtifactEffect(number), "</div>\n            </div>\n        ");
     };
     return ArtifactsManager;
 }(CardManager));
@@ -1697,6 +1697,9 @@ var Knarr = /** @class */ (function () {
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
+            case 'discardTableCard':
+                this.onEnteringDiscardTableCard();
+                break;
             case 'discardCard':
                 this.onEnteringDiscardCard(args.args);
                 break;
@@ -1735,6 +1738,11 @@ var Knarr = /** @class */ (function () {
             this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
         }
     };
+    Knarr.prototype.onEnteringDiscardTableCard = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, null, 0);
+        }
+    };
     Knarr.prototype.onEnteringDiscardCard = function (args) {
         var _a;
         if (this.isCurrentPlayerActive()) {
@@ -1761,6 +1769,9 @@ var Knarr = /** @class */ (function () {
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
+            case 'discardTableCard':
+                this.onLeavingDiscardTableCard();
+                break;
             case 'discardCard':
                 this.onLeavingDiscardCard();
                 break;
@@ -1779,6 +1790,9 @@ var Knarr = /** @class */ (function () {
         var _a;
         document.querySelectorAll('.selected-pay-destination').forEach(function (elem) { return elem.classList.remove('selected-pay-destination'); });
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+    };
+    Knarr.prototype.onLeavingDiscardTableCard = function () {
+        this.tableCenter.setCardsSelectable(false);
     };
     Knarr.prototype.onLeavingDiscardCard = function () {
         var _a;
@@ -2000,7 +2014,12 @@ var Knarr = /** @class */ (function () {
         this.playCard(card.id);
     };
     Knarr.prototype.onTableCardClick = function (card) {
-        this.chooseNewCard(card.id);
+        if (this.gamedatas.gamestate.name == 'discardTableCard') {
+            this.discardTableCard(card.id);
+        }
+        else {
+            this.chooseNewCard(card.id);
+        }
     };
     Knarr.prototype.onPlayedCardClick = function (card) {
         if (this.gamedatas.gamestate.name == 'discardCard') {
@@ -2070,6 +2089,14 @@ var Knarr = /** @class */ (function () {
             return;
         }
         this.takeAction('endTurn');
+    };
+    Knarr.prototype.discardTableCard = function (id) {
+        if (!this.checkAction('discardTableCard')) {
+            return;
+        }
+        this.takeAction('discardTableCard', {
+            id: id
+        });
     };
     Knarr.prototype.discardCard = function (id) {
         if (!this.checkAction('discardCard')) {
@@ -2184,7 +2211,7 @@ var Knarr = /** @class */ (function () {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[1], "<strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ');
+                    args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ');
                 }
                 for (var property in args) {
                     if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {

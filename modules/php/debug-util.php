@@ -15,8 +15,8 @@ trait DebugUtilTrait {
         //$this->debugSetScore(39);
         //$this->debugSetFame(8);
 
-        $this->debugAddDestinations(2343492, 'A', 15);
-        $this->debugAddDestinations(2343492, 'B', 10);
+        //$this->debugAddDestinations(2343492, 'A', 15);
+        //$this->debugAddDestinations(2343492, 'B', 10);
         
         //$this->debugLastTurn();
     }

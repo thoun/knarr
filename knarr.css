@@ -994,7 +994,7 @@ html, .mode_3d #game_play_area_background {
   padding: 5px;
 }
 .artifact-tooltip > div:not(:last-child) {
-  border-bottom: 1px solid #2F81A4;
+  border-bottom: 1px solid gray;
 }
 
 #last-round {

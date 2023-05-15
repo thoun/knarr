@@ -128,6 +128,9 @@ class Knarr implements KnarrGame {
             case 'payDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
+            case 'discardTableCard':
+                this.onEnteringDiscardTableCard();
+                break;
             case 'discardCard':
                 this.onEnteringDiscardCard(args.args);
                 break;
@@ -167,6 +170,12 @@ class Knarr implements KnarrGame {
         }
     }
 
+    private onEnteringDiscardTableCard() {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setCardsSelectable(true, null, 0);
+        }
+    }
+
     private onEnteringDiscardCard(args: EnteringPayDestinationArgs) {
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setCardsSelectable(true, [0]);
@@ -194,6 +203,9 @@ class Knarr implements KnarrGame {
             case 'payDestination':
                 this.onLeavingPayDestination();
                 break;
+            case 'discardTableCard':
+                this.onLeavingDiscardTableCard();
+                break;
             case 'discardCard':
                 this.onLeavingDiscardCard();
                 break;
@@ -213,6 +225,10 @@ class Knarr implements KnarrGame {
     private onLeavingPayDestination() {
         document.querySelectorAll('.selected-pay-destination').forEach(elem => elem.classList.remove('selected-pay-destination'));
         this.getCurrentPlayerTable()?.setCardsSelectable(false);
+    }
+    
+    private onLeavingDiscardTableCard() {
+        this.tableCenter.setCardsSelectable(false);
     }
 
     private onLeavingDiscardCard() {
@@ -493,7 +509,11 @@ class Knarr implements KnarrGame {
     }
 
     public onTableCardClick(card: Card): void {
-        this.chooseNewCard(card.id);
+        if (this.gamedatas.gamestate.name == 'discardTableCard') {
+            this.discardTableCard(card.id);
+        } else {
+            this.chooseNewCard(card.id);
+        }
     }
 
     public onPlayedCardClick(card: Card): void {
@@ -580,6 +600,16 @@ class Knarr implements KnarrGame {
         }
 
         this.takeAction('endTurn');
+    }
+  	
+    public discardTableCard(id: number) {
+        if(!(this as any).checkAction('discardTableCard')) {
+            return;
+        }
+
+        this.takeAction('discardTableCard', {
+            id
+        });
     }
   	
     public discardCard(id: number) {
@@ -723,7 +753,7 @@ class Knarr implements KnarrGame {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[1]}<strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ');
+                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ');
                 }
 
                 for (const property in args) {

@@ -14,25 +14,25 @@ class ArtifactsManager extends CardManager<number> {
 
     private getArtifactName(number: number): string {
         switch (number) {
-            case 1: return _("Mobile phone");
-            case 2: return _("Minibar");
-            case 3: return _("Ghetto blaster");
-            case 4: return _("Game console");
-            case 5: return _("Pinball Machine");
-            case 6: return _("Computer");
-            case 7: return _("Moped");
+            case 1: return _("Hydromel cup");
+            case 2: return _("Silver coins");
+            case 3: return _("Caldron");
+            case 4: return _("Golden bracelet");
+            case 5: return _("Helmet");
+            case 6: return _("Amulet");
+            case 7: return _("Weatherclock");
         }     
     }
 
     private getArtifactEffect(number: number): string {
-        switch (number) {
-            case 1: return _("before arranging your Primate Assembly, return 1 of the cards you just drew (level 1 or 2) to the bottom of its corresponding deck on the main board. Next, draw the top card from a deck of your choice (same level as the card you removed) and add it to your Primate Assembly. This card permanently replaces the card you removed from your draw deck. The required [Energy] cost depends on the level of the card you removed: 2 [Energy] for a card of level 1, and 3 [Energy] for a card of level 2. You don't receive the rage bonus in the top right corner of the card you removed.");
-            case 2: return _("swap 1 of your resources with 1 resource from the general supply. You may swap resources of any type") + '  ([Flower], [Fruit], ' + _("${a} or ${b}").replace('${a}', '[Grain]').replace('${b}', '[Energy]') + ').';
-            case 3: return _("before assigning your Primate Assembly, place 1 of the cards you just draw on your discard pile and draw 1 card from your draw pile to replace it.");
-            case 4: return _("when discarding the cards in your Primate Assembly, place 1 of these card back on top of your draw pile instead of discarding it.  This costs 3 [Energy] for an ape of level 1, and 5 [Energy] for an ape of level 2.");
-            case 5: return _("before assigning your Primate Assembly, draw a 5th card. You have access to an extra card this round.");
-            case 6: return _("immediately score 5 [Point].");
-            case 7: return _("attract an ape of your choice and place it on top of your draw pile. This costs 6 [Energy] for an ape of level 1, and 9 [Energy] for an ape of level 2.");
+        switch (number) { // TODO
+            case 1: return _("Si vous effectuez l’action Explorer, vous pouvez défausser un viking du plateau et le remplacer par le 1er de la pioche.");
+            case 2: return _("Pour chaque viking recruté au-delà du 3e viking de même couleur, vous gagnez 1 point de victoire.");
+            case 3: return _("Si vous recrutez le 2nd viking de même couleur, vous pouvez prendre la carte viking de votre choix au lieu de celle imposée par la carte jouée.");
+            case 4: return _("Si vous recrutez le 3e viking de même couleur, vous pouvez réserver une carte destination de votre choix. Prenez-la parmi les cartes visibles et posez-la à côté de votre aire de jeu. Lorsque vous faites l’action Explorer, vous pouvez désormais choisir d’explorer une destination réservée à la place d’une destination visible. Vous pouvez avoir jusqu’à deux cartes destination réservées.");
+            case 5: return _("Si vous placez la carte terre d’influence que vous venez d’explorer, directement sur une carte terre d’échange, vous pouvez effectuer immédiatement l’action Recruter.");
+            case 6: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez prendre un bracelet en argent, une recrue et un point de renommée.");
+            case 7: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez effectuer immédiatement l’action Explorer. Vous devez toujours payer le coût d’exploration.");
         }     
     }
 
@@ -40,7 +40,7 @@ class ArtifactsManager extends CardManager<number> {
         return `
             <div class="artifact-tooltip">
                 <div class="title">${this.getArtifactName(number)}</div>
-                <div class="effect"><span class="label">${_('Effect:')}</span> ${this.getArtifactEffect(number)}</div>
+                <div class="effect">${this.getArtifactEffect(number)}</div>
             </div>
         `;
     }

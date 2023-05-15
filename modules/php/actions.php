@@ -26,7 +26,12 @@ trait ActionTrait {
     public function playCard(int $id) {
         self::checkAction('playCard');
 
+        if (boolval($this->getGameStateValue(RECRUIT_DONE))) {
+            throw new BgaUserException("Invalid action");
+        }
+
         $playerId = intval($this->getActivePlayerId());
+            
 
         $hand = $this->getCardsByLocation('hand', $playerId);
         $card = $this->array_find($hand, fn($c) => $c->id == $id);
@@ -128,6 +133,10 @@ trait ActionTrait {
 
     public function takeDestination(int $id) {
         self::checkAction('takeDestination');
+
+        if (boolval($this->getGameStateValue(EXPLORE_DONE))) {
+            throw new BgaUserException("Invalid action");
+        }
 
         $args = $this->argPlayAction();
         $destination = $this->array_find($args['possibleDestinations'], fn($c) => $c->id == $id);
