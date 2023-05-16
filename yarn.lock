@@ -18,6 +18,10 @@ bga-cards@thoun/bga-cards#main:
   version "1.0.0"
   resolved "https://codeload.github.com/thoun/bga-cards/tar.gz/9887593c5547d3acef790933b98fcd3e76f525fe"
 
+bga-jump-to@thoun/bga-jump-to:
+  version "1.0.0"
+  resolved "https://codeload.github.com/thoun/bga-jump-to/tar.gz/ec9d61e895c3a5b801aea47bb86682fc7120e0fe"
+
 bga-zoom@thoun/bga-zoom:
   version "1.0.0"
   resolved "https://codeload.github.com/thoun/bga-zoom/tar.gz/5965fff329655cafa2faba40e0647cbc4a958f60"

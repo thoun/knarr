@@ -12,6 +12,7 @@
         "src/counter.d.ts",
         "src/knarr.d.ts",
         "node_modules/bga-zoom/src/zoom-manager.ts",
+        "node_modules/bga-jump-to/src/jump-to-manager.ts",
         "node_modules/bga-animations/src/animations/slide-animation.ts",
         "node_modules/bga-animations/src/animations-utils.ts",
         "node_modules/bga-animations/src/animation-manager.ts",

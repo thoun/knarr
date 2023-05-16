@@ -9,6 +9,7 @@ const ANIMATION_MS = 500;
 const ACTION_TIMER_DURATION = 5;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
+const LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'Knarr-jump-to-folded';
 
 const VP_BY_FAME = {
     0: 0,
@@ -82,6 +83,14 @@ class Knarr implements KnarrGame {
         this.cardsManager = new CardsManager(this);
         this.destinationsManager = new DestinationsManager(this);
         this.animationManager = new AnimationManager(this);
+        new JumpToManager(this, {
+            localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
+            topEntries: [
+                new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
+            ],
+            entryClasses: 'triangle-point',
+            defaultFolded: true,
+        });
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);

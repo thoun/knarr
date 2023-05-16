@@ -61,6 +61,116 @@
   background: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 70 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;"><g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M23.8,102.1L35.7,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,102.1L47.5,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,102.1L35.7,90.3" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M51,118C55.2,113.8 57.3,108.7 57.3,102.8C57.3,96.8 55.2,91.8 51,87.6C46.8,83.4 41.7,81.3 35.8,81.3C29.9,81.3 24.8,83.4 20.6,87.6C16.4,91.8 14.3,96.8 14.3,102.8C14.3,108.7 16.4,113.8 20.6,118C24.8,122.2 29.9,124.3 35.8,124.3C41.7,124.3 46.8,122.2 51,118" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M35.7,113.9L35.7,102.1" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g><g transform="matrix(1,0,0,1,-7.91703,-76.2244)"><path d="M65.3,132.3L51,118" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:7px;"/></g></g></svg>');
 }
 
+:root {
+  --jump-to-eye-url: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ctitle%3E eye %3C/title%3E%3Cpath d='M10 7.5a2.5 2.5 0 1 0 2.5 2.5A2.5 2.5 0 0 0 10 7.5zm0 7a4.5 4.5 0 1 1 4.5-4.5 4.5 4.5 0 0 1-4.5 4.5zM10 3C3 3 0 10 0 10s3 7 10 7 10-7 10-7-3-7-10-7z'/%3E%3C/svg%3E%0A");
+}
+
+#bga-jump-to-controls {
+  position: fixed;
+  top: 50vh;
+  z-index: 5;
+  user-select: none;
+}
+
+#bga-jump-to-controls.folded .bga-jump-to-link:not(.toggle) {
+  display: none;
+}
+
+#bga-jump-to-controls .bga-jump-to-link {
+  position: relative;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--color);
+  margin: 10px 0;
+  width: fit-content;
+  cursor: pointer;
+  height: 22px;
+  padding: 2px 5px;
+  background: white;
+  color: var(--color);
+}
+
+#bga-jump-to-controls .bga-jump-to-link .bga-jump-to-label {
+  background: var(--colorback);
+}
+
+#bga-jump-to-controls .bga-jump-to-link.round-point {
+  border-radius: 0 11px 11px 0;
+  padding-right: 11px;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.hexa-point {
+  border-right-width: 0;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.hexa-point::before {
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left-width: 11px;
+  border-left-style: solid;
+  content: "";
+  position: absolute;
+  right: -11px;
+  top: -2px;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.hexa-point::after {
+  width: 0;
+  height: 0;
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  border-left: 9px solid white;
+  content: "";
+  position: absolute;
+  right: -9px;
+  top: 0px;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.triangle-point {
+  border-right-width: 0;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.triangle-point::before {
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left-width: 15px;
+  border-left-style: solid;
+  content: "";
+  position: absolute;
+  right: -15px;
+  top: -2px;
+}
+
+#bga-jump-to-controls .bga-jump-to-link.triangle-point::after {
+  width: 0;
+  height: 0;
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  border-left: 13px solid white;
+  content: "";
+  position: absolute;
+  right: -13px;
+  top: 0px;
+}
+
+#bga-jump-to-controls .bga-jump-to-link .eye {
+  width: 20px;
+  height: 20px;
+  mask: var(--jump-to-eye-url) no-repeat center/contain;
+  -webkit-mask: var(--jump-to-eye-url) no-repeat center/contain;
+  background: black;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: var(--color);
+  display: inline-block;
+  vertical-align: middle;
+}
+
 body > .card {
   position: absolute;
   left: -9999px;
