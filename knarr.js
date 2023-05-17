@@ -613,9 +613,7 @@ var CardStock = /** @class */ (function () {
         var promise;
         this.addCardElementToParent(cardElement, settings);
         cardElement.classList.remove('selectable', 'selected', 'disabled');
-        promise = this.animationFromElement({
-            element: cardElement,
-            fromElement: animation.fromStock.element,
+        promise = this.animationFromElement(cardElement, animation.fromStock.element, {
             originalSide: animation.originalSide,
             rotationDelta: animation.rotationDelta,
             animation: animation.animation,
@@ -635,9 +633,7 @@ var CardStock = /** @class */ (function () {
         this.addCardElementToParent(cardElement, settings);
         if (animation) {
             if (animation.fromStock) {
-                promise = this.animationFromElement({
-                    element: cardElement,
-                    fromElement: animation.fromStock.element,
+                promise = this.animationFromElement(cardElement, animation.fromStock.element, {
                     originalSide: animation.originalSide,
                     rotationDelta: animation.rotationDelta,
                     animation: animation.animation,
@@ -645,9 +641,7 @@ var CardStock = /** @class */ (function () {
                 animation.fromStock.removeCard(card);
             }
             else if (animation.fromElement) {
-                promise = this.animationFromElement({
-                    element: cardElement,
-                    fromElement: animation.fromElement,
+                promise = this.animationFromElement(cardElement, animation.fromElement, {
                     originalSide: animation.originalSide,
                     rotationDelta: animation.rotationDelta,
                     animation: animation.animation,
@@ -847,15 +841,24 @@ var CardStock = /** @class */ (function () {
         }
         (_a = this.onCardClick) === null || _a === void 0 ? void 0 : _a.call(this, card);
     };
-    CardStock.prototype.animationFromElement = function (settings) {
-        var _a;
-        if (document.visibilityState !== 'hidden' && !this.manager.game.instantaneousMode) {
-            var animation = (_a = settings.animation) !== null && _a !== void 0 ? _a : stockSlideAnimation;
-            return animation(settings);
+    /**
+     * @param element The element to animate. The element is added to the destination stock before the animation starts.
+     * @param fromElement The HTMLElement to animate from.
+     */
+    CardStock.prototype.animationFromElement = function (element, fromElement, settings) {
+        var _a, _b, _c, _d, _e, _f;
+        var side = element.dataset.side;
+        if (settings.originalSide && settings.originalSide != side) {
+            var cardSides_1 = element.getElementsByClassName('card-sides')[0];
+            cardSides_1.style.transition = 'none';
+            element.dataset.side = settings.originalSide;
+            setTimeout(function () {
+                cardSides_1.style.transition = null;
+                element.dataset.side = side;
+            });
         }
-        else {
-            return Promise.resolve(false);
-        }
+        var animation = (_a = settings.animation) !== null && _a !== void 0 ? _a : slideAnimation;
+        return (_f = animation(element, __assign(__assign({ duration: (_c = (_b = this.manager.animationManager.getSettings()) === null || _b === void 0 ? void 0 : _b.duration) !== null && _c !== void 0 ? _c : 500, scale: (_e = (_d = this.manager.animationManager.getZoomManager()) === null || _d === void 0 ? void 0 : _d.zoom) !== null && _e !== void 0 ? _e : undefined }, settings !== null && settings !== void 0 ? settings : {}), { game: this.manager.game, fromElement: fromElement }))) !== null && _f !== void 0 ? _f : Promise.resolve(false);
     };
     /**
      * Set the card to its front (visible) or back (not visible) side.
@@ -928,6 +931,10 @@ var Deck = /** @class */ (function (_super) {
         this.element.style.setProperty('--thickness', thickness + 'px');
     };
     Deck.prototype.addCard = function (card, animation, settings) {
+        var _a;
+        if (this.autoUpdateCardNumber && ((_a = settings === null || settings === void 0 ? void 0 : settings.autoUpdateCardNumber) !== null && _a !== void 0 ? _a : true)) {
+            this.setCardNumber(this.cardNumber + 1);
+        }
         return _super.prototype.addCard.call(this, card, animation, settings);
     };
     Deck.prototype.cardRemoved = function (card) {
@@ -1186,9 +1193,11 @@ var CardManager = /** @class */ (function () {
      * @param settings: a `CardManagerSettings` object
      */
     function CardManager(game, settings) {
+        var _a;
         this.game = game;
         this.settings = settings;
         this.stocks = [];
+        this.animationManager = (_a = settings.animationManager) !== null && _a !== void 0 ? _a : new AnimationManager(game);
     }
     CardManager.prototype.addStock = function (stock) {
         this.stocks.push(stock);
