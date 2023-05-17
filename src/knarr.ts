@@ -306,7 +306,7 @@ class Knarr implements KnarrGame {
                 case 'trade':
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
-                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelets").replace('${number}', number), () => this.trade(number));
+                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets[number] == 0));
                         if (tradeArgs.bracelets < number) {
                             document.getElementById(`trade${number}_button`).classList.add('disabled');
                         }
@@ -585,8 +585,16 @@ class Knarr implements KnarrGame {
         });
     }
   	
-    public trade(number: number) {
+    public trade(number: number, showWarning: boolean) {
         if(!(this as any).checkAction('trade')) {
+            return;
+        }
+
+        if (showWarning) {
+            (this as any).confirmationDialog(
+                _("Are you sure you want to trade ${bracelets} bracelet(s) ? There is nothing to gain yet with this number of bracelet(s)").replace('${bracelets}', number), 
+                () => this.trade(number, false)
+            );
             return;
         }
 
@@ -762,7 +770,8 @@ class Knarr implements KnarrGame {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ');
+                    const entries = Object.entries(args.gains);
+                    args.gains = entries.length ? entries.map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ') : `<strong>${_('nothing')}</strong>`;
                 }
 
                 for (const property in args) {

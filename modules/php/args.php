@@ -86,9 +86,14 @@ trait ArgsTrait {
         $playerId = intval($this->getActivePlayerId());
 
         $bracelets = $this->getPlayer($playerId)->bracelet;
+        $gainsByBracelets = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $gainsByBracelets[$i] = count($this->getTradeGains($playerId, $i));
+        }
 
         return [
             'bracelets' => $bracelets,
+            'gainsByBracelets' => $gainsByBracelets,
         ];
     }
 } 

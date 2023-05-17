@@ -526,4 +526,24 @@ trait UtilTrait {
     function getAvailableDeckCards() {
         return intval($this->cards->countCardInLocation('deck')) + intval($this->cards->countCardInLocation('discard'));
     }
+
+    function getTradeGains(int $playerId, int $bracelets) {
+        $destinations = $this->getDestinationsByLocation('played'.$playerId);
+
+        $gains = [];
+
+        $rows = array_merge(
+            [$this->getBoatGain()],
+            array_map(fn($destination) => $destination->gains, $destinations),
+        );
+        foreach ($rows as $row) {
+            for ($i = 0; $i < $bracelets; $i++) {
+                if ($row[$i] !== null) {
+                    $gains[] = $row[$i];
+                }
+            }
+        }
+
+        return $gains;
+    }
 }

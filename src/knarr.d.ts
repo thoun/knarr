@@ -94,6 +94,7 @@ interface EnteringPayDestinationArgs {
 
 interface EnteringTradeArgs {
     bracelets: number;
+    gainsByBracelets: { [bracelets: number]: number };
 }
 
 // playCard

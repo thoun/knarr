@@ -1955,7 +1955,7 @@ var Knarr = /** @class */ (function () {
                 case 'trade':
                     var tradeArgs_1 = args;
                     [1, 2, 3].forEach(function (number) {
-                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelets").replace('${number}', number), function () { return _this.trade(number); });
+                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets[number] == 0); });
                         if (tradeArgs_1.bracelets < number) {
                             document.getElementById("trade".concat(number, "_button")).classList.add('disabled');
                         }
@@ -2169,8 +2169,13 @@ var Knarr = /** @class */ (function () {
             recruits: recruits
         });
     };
-    Knarr.prototype.trade = function (number) {
+    Knarr.prototype.trade = function (number, showWarning) {
+        var _this = this;
         if (!this.checkAction('trade')) {
+            return;
+        }
+        if (showWarning) {
+            this.confirmationDialog(_("Are you sure you want to trade ${bracelets} bracelet(s) ? There is nothing to gain yet with this number of bracelet(s)").replace('${bracelets}', number), function () { return _this.trade(number, false); });
             return;
         }
         this.takeAction('trade', {
@@ -2310,7 +2315,8 @@ var Knarr = /** @class */ (function () {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
-                    args.gains = Object.entries(args.gains).map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ');
+                    var entries = Object.entries(args.gains);
+                    args.gains = entries.length ? entries.map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ') : "<strong>".concat(_('nothing'), "</strong>");
                 }
                 for (var property in args) {
                     if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {

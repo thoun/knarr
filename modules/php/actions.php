@@ -351,21 +351,7 @@ trait ActionTrait {
             'number' => $number, // for logs
         ]);
 
-        $destinations = $this->getDestinationsByLocation('played'.$playerId);
-
-        $gains = [];
-
-        $rows = array_merge(
-            [$this->getBoatGain()],
-            array_map(fn($destination) => $destination->gains, $destinations),
-        );
-        foreach ($rows as $row) {
-            for ($i = 0; $i < $number; $i++) {
-                if ($row[$i] !== null) {
-                    $gains[] = $row[$i];
-                }
-            }
-        }
+        $gains = $this->getTradeGains($playerId, $number);
         $groupGains = $this->groupGains($gains);
         $effectiveGains = $this->gainResources($playerId, $groupGains, 'trade');
 
