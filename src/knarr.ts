@@ -28,7 +28,7 @@ const FAME = 4;
 const CARD = 5;
 
 function getVpByFame(fame: number) {
-    return Object.entries(VP_BY_FAME).find(entry => Number(entry[0]) >= fame)[1];
+    return Object.entries(VP_BY_FAME).findLast(entry => fame >= Number(entry[0]))[1];
 }
 
 class Knarr implements KnarrGame {
@@ -478,7 +478,7 @@ class Knarr implements KnarrGame {
                         this.setRecruits(playerId, this.recruitCounters[playerId].getValue() + amount);
                         break;
                     case FAME:
-                        this.setFame(playerId, this.fameCounters[playerId].getValue() + amount);
+                        this.setFame(playerId, this.tableCenter.getFame(playerId) + amount);
                         break;
                     case CARD:
                         // TODO
@@ -494,6 +494,7 @@ class Knarr implements KnarrGame {
     }
 
     private setFame(playerId: number, count: number) {
+        console.log('setFame', playerId, count);
         this.fameCounters[playerId].toValue(getVpByFame(count));
         this.tableCenter.setFame(playerId, count);
     }

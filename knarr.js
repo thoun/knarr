@@ -1531,6 +1531,7 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.moveFame = function () {
         var _this = this;
         this.fame.forEach(function (points, playerId) {
+            console.log(points, playerId);
             var markerDiv = document.getElementById("player-".concat(playerId, "-fame-marker"));
             var coordinates = _this.getFameCoordinates(points);
             var left = coordinates[0];
@@ -1549,6 +1550,9 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.setFame = function (playerId, fame) {
         this.fame.set(playerId, Math.min(14, fame));
         this.moveFame();
+    };
+    TableCenter.prototype.getFame = function (playerId) {
+        return this.fame.get(playerId);
     };
     TableCenter.prototype.setCardsSelectable = function (selectable, freeColor, recruits) {
         var _this = this;
@@ -1710,7 +1714,7 @@ var RECRUIT = 3;
 var FAME = 4;
 var CARD = 5;
 function getVpByFame(fame) {
-    return Object.entries(VP_BY_FAME).find(function (entry) { return Number(entry[0]) >= fame; })[1];
+    return Object.entries(VP_BY_FAME).findLast(function (entry) { return fame >= Number(entry[0]); })[1];
 }
 var Knarr = /** @class */ (function () {
     function Knarr() {
@@ -2080,7 +2084,7 @@ var Knarr = /** @class */ (function () {
                         _this.setRecruits(playerId, _this.recruitCounters[playerId].getValue() + amount);
                         break;
                     case FAME:
-                        _this.setFame(playerId, _this.fameCounters[playerId].getValue() + amount);
+                        _this.setFame(playerId, _this.tableCenter.getFame(playerId) + amount);
                         break;
                     case CARD:
                         // TODO
@@ -2095,6 +2099,7 @@ var Knarr = /** @class */ (function () {
         this.tableCenter.setScore(playerId, score);
     };
     Knarr.prototype.setFame = function (playerId, count) {
+        console.log('setFame', playerId, count);
         this.fameCounters[playerId].toValue(getVpByFame(count));
         this.tableCenter.setFame(playerId, count);
     };

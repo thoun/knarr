@@ -124,6 +124,7 @@ class TableCenter {
 
     private moveFame() {
         this.fame.forEach((points, playerId) => {
+            console.log(points, playerId);
             const markerDiv = document.getElementById(`player-${playerId}-fame-marker`);
 
             const coordinates = this.getFameCoordinates(points);
@@ -143,9 +144,13 @@ class TableCenter {
         });
     }
     
-    setFame(playerId: number, fame: number) {
+    public setFame(playerId: number, fame: number) {
         this.fame.set(playerId, Math.min(14, fame));
         this.moveFame();
+    }
+    
+    public getFame(playerId: number): number {
+        return this.fame.get(playerId);
     }
 
     public setCardsSelectable(selectable: boolean, freeColor: number | null = null, recruits: number | null = null) {
