@@ -346,7 +346,9 @@ trait UtilTrait {
 
         foreach ($destination->cost as $color => $required) {
             $available = 0;
-            if ($color == DIFFERENT) {
+            if ($color == EQUAL) {
+                $available = max($playedCardsColors);
+            } else if ($color == DIFFERENT) {
                 $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
             } else {
                 $available = $playedCardsColors[$color]; 

@@ -49,3 +49,16 @@
   }
 
 }
+
+#first-player {
+  background: #6199b0;
+  color: white;
+  height: 20px;
+  font-size: 14px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  user-select: none;
+  padding: 0 10px;
+}

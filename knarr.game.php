@@ -166,6 +166,7 @@ class Knarr extends Table {
   
         // Gather all information about current game situation (visible by player $current_player_id).
 
+        $firstPlayerId = null;
         $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
 
         $result['boatSideOption'] = $this->getBoatSideOption();
@@ -178,6 +179,10 @@ class Knarr extends Table {
         
         foreach($result['players'] as $playerId => &$player) {
             $player['playerNo'] = intval($player['playerNo']);
+            if ($player['playerNo'] == 1) {
+                $firstPlayerId = $playerId;
+            }
+
             $player['fame'] = intval($player['fame']);
             $player['recruit'] = intval($player['recruit']);
             $player['bracelet'] = intval($player['bracelet']);
@@ -202,6 +207,7 @@ class Knarr extends Table {
             'A' => $this->getDestinationsByLocation('slotA'),
             'B' => $this->getDestinationsByLocation('slotB'),
         ];
+        $result['firstPlayerId'] = $firstPlayerId;
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   
         return $result;

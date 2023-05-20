@@ -51,6 +51,7 @@ interface KnarrGamedatas {
     boatSideOption: number;
     variantOption: number;
     artifacts?: number[];
+    firstPlayerId: number;
     lastTurn: boolean;
     reservePossible: boolean;
 }

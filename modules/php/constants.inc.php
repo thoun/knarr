@@ -9,6 +9,7 @@ define('B', 'B');
 /*
  * Color
  */
+define('EQUAL', -1);
 define('DIFFERENT', 0);
 define('RED', 1);
 define('YELLOW', 2);

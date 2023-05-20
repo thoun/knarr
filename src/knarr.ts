@@ -19,6 +19,7 @@ const VP_BY_FAME = {
     14: 5,
 };
 
+const EQUAL = -1;
 const DIFFERENT = 0;
 
 const VP = 1;
@@ -420,7 +421,8 @@ class Knarr implements KnarrGame {
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
                 
-            </div>`;
+            </div>
+            <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
 
             dojo.place(html, `player_board_${player.id}`);
 

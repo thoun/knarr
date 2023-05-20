@@ -122,7 +122,7 @@ class PlayerTable {
                 const element = this.played[i].getCardElement(card);
                 let disabled = !selectable || cost == null;
                 if (!disabled) {
-                    if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
+                    if (colors.length != 1 || (colors.length == 1 && ![EQUAL, DIFFERENT].includes(colors[0]))) {
                         disabled = !colors.includes(card.color);
                     }
                 }

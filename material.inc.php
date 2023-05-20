@@ -53,9 +53,9 @@ $this->DESTINATIONS = [
     19 => new DestinationType([RED => 2], [BRACELET => 1, FAME => 1], [VP, null, VP]),
     20 => new DestinationType([RED => 2], [BRACELET => 1], [VP, VP, null]),
     // B
-    21 => new DestinationType([DIFFERENT => 4], [VP => 5, RECRUIT => 1], [null, null, VP]),
-    22 => new DestinationType([DIFFERENT => 4], [VP => 5, FAME => 1], [null, null, VP]),
-    23 => new DestinationType([DIFFERENT => 4], [VP => 5, BRACELET => 1], [null, null, VP]),
+    21 => new DestinationType([EQUAL => 4], [VP => 5, RECRUIT => 1], [null, null, VP]),
+    22 => new DestinationType([EQUAL => 4], [VP => 5, FAME => 1], [null, null, VP]),
+    23 => new DestinationType([EQUAL => 4], [VP => 5, BRACELET => 1], [null, null, VP]),
     24 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, BRACELET => 1, RECRUIT => 1, FAME => 1, CARD => 1], [null, null, VP]),
     25 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, BRACELET => 1, RECRUIT => 1, FAME => 1, CARD => 1], [null, null, VP]),
     26 => new DestinationType([PURPLE => 2, YELLOW => 2], [VP => 6], [null, VP, null]),

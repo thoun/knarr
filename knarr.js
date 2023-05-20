@@ -1652,7 +1652,7 @@ var PlayerTable = /** @class */ (function () {
                 var element = _this.played[i].getCardElement(card);
                 var disabled = !selectable || cost == null;
                 if (!disabled) {
-                    if (colors.length != 1 || (colors.length == 1 && colors[0] != DIFFERENT)) {
+                    if (colors.length != 1 || (colors.length == 1 && ![EQUAL, DIFFERENT].includes(colors[0]))) {
                         disabled = !colors.includes(card.color);
                     }
                 }
@@ -1707,6 +1707,7 @@ var VP_BY_FAME = {
     10: 3,
     14: 5,
 };
+var EQUAL = -1;
 var DIFFERENT = 0;
 var VP = 1;
 var BRACELET = 2;
@@ -2035,7 +2036,7 @@ var Knarr = /** @class */ (function () {
                     <div class="player-hand-card"></div>
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>*/
-            var html = "<div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-".concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>");
+            var html = "<div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-".concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
             dojo.place(html, "player_board_".concat(player.id));
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
