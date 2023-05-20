@@ -193,10 +193,11 @@ class Knarr implements KnarrGame {
     }
 
     private onEnteringPayDestination(args: EnteringPayDestinationArgs) {
+        const selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
+        selectedCardDiv.classList.add('selected-pay-destination');
+
         if ((this as any).isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setCardsSelectable(true, args.selectedDestination.cost);
-            const selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
-            selectedCardDiv.classList.add('selected-pay-destination');
         }
     }
 
@@ -255,7 +256,6 @@ class Knarr implements KnarrGame {
         const button = document.getElementById(`payDestination_button`);
 
         const total = Object.values(args.selectedDestination.cost).reduce((a, b) => a + b, 0);
-        let invalidSelectedCard = false; // TODO!!!
         const cards = selectedCards.length;
         const recruits = total - cards;
         let message = '';
@@ -268,7 +268,7 @@ class Knarr implements KnarrGame {
         }
 
         button.innerHTML = message.replace('${recruits}', ''+recruits).replace('${cards}', ''+cards);
-        button.classList.toggle('disabled', invalidSelectedCard || args.recruits < recruits);
+        button.classList.toggle('disabled', args.recruits < recruits);
         button.dataset.recruits = ''+recruits;
     }
 

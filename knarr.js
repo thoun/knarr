@@ -1579,6 +1579,7 @@ var PlayerTable = /** @class */ (function () {
         var _this = this;
         this.game = game;
         this.played = [];
+        this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
         var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n        ");
@@ -1617,7 +1618,12 @@ var PlayerTable = /** @class */ (function () {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onCardClick = function (card) { return _this.game.onPlayedCardClick(card); };
+            this.played[i].onCardClick = function (card) {
+                _this.game.onPlayedCardClick(card);
+                if (_this.limitSelection !== null) {
+                    _this.updateSelectable();
+                }
+            };
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -1649,13 +1655,15 @@ var PlayerTable = /** @class */ (function () {
         var _this = this;
         if (cost === void 0) { cost = null; }
         var colors = cost == null ? [] : Object.keys(cost).map(function (key) { return Number(key); });
+        var equalOrDifferent = cost == null ? false : [EQUAL, DIFFERENT].includes(colors[0]);
+        this.limitSelection = equalOrDifferent ? colors[0] : null;
         var _loop_2 = function (i) {
             this_1.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
             this_1.played[i].getCards().forEach(function (card) {
                 var element = _this.played[i].getCardElement(card);
                 var disabled = !selectable || cost == null;
                 if (!disabled) {
-                    if (colors.length != 1 || (colors.length == 1 && ![EQUAL, DIFFERENT].includes(colors[0]))) {
+                    if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
                         disabled = !colors.includes(card.color);
                     }
                 }
@@ -1703,6 +1711,29 @@ var PlayerTable = /** @class */ (function () {
         }
         for (var i = 1; i <= 3; i++) {
             document.getElementById("player-table-".concat(this.playerId, "-column").concat(i)).classList.toggle('highlight', i <= number);
+        }
+    };
+    PlayerTable.prototype.updateSelectable = function () {
+        var _this = this;
+        var selectedCards = this.getSelectedCards();
+        var selectedColors = selectedCards.map(function (card) { return card.color; });
+        var color = selectedCards.length ? selectedCards[0].color : null;
+        var _loop_3 = function (i) {
+            this_2.played[i].getCards().forEach(function (card) {
+                var element = _this.played[i].getCardElement(card);
+                var disabled = false;
+                if (_this.limitSelection === DIFFERENT) {
+                    disabled = selectedColors.includes(card.color) && !selectedCards.includes(card);
+                }
+                else if (_this.limitSelection === EQUAL) {
+                    disabled = color !== null && card.color != color;
+                }
+                element.classList.toggle('disabled', disabled);
+            });
+        };
+        var this_2 = this;
+        for (var i = 1; i <= 5; i++) {
+            _loop_3(i);
         }
     };
     return PlayerTable;
@@ -1866,10 +1897,10 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.onEnteringPayDestination = function (args) {
         var _a;
+        var selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
+        selectedCardDiv.classList.add('selected-pay-destination');
         if (this.isCurrentPlayerActive()) {
             (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.selectedDestination.cost);
-            var selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
-            selectedCardDiv.classList.add('selected-pay-destination');
         }
     };
     Knarr.prototype.onLeavingState = function (stateName) {
@@ -1920,7 +1951,6 @@ var Knarr = /** @class */ (function () {
         var selectedCards = this.getCurrentPlayerTable().getSelectedCards();
         var button = document.getElementById("payDestination_button");
         var total = Object.values(args.selectedDestination.cost).reduce(function (a, b) { return a + b; }, 0);
-        var invalidSelectedCard = false; // TODO!!!
         var cards = selectedCards.length;
         var recruits = total - cards;
         var message = '';
@@ -1934,7 +1964,7 @@ var Knarr = /** @class */ (function () {
             message = _("Pay ${recruits} recruit(s)");
         }
         button.innerHTML = message.replace('${recruits}', '' + recruits).replace('${cards}', '' + cards);
-        button.classList.toggle('disabled', invalidSelectedCard || args.recruits < recruits);
+        button.classList.toggle('disabled', args.recruits < recruits);
         button.dataset.recruits = '' + recruits;
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the

@@ -8,6 +8,7 @@ class PlayerTable {
     public played: LineStock<Card>[] = [];
     public destinations: LineStock<Destination>;
     public reservedDestinations?: LineStock<Destination>;
+    public limitSelection: number | null = null;
 
     private currentPlayer: boolean;
 
@@ -81,7 +82,12 @@ class PlayerTable {
                 direction: 'column',
                 center: false,
             });
-            this.played[i].onCardClick = card => this.game.onPlayedCardClick(card);
+            this.played[i].onCardClick = card => {
+                this.game.onPlayedCardClick(card);
+                if (this.limitSelection !== null) {
+                    this.updateSelectable();
+                }
+            }
             this.played[i].addCards(player.playedCards[i]);
             playedDiv.style.setProperty('--card-overlap', '195px');
         }
@@ -118,6 +124,8 @@ class PlayerTable {
 
     public setCardsSelectable(selectable: boolean, cost: { [color: number]: number } | null = null) {
         const colors = cost == null ? [] : Object.keys(cost).map(key => Number(key));
+        const equalOrDifferent = cost == null ? false : [EQUAL, DIFFERENT].includes(colors[0]);
+        this.limitSelection = equalOrDifferent ? colors[0] : null;
 
         for (let i = 1; i <= 5; i++) {
             this.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
@@ -125,7 +133,7 @@ class PlayerTable {
                 const element = this.played[i].getCardElement(card);
                 let disabled = !selectable || cost == null;
                 if (!disabled) {
-                    if (colors.length != 1 || (colors.length == 1 && ![EQUAL, DIFFERENT].includes(colors[0]))) {
+                    if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
                         disabled = !colors.includes(card.color);
                     }
                 }
@@ -176,6 +184,26 @@ class PlayerTable {
 
         for (let i = 1; i <= 3; i++) {
             document.getElementById(`player-table-${this.playerId}-column${i}`).classList.toggle('highlight', i <= number);
+        }
+    }
+    
+    private updateSelectable() {
+        const selectedCards = this.getSelectedCards();
+        const selectedColors = selectedCards.map(card => card.color);
+        const color = selectedCards.length ? selectedCards[0].color : null;
+
+        for (let i = 1; i <= 5; i++) {
+            this.played[i].getCards().forEach(card => {
+                const element = this.played[i].getCardElement(card);
+                
+                let disabled = false;
+                if (this.limitSelection === DIFFERENT) {
+                    disabled = selectedColors.includes(card.color) && !selectedCards.includes(card);
+                } else if (this.limitSelection === EQUAL) {
+                    disabled = color !== null && card.color != color;
+                }
+                element.classList.toggle('disabled', disabled);
+            });
         }
     }
 }
