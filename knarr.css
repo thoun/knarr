@@ -923,6 +923,24 @@ body > .card {
 .player-table .boat .icon[data-number="1"].bracelet {
   right: 2px;
 }
+.player-table .boat .column {
+  position: absolute;
+  bottom: 110px;
+  width: 28px;
+  height: var(--column-height);
+}
+.player-table .boat .column[data-number="1"] {
+  left: 112px;
+}
+.player-table .boat .column[data-number="2"] {
+  left: 141px;
+}
+.player-table .boat .column[data-number="3"] {
+  left: 170px;
+}
+.player-table .boat .column.highlight {
+  box-shadow: 0 0 2px 3px orange;
+}
 .player-table .block-with-text {
   display: flex;
 }

@@ -1587,6 +1587,9 @@ var PlayerTable = /** @class */ (function () {
         }
         html += "\n            <div id=\"player-table-".concat(this.playerId, "-destinations\" class=\"destinations\"></div>\n            <div id=\"player-table-").concat(this.playerId, "-boat\" class=\"boat ").concat(this.game.getBoatSide() == 2 ? 'advanced' : 'normal', "\" data-color=\"").concat(player.color, "\" data-recruits=\"").concat(player.recruit, "\" data-bracelets=\"").concat(player.bracelet, "\">");
         for (var i = 1; i <= 3; i++) {
+            if (this.currentPlayer) {
+                html += "<div id=\"player-table-".concat(this.playerId, "-column").concat(i, "\" class=\"column\" data-number=\"").concat(i, "\"></div>");
+            }
             html += "\n            <div class=\"icon bracelet\" data-number=\"".concat(i, "\"></div>\n            <div class=\"icon recruit\" data-number=\"").concat(i, "\"></div>\n            ");
         }
         html += "\n            </div>\n            <div class=\"visible-cards\">";
@@ -1622,7 +1625,7 @@ var PlayerTable = /** @class */ (function () {
         this.destinations = new LineStock(this.game.destinationsManager, destinationsDiv, {
             center: false,
         });
-        destinationsDiv.style.setProperty('--card-overlap', '92px');
+        destinationsDiv.style.setProperty('--card-overlap', '94px');
         this.destinations.addCards(player.destinations);
         if (reservePossible) {
             this.reservedDestinations = new LineStock(this.game.destinationsManager, document.getElementById("player-table-".concat(this.playerId, "-reserved-destinations")), {
@@ -1693,6 +1696,14 @@ var PlayerTable = /** @class */ (function () {
             element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
+    };
+    PlayerTable.prototype.showColumns = function (number) {
+        if (number > 0) {
+            document.getElementById("player-table-".concat(this.playerId, "-boat")).style.setProperty('--column-height', "".concat(35 * (this.destinations.getCards().length + 1), "px"));
+        }
+        for (var i = 1; i <= 3; i++) {
+            document.getElementById("player-table-".concat(this.playerId, "-column").concat(i)).classList.toggle('highlight', i <= number);
+        }
     };
     return PlayerTable;
 }());
@@ -1909,7 +1920,7 @@ var Knarr = /** @class */ (function () {
         var selectedCards = this.getCurrentPlayerTable().getSelectedCards();
         var button = document.getElementById("payDestination_button");
         var total = Object.values(args.selectedDestination.cost).reduce(function (a, b) { return a + b; }, 0);
-        var invalidSelectedCard = false; // TODO
+        var invalidSelectedCard = false; // TODO!!!
         var cards = selectedCards.length;
         var recruits = total - cards;
         var message = '';
@@ -1946,8 +1957,9 @@ var Knarr = /** @class */ (function () {
                 case 'chooseNewCard':
                     var chooseNewCardArgs_1 = args;
                     [1, 2, 3, 4, 5].forEach(function (color) {
-                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(chooseNewCardArgs_1.allFree || color == chooseNewCardArgs_1.freeColor ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); });
-                        if (!chooseNewCardArgs_1.allFree && color != chooseNewCardArgs_1.freeColor && chooseNewCardArgs_1.recruits < 1) {
+                        var free = chooseNewCardArgs_1.allFree || color == chooseNewCardArgs_1.freeColor;
+                        _this.addActionButton("chooseNewCard".concat(color, "_button"), _("Take ${color}").replace('${color}', "<div class=\"color\" data-color=\"".concat(color, "\"></div>")) + " (".concat(free ? _('free') : "1 <div class=\"recruit icon\"></div>", ")"), function () { return _this.chooseNewCard(chooseNewCardArgs_1.centerCards.find(function (card) { return card.locationArg == color; }).id); }, null, null, free ? undefined : 'gray');
+                        if (!free && chooseNewCardArgs_1.recruits < 1) {
                             document.getElementById("chooseNewCard".concat(color, "_button")).classList.add('disabled');
                         }
                     });
@@ -1961,8 +1973,13 @@ var Knarr = /** @class */ (function () {
                     var tradeArgs_1 = args;
                     [1, 2, 3].forEach(function (number) {
                         _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets[number] == 0); });
+                        var button = document.getElementById("trade".concat(number, "_button"));
                         if (tradeArgs_1.bracelets < number) {
-                            document.getElementById("trade".concat(number, "_button")).classList.add('disabled');
+                            button.classList.add('disabled');
+                        }
+                        else {
+                            button.addEventListener('mouseenter', function () { return _this.getCurrentPlayerTable().showColumns(number); });
+                            button.addEventListener('mouseleave', function () { return _this.getCurrentPlayerTable().showColumns(0); });
                         }
                     });
                     this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');

@@ -30,6 +30,9 @@ class PlayerTable {
             <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
             <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}">`;
         for (let i = 1; i <= 3; i++) {
+            if (this.currentPlayer) {
+                html += `<div id="player-table-${this.playerId}-column${i}" class="column" data-number="${i}"></div>`;
+            }
             html += `
             <div class="icon bracelet" data-number="${i}"></div>
             <div class="icon recruit" data-number="${i}"></div>
@@ -87,7 +90,7 @@ class PlayerTable {
         this.destinations = new LineStock<Destination>(this.game.destinationsManager, destinationsDiv, {
             center: false,
         });
-        destinationsDiv.style.setProperty('--card-overlap', '92px');
+        destinationsDiv.style.setProperty('--card-overlap', '94px');
         
         this.destinations.addCards(player.destinations);
 
@@ -164,5 +167,15 @@ class PlayerTable {
             element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
+    }
+    
+    public showColumns(number: number) {
+        if (number > 0) {
+            document.getElementById(`player-table-${this.playerId}-boat`).style.setProperty('--column-height', `${35 * (this.destinations.getCards().length + 1)}px`);
+        }
+
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`player-table-${this.playerId}-column${i}`).classList.toggle('highlight', i <= number);
+        }
     }
 }

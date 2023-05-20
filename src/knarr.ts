@@ -255,7 +255,7 @@ class Knarr implements KnarrGame {
         const button = document.getElementById(`payDestination_button`);
 
         const total = Object.values(args.selectedDestination.cost).reduce((a, b) => a + b, 0);
-        let invalidSelectedCard = false; // TODO
+        let invalidSelectedCard = false; // TODO!!!
         const cards = selectedCards.length;
         const recruits = total - cards;
         let message = '';
@@ -292,8 +292,9 @@ class Knarr implements KnarrGame {
                 case 'chooseNewCard':
                     const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
                     [1, 2, 3, 4, 5].forEach(color => {
-                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id));
-                        if (!chooseNewCardArgs.allFree && color != chooseNewCardArgs.freeColor && chooseNewCardArgs.recruits < 1) {
+                        const free = chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor;
+                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${free ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id), null, null, free ? undefined : 'gray');
+                        if (!free && chooseNewCardArgs.recruits < 1) {
                             document.getElementById(`chooseNewCard${color}_button`).classList.add('disabled');
                         }
                     });
@@ -308,8 +309,12 @@ class Knarr implements KnarrGame {
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
                         (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets[number] == 0));
+                        const button = document.getElementById(`trade${number}_button`);
                         if (tradeArgs.bracelets < number) {
-                            document.getElementById(`trade${number}_button`).classList.add('disabled');
+                            button.classList.add('disabled');
+                        } else {
+                            button.addEventListener('mouseenter', () => this.getCurrentPlayerTable().showColumns(number));
+                            button.addEventListener('mouseleave', () => this.getCurrentPlayerTable().showColumns(0));
                         }
                     });
                     (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');

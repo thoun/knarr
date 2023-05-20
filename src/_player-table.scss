@@ -132,6 +132,23 @@
         &.bracelet { right: 2px; }
       }
     }
+
+    .column {
+      position: absolute;
+      bottom: 110px;
+      width: 28px;
+      height: var(--column-height);
+
+      @for $number from 1 through 3 {
+        &[data-number="#{$number}"] {
+          left: #{112px + ($number - 1) * 29px};
+        }
+      }
+
+      &.highlight {
+        box-shadow: 0 0 2px 3px orange;
+      }
+    }
   }
   
   .block-with-text {
