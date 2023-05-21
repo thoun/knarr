@@ -772,6 +772,34 @@ class Knarr implements KnarrGame {
         </div>`, 'page-title');
     }
 
+    public getGain(type: number): string {
+        switch (type) {
+            case 1: return _("Victory Point");
+            case 2: return _("Bracelet");
+            case 3: return _("Recruit");
+            case 4: return _("Fame");
+            case 5: return _("Card");
+        }
+    }
+
+    public getTooltipGain(type: number): string {
+        return `${this.getGain(type)} (<div class="icon" data-type="${type}"></div>)`;
+    }
+
+    public getColor(color: number): string {
+        switch (color) {
+            case 1: return _("Red");
+            case 2: return _("Yellow");
+            case 3: return _("Green");
+            case 4: return _("Blue");
+            case 5: return _("Purple");
+        }
+    }
+
+    public getTooltipColor(color: number): string {
+        return `${this.getColor(color)} (<div class="color" data-color="${color}"></div>)`;
+    }
+
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     public format_string_recursive(log: string, args: any) {

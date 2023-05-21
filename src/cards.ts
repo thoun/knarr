@@ -15,30 +15,11 @@ class CardsManager extends CardManager<Card> {
         });
     }
 
-    private getGain(type: number): string {
-        switch (type) {
-            case 1: return _("House");
-            case 2: return _("Storage");
-            case 3: return _("Human");
-            case 4: return _("Tool");
-        }
-    }
-
-    private getColor(color: number): string {
-        switch (color) {
-            case 1: return _("Blue");
-            case 2: return _("Yellow");
-            case 3: return _("Green");
-            case 4: return _("Red");
-            case 5: return _("Purple");
-        }
-    }
-
     private getTooltip(card: Card): string {
         let message = `
-        <strong>${_("Color:")}</strong> ${this.getColor(card.color)}
+        <strong>${_("Color:")}</strong> ${this.game.getTooltipColor(card.color)}
         <br>
-        <strong>${_("Gain:")}</strong> ${this.getGain(card.gain)}
+        <strong>${_("Gain:")}</strong> <strong>1</strong> ${this.game.getTooltipGain(card.gain)}
         `;
  
         return message;

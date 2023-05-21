@@ -135,6 +135,13 @@ html, .mode_3d #game_play_area_background {
   }
 }
 
+.dijitTooltipContents {
+  .icon, .color {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 
 #tables-and-center {
   position: relative;

@@ -62,6 +62,10 @@ interface KnarrGame extends Game {
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
+    //getGain(type: number): string;
+    //getColor(color: number): string;
+    getTooltipGain(type: number): string;
+    getTooltipColor(color: number): string;
     getBoatSide(): number;
     getVariantOption(): number;
     getGameStateName(): string;

@@ -1521,25 +1521,8 @@ var CardsManager = /** @class */ (function (_super) {
         _this.game = game;
         return _this;
     }
-    CardsManager.prototype.getGain = function (type) {
-        switch (type) {
-            case 1: return _("House");
-            case 2: return _("Storage");
-            case 3: return _("Human");
-            case 4: return _("Tool");
-        }
-    };
-    CardsManager.prototype.getColor = function (color) {
-        switch (color) {
-            case 1: return _("Blue");
-            case 2: return _("Yellow");
-            case 3: return _("Green");
-            case 4: return _("Red");
-            case 5: return _("Purple");
-        }
-    };
     CardsManager.prototype.getTooltip = function (card) {
-        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.getColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> ").concat(this.getGain(card.gain), "\n        ");
+        var message = "\n        <strong>".concat(_("Color:"), "</strong> ").concat(this.game.getTooltipColor(card.color), "\n        <br>\n        <strong>").concat(_("Gain:"), "</strong> <strong>1</strong> ").concat(this.game.getTooltipGain(card.gain), "\n        ");
         return message;
     };
     return CardsManager;
@@ -1554,7 +1537,6 @@ var DestinationsManager = /** @class */ (function (_super) {
                 div.dataset.cardId = '' + card.id;
             },
             setupFrontDiv: function (card, div) {
-                div.dataset.cardId = "".concat(_this.getId(card), "-front");
                 div.dataset.type = '' + card.type;
                 div.dataset.number = '' + card.number;
                 game.setTooltip(div.id, _this.getTooltip(card));
@@ -1563,29 +1545,31 @@ var DestinationsManager = /** @class */ (function (_super) {
         _this.game = game;
         return _this;
     }
-    DestinationsManager.prototype.getGain = function (type) {
+    DestinationsManager.prototype.getCost = function (cost) {
+        var _this = this;
+        var keys = Object.keys(cost).map(function (c) { return Number(c); });
+        if (keys.length == 1 && keys[0] == DIFFERENT) {
+            return _("${number} different color cards").replace('${number}', "<strong>".concat(cost[keys[0]], "</strong>"));
+        }
+        else if (keys.length == 1 && keys[0] == EQUAL) {
+            return _("${number} cards of the same color").replace('${number}', "<strong>".concat(cost[keys[0]], "</strong>"));
+        }
+        else {
+            return keys.map(function (color) { return _("${number} ${color} cards").replace('${number}', "<strong>".concat(cost[color], "</strong>")).replace('${color}', _this.game.getTooltipColor(color)); }).join(', ');
+        }
+    };
+    DestinationsManager.prototype.getGains = function (gains) {
+        var _this = this;
+        return Object.entries(gains).map(function (entry) { return "<strong>".concat(entry[1], "</strong> ").concat(_this.game.getTooltipGain(Number(entry[0]))); }).join(', ');
+    };
+    DestinationsManager.prototype.getType = function (type) {
         switch (type) {
-            case 1: return _("House");
-            case 2: return _("Storage");
-            case 3: return _("Human");
-            case 4: return _("Tool");
+            case 1: return _("TODO terre d'échange");
+            case 2: return _("TODO terre d'influence");
         }
     };
-    DestinationsManager.prototype.getColor = function (color) {
-        switch (color) {
-            case 1: return _("Blue");
-            case 2: return _("Yellow");
-            case 3: return _("Green");
-            case 4: return _("Red");
-            case 5: return _("Purple");
-        }
-    };
-    DestinationsManager.prototype.getTooltip = function (card) {
-        var message = "TODO"; /*
-        <strong>${_("Color:")}</strong> ${this.getColor(card.color)}
-        <br>
-        <strong>${_("Gain:")}</strong> ${this.getGain(card.gain)}
-        `;*/
+    DestinationsManager.prototype.getTooltip = function (destination) {
+        var message = "\n        <strong>".concat(_("Cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.getType(destination.type), "\n        ");
         return message;
     };
     return DestinationsManager;
@@ -2567,6 +2551,30 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_lastTurn = function (animate) {
         if (animate === void 0) { animate = true; }
         dojo.place("<div id=\"last-round\">\n            <span class=\"last-round-text ".concat(animate ? 'animate' : '', "\">").concat(_("This is the final round!"), "</span>\n        </div>"), 'page-title');
+    };
+    Knarr.prototype.getGain = function (type) {
+        switch (type) {
+            case 1: return _("Victory Point");
+            case 2: return _("Bracelet");
+            case 3: return _("Recruit");
+            case 4: return _("Fame");
+            case 5: return _("Card");
+        }
+    };
+    Knarr.prototype.getTooltipGain = function (type) {
+        return "".concat(this.getGain(type), " (<div class=\"icon\" data-type=\"").concat(type, "\"></div>)");
+    };
+    Knarr.prototype.getColor = function (color) {
+        switch (color) {
+            case 1: return _("Red");
+            case 2: return _("Yellow");
+            case 3: return _("Green");
+            case 4: return _("Blue");
+            case 5: return _("Purple");
+        }
+    };
+    Knarr.prototype.getTooltipColor = function (color) {
+        return "".concat(this.getColor(color), " (<div class=\"color\" data-color=\"").concat(color, "\"></div>)");
     };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */

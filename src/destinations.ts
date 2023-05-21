@@ -7,7 +7,6 @@ class DestinationsManager extends CardManager<Destination> {
                 div.dataset.cardId = ''+card.id;
             },
             setupFrontDiv: (card: Destination, div: HTMLElement) => { 
-                div.dataset.cardId = `${this.getId(card)}-front`;
                 div.dataset.type = ''+card.type;
                 div.dataset.number = ''+card.number;
                 game.setTooltip(div.id, this.getTooltip(card));
@@ -15,31 +14,36 @@ class DestinationsManager extends CardManager<Destination> {
         });
     }
 
-    private getGain(type: number): string {
+    private getCost(cost: { [color: number]: number }): string {
+        const keys = Object.keys(cost).map(c => Number(c));
+        if (keys.length == 1 && keys[0] == DIFFERENT) {
+            return _("${number} different color cards").replace('${number}', `<strong>${cost[keys[0]]}</strong>`);
+        } else if (keys.length == 1 && keys[0] == EQUAL) {
+            return _("${number} cards of the same color").replace('${number}', `<strong>${cost[keys[0]]}</strong>`);
+        } else {
+            return keys.map(color => _("${number} ${color} cards").replace('${number}', `<strong>${cost[color]}</strong>`).replace('${color}', this.game.getTooltipColor(color))).join(', ');
+        }
+    }
+
+    private getGains(gains: { [type: number]: number }): string {
+        return Object.entries(gains).map(entry => `<strong>${entry[1]}</strong> ${this.game.getTooltipGain(Number(entry[0]))}`).join(', ');
+    }
+
+    public getType(type: number): string {
         switch (type) {
-            case 1: return _("House");
-            case 2: return _("Storage");
-            case 3: return _("Human");
-            case 4: return _("Tool");
+            case 1: return _("TODO terre d'échange");
+            case 2: return _("TODO terre d'influence");
         }
     }
 
-    private getColor(color: number): string {
-        switch (color) {
-            case 1: return _("Blue");
-            case 2: return _("Yellow");
-            case 3: return _("Green");
-            case 4: return _("Red");
-            case 5: return _("Purple");
-        }
-    }
-
-    private getTooltip(card: Destination): string {
-        let message = `TODO`;/*
-        <strong>${_("Color:")}</strong> ${this.getColor(card.color)}
+    private getTooltip(destination: Destination): string {
+        let message = `
+        <strong>${_("Cost:")}</strong> ${this.getCost(destination.cost)} (recruits can be used as jokers)
         <br>
-        <strong>${_("Gain:")}</strong> ${this.getGain(card.gain)}
-        `;*/
+        <strong>${_("Immediate gains:")}</strong> ${this.getGains(destination.immediateGains)}
+        <br>
+        <strong>${_("Type:")}</strong> ${this.getType(destination.type)}
+        `;
  
         return message;
     }
