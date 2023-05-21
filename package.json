@@ -10,10 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bga-zoom": "thoun/bga-zoom",
-    "bga-jump-to": "thoun/bga-jump-to",
-    "bga-animations": "thoun/bga-animations#main",
-    "bga-cards": "thoun/bga-cards#main"
+    "bga-zoom": "thoun/bga-zoom#0.1.0",
+    "bga-jump-to": "thoun/bga-jump-to#0.1.0",
+    "bga-animations": "thoun/bga-animations#0.1.0",
+    "bga-cards": "thoun/bga-cards#1.0.3"
   },
   "devDependencies": {
     "sass": "^1.32.6",

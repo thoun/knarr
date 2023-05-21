@@ -7,11 +7,11 @@ class CardsManager extends CardManager<Card> {
                 div.dataset.cardId = ''+card.id;
             },
             setupFrontDiv: (card: Card, div: HTMLElement) => { 
-                div.dataset.cardId = `${this.getId(card)}-front`;
                 div.dataset.color = ''+card.color;
                 div.dataset.gain = ''+card.gain;
                 game.setTooltip(div.id, this.getTooltip(card));
             },
+            isCardVisible: card => Boolean(card.color),
         });
     }
 
