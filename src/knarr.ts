@@ -29,7 +29,7 @@ const FAME = 4;
 const CARD = 5;
 
 function getVpByFame(fame: number) {
-    return Object.entries(VP_BY_FAME).findLast(entry => fame >= Number(entry[0]))[1];
+    return Object.entries(VP_BY_FAME).find(entry => fame >= Number(entry[0]))[1];
 }
 
 class Knarr implements KnarrGame {

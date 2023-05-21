@@ -291,6 +291,107 @@ var JumpToManager = /** @class */ (function () {
  * @param settings an `AnimationSettings` object
  * @returns a promise when animation ends
  */
+function cumulatedAnimations(element, animations, settingsOrSettingsArray) {
+    var settings = Array.isArray(settingsOrSettingsArray) ? settingsOrSettingsArray[0] : settingsOrSettingsArray;
+    if (!animations.length) {
+        throw new Error("[bga-animation] animations of cumulatedAnimations cannot be empty");
+    }
+    else if (animations.length == 1) {
+        return animations[0](element, settings);
+    }
+    else {
+        // multiple animations, we play the first then we resursively call the next ones
+        return animations[0](element, settings).then(function () {
+            return cumulatedAnimations(element, animations.slice(1), Array.isArray(settingsOrSettingsArray) ? settingsOrSettingsArray.slice(1) : settingsOrSettingsArray);
+        });
+    }
+}
+/**
+ * Show the element at the center of the screen
+ *
+ * @param element the element to animate
+ * @param settings an `AnimationSettings` object
+ * @returns a promise when animation ends
+ */
+function pauseAnimation(element, settings) {
+    var promise = new Promise(function (success) {
+        var _a;
+        // should be checked at the beginning of every animation
+        if (!shouldAnimate(settings)) {
+            success(false);
+            return promise;
+        }
+        var duration = (_a = settings === null || settings === void 0 ? void 0 : settings.duration) !== null && _a !== void 0 ? _a : 500;
+        setTimeout(function () { return success(true); }, duration);
+    });
+    return promise;
+}
+/**
+ * Show the element at the center of the screen
+ *
+ * @param element the element to animate
+ * @param settings an `AnimationSettings` object
+ * @returns a promise when animation ends
+ */
+function showScreenCenterAnimation(element, settings) {
+    var promise = new Promise(function (success) {
+        var _a, _b, _c, _d;
+        // should be checked at the beginning of every animation
+        if (!shouldAnimate(settings)) {
+            success(false);
+            return promise;
+        }
+        var elementBR = element.getBoundingClientRect();
+        var xCenter = (elementBR.left + elementBR.right) / 2;
+        var yCenter = (elementBR.top + elementBR.bottom) / 2;
+        var x = xCenter - (window.innerWidth / 2);
+        var y = yCenter - (window.innerHeight / 2);
+        var duration = (_a = settings === null || settings === void 0 ? void 0 : settings.duration) !== null && _a !== void 0 ? _a : 500;
+        var originalZIndex = element.style.zIndex;
+        var originalTransition = element.style.transition;
+        element.style.zIndex = "".concat((_b = settings === null || settings === void 0 ? void 0 : settings.zIndex) !== null && _b !== void 0 ? _b : 10);
+        (_c = settings === null || settings === void 0 ? void 0 : settings.animationStart) === null || _c === void 0 ? void 0 : _c.call(settings, element);
+        var timeoutId = null;
+        var cleanOnTransitionEnd = function () {
+            var _a;
+            element.style.zIndex = originalZIndex;
+            element.style.transition = originalTransition;
+            (_a = settings === null || settings === void 0 ? void 0 : settings.animationEnd) === null || _a === void 0 ? void 0 : _a.call(settings, element);
+            success(true);
+            element.removeEventListener('transitioncancel', cleanOnTransitionEnd);
+            element.removeEventListener('transitionend', cleanOnTransitionEnd);
+            document.removeEventListener('visibilitychange', cleanOnTransitionEnd);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+        var cleanOnTransitionCancel = function () {
+            var _a;
+            element.style.transition = "";
+            element.offsetHeight;
+            element.style.transform = (_a = settings === null || settings === void 0 ? void 0 : settings.finalTransform) !== null && _a !== void 0 ? _a : null;
+            element.offsetHeight;
+            cleanOnTransitionEnd();
+        };
+        element.addEventListener('transitioncancel', cleanOnTransitionEnd);
+        element.addEventListener('transitionend', cleanOnTransitionEnd);
+        document.addEventListener('visibilitychange', cleanOnTransitionCancel);
+        element.offsetHeight;
+        element.style.transition = "transform ".concat(duration, "ms linear");
+        element.offsetHeight;
+        element.style.transform = "translate(".concat(-x, "px, ").concat(-y, "px) rotate(").concat((_d = settings === null || settings === void 0 ? void 0 : settings.rotationDelta) !== null && _d !== void 0 ? _d : 0, "deg)");
+        // safety in case transitionend and transitioncancel are not called
+        timeoutId = setTimeout(cleanOnTransitionEnd, duration + 100);
+    });
+    return promise;
+}
+/**
+ * Linear slide of the card from origin to destination.
+ *
+ * @param element the element to animate. The element should be attached to the destination element before the animation starts.
+ * @param settings an `AnimationSettings` object
+ * @returns a promise when animation ends
+ */
 function slideAnimation(element, settings) {
     var promise = new Promise(function (success) {
         var _a, _b, _c, _d, _e;
@@ -1206,6 +1307,39 @@ var VoidStock = /** @class */ (function (_super) {
     };
     return VoidStock;
 }(CardStock));
+function sortFunction() {
+    var sortedFields = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        sortedFields[_i] = arguments[_i];
+    }
+    return function (a, b) {
+        for (var i = 0; i < sortedFields.length; i++) {
+            var direction = 1;
+            var field = sortedFields[i];
+            if (field[0] == '-') {
+                direction = -1;
+                field = field.substring(1);
+            }
+            else if (field[0] == '+') {
+                field = field.substring(1);
+            }
+            var type = typeof a[field];
+            if (type === 'string') {
+                var compare = a[field].localeCompare(b[field]);
+                if (compare !== 0) {
+                    return compare;
+                }
+            }
+            else if (type === 'number') {
+                var compare = (a[field] - b[field]) * direction;
+                if (compare !== 0) {
+                    return compare * direction;
+                }
+            }
+        }
+        return 0;
+    };
+}
 var CardManager = /** @class */ (function () {
     /**
      * @param game the BGA game class, usually it will be `this`
@@ -1829,7 +1963,7 @@ var RECRUIT = 3;
 var FAME = 4;
 var CARD = 5;
 function getVpByFame(fame) {
-    return Object.entries(VP_BY_FAME).findLast(function (entry) { return fame >= Number(entry[0]); })[1];
+    return Object.entries(VP_BY_FAME).find(function (entry) { return fame >= Number(entry[0]); })[1];
 }
 var Knarr = /** @class */ (function () {
     function Knarr() {

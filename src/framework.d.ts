@@ -57,8 +57,6 @@ interface Dojo {
     position: (obj: HTMLElement, includeScroll?: boolean) => { w: number; h: number; x: number; y: number; };
 }
 
-type Gamestate = any; // TODO
-
 interface Player {
     beginner: boolean;
     color: string;
