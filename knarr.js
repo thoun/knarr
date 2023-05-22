@@ -1775,7 +1775,7 @@ var PlayerTable = /** @class */ (function () {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
@@ -1792,9 +1792,9 @@ var PlayerTable = /** @class */ (function () {
         }
         html += "\n            </div>\n        ";
         if (reservePossible) {
-            html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Reserved destinations'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-reserved-destinations\"></div>\n            </div>");
+            html += "\n            <div id=\"player-table-".concat(this.playerId, "-reserved-destinations-wrapper\" class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">").concat(_('Reserved destinations'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-reserved-destinations\"></div>\n            </div>");
         }
-        html += "\n        </div>\n        ";
+        html += "\n            </div>\n            \n            <div class=\"col col2\"></div>\n            </div>\n        </div>\n        ";
         dojo.place(html, document.getElementById('tables'));
         if (this.currentPlayer) {
             var handDiv = document.getElementById("player-table-".concat(this.playerId, "-hand"));
@@ -1929,6 +1929,27 @@ var PlayerTable = /** @class */ (function () {
             _loop_3(i);
         }
     };
+    PlayerTable.prototype.setDoubleColumn = function (isDoublePlayerColumn) {
+        var destinations = document.getElementById("player-table-".concat(this.playerId, "-destinations"));
+        var boat = document.getElementById("player-table-".concat(this.playerId, "-boat"));
+        var reservedDestinations = document.getElementById("player-table-".concat(this.playerId, "-reserved-destinations-wrapper"));
+        if (isDoublePlayerColumn) {
+            var col2 = document.getElementById("player-table-".concat(this.playerId)).querySelector('.col2');
+            col2.appendChild(destinations);
+            col2.appendChild(boat);
+            if (reservedDestinations) {
+                col2.appendChild(reservedDestinations);
+            }
+        }
+        else {
+            var visibleCards = document.getElementById("player-table-".concat(this.playerId)).querySelector('.visible-cards');
+            visibleCards.insertAdjacentElement('beforebegin', destinations);
+            visibleCards.insertAdjacentElement('beforebegin', boat);
+            if (reservedDestinations) {
+                visibleCards.insertAdjacentElement('afterend', reservedDestinations);
+            }
+        }
+    };
     return PlayerTable;
 }());
 var ANIMATION_MS = 500;
@@ -1974,6 +1995,7 @@ var Knarr = /** @class */ (function () {
         "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
     */
     Knarr.prototype.setup = function (gamedatas) {
+        var _this = this;
         if (!gamedatas.variantOption) {
             this.dontPreloadImage('artefacts.jpg');
         }
@@ -2009,7 +2031,14 @@ var Knarr = /** @class */ (function () {
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
             onDimensionsChange: function () {
                 var tablesAndCenter = document.getElementById('tables-and-center');
-                tablesAndCenter.classList.toggle('double-column', tablesAndCenter.clientWidth > 1350);
+                var clientWidth = tablesAndCenter.clientWidth;
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1350);
+                var wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
+                var isDoublePlayerColumn = clientWidth > 1670;
+                if (wasDoublePlayerColumn != isDoublePlayerColumn) {
+                    tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
+                    _this.playersTables.forEach(function (table) { return table.setDoubleColumn(isDoublePlayerColumn); });
+                }
             },
         });
         if (gamedatas.lastTurn) {

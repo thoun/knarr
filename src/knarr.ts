@@ -105,7 +105,14 @@ class Knarr implements KnarrGame {
             localStorageZoomKey: LOCAL_STORAGE_ZOOM_KEY,
             onDimensionsChange: () => {
                 const tablesAndCenter = document.getElementById('tables-and-center');
-                tablesAndCenter.classList.toggle('double-column', tablesAndCenter.clientWidth > 1350);
+                const clientWidth = tablesAndCenter.clientWidth;
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1350);
+                const wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
+                const isDoublePlayerColumn = clientWidth > 1670;
+                if (wasDoublePlayerColumn != isDoublePlayerColumn) {
+                    tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
+                    this.playersTables.forEach(table => table.setDoubleColumn(isDoublePlayerColumn));
+                }
             },
         });
 

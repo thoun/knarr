@@ -19,6 +19,8 @@ class PlayerTable {
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper">${player.name}</div>
+            <div class="cols">
+            <div class="col col1">
         `;
         if (this.currentPlayer) {
             html += `
@@ -53,12 +55,16 @@ class PlayerTable {
 
         if (reservePossible) {
             html += `
-            <div class="block-with-text hand-wrapper">
+            <div id="player-table-${this.playerId}-reserved-destinations-wrapper" class="block-with-text hand-wrapper">
                 <div class="block-label">${_('Reserved destinations')}</div>
                 <div id="player-table-${this.playerId}-reserved-destinations"></div>
             </div>`;
         }
         html += `
+            </div>
+            
+            <div class="col col2"></div>
+            </div>
         </div>
         `;
 
@@ -204,6 +210,27 @@ class PlayerTable {
                 }
                 element.classList.toggle('disabled', disabled);
             });
+        }
+    }
+    
+    public setDoubleColumn(isDoublePlayerColumn: boolean): void {
+        const destinations = document.getElementById(`player-table-${this.playerId}-destinations`);
+        const boat = document.getElementById(`player-table-${this.playerId}-boat`);
+        const reservedDestinations = document.getElementById(`player-table-${this.playerId}-reserved-destinations-wrapper`);
+        if (isDoublePlayerColumn) {
+            const col2 = document.getElementById(`player-table-${this.playerId}`).querySelector('.col2');
+            col2.appendChild(destinations);
+            col2.appendChild(boat);
+            if (reservedDestinations) {
+                col2.appendChild(reservedDestinations);
+            }
+        } else {
+            const visibleCards = document.getElementById(`player-table-${this.playerId}`).querySelector('.visible-cards');
+            visibleCards.insertAdjacentElement('beforebegin', destinations);
+            visibleCards.insertAdjacentElement('beforebegin', boat);
+            if (reservedDestinations) {
+                visibleCards.insertAdjacentElement('afterend', reservedDestinations);
+            }
         }
     }
 }

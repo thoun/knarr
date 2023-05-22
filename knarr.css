@@ -491,10 +491,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px orange;
+    box-shadow: 0 0 3px 2px white;
   }
   100% {
-    box-shadow: 0 0 5px 3px orange;
+    box-shadow: 0 0 5px 3px white;
   }
 }
 .knarr-destination {
@@ -658,10 +658,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px orange;
+    box-shadow: 0 0 3px 2px white;
   }
   100% {
-    box-shadow: 0 0 5px 3px orange;
+    box-shadow: 0 0 5px 3px white;
   }
 }
 .card.artifact {
@@ -1016,6 +1016,25 @@ body > .card {
 }
 .player-table .destinations .card:not(:last-child) {
   margin-top: calc(-1 * var(--card-overlap));
+}
+.player-table .col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.player-table .col.col2 {
+  display: none;
+}
+
+.double-player-column .cols {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+}
+.double-player-column .cols .col2 {
+  display: flex;
 }
 
 /* make space between buttons on touch devices */
