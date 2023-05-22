@@ -1947,7 +1947,7 @@ var RECRUIT = 3;
 var FAME = 4;
 var CARD = 5;
 function getVpByFame(fame) {
-    return Object.entries(VP_BY_FAME).find(function (entry) { return fame >= Number(entry[0]); })[1];
+    return Object.entries(VP_BY_FAME).findLast(function (entry) { return fame >= Number(entry[0]); })[1];
 }
 var Knarr = /** @class */ (function () {
     function Knarr() {
