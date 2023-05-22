@@ -124,7 +124,6 @@ class TableCenter {
 
     private moveFame() {
         this.fame.forEach((points, playerId) => {
-            console.log(points, playerId);
             const markerDiv = document.getElementById(`player-${playerId}-fame-marker`);
 
             const coordinates = this.getFameCoordinates(points);
@@ -165,5 +164,12 @@ class TableCenter {
             element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
+    }
+    
+    public getVisibleDestinations(): Destination[] {
+        return [
+            ...this.destinations['A'].getCards(),
+            ...this.destinations['B'].getCards(),
+        ];
     }
 }

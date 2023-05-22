@@ -254,6 +254,10 @@ trait UtilTrait {
     } 
     
     function redirectAfterAction(int $playerId, bool $checkArtifacts) {
+        if ($checkArtifacts && $this->getVariantOption() >= 2) {
+            $this->checkArtifacts($playerId);
+        }
+
         if (boolval($this->getGameStateValue(GO_RESERVE))) {
             $this->incGameStateValue(GO_RESERVE, -1);
             $reserved = $this->getDestinationsByLocation('reserved', $playerId);
@@ -271,10 +275,6 @@ trait UtilTrait {
             $this->incGameStateValue(GO_DISCARD_TABLE_CARD, -1);
             $this->gamestate->nextState('discardTableCard');
             return;
-        }
-
-        if ($checkArtifacts && $this->getVariantOption() >= 2) {
-            $this->checkArtifacts($playerId);
         }
 
         $args = $this->argPlayAction();

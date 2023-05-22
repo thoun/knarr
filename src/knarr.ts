@@ -144,6 +144,9 @@ class Knarr implements KnarrGame {
             case 'discardCard':
                 this.onEnteringDiscardCard(args.args);
                 break;
+            case 'reserveDestination':
+                this.onEnteringReserveDestination();
+                break;
         }
     }
     
@@ -201,6 +204,12 @@ class Knarr implements KnarrGame {
         }
     }
 
+    private onEnteringReserveDestination() {
+        if ((this as any).isCurrentPlayerActive()) {
+            this.tableCenter.setDestinationsSelectable(true, this.tableCenter.getVisibleDestinations());
+        }
+    }
+
     public onLeavingState(stateName: string) {
         log( 'Leaving state: '+stateName );
 
@@ -219,6 +228,9 @@ class Knarr implements KnarrGame {
                 break;
             case 'discardCard':
                 this.onLeavingDiscardCard();
+                break;
+            case 'reserveDestination':
+                this.onLeavingReserveDestination();
                 break;
         }
     }
@@ -244,6 +256,10 @@ class Knarr implements KnarrGame {
 
     private onLeavingDiscardCard() {
         this.getCurrentPlayerTable()?.setCardsSelectable(false);
+    }
+
+    private onLeavingReserveDestination() {
+        this.tableCenter.setDestinationsSelectable(false);
     }
 
     private setPayDestinationLabelAndState(args?: EnteringPayDestinationArgs) {
@@ -501,7 +517,6 @@ class Knarr implements KnarrGame {
     }
 
     private setFame(playerId: number, count: number) {
-        console.log('setFame', playerId, count);
         this.fameCounters[playerId].toValue(getVpByFame(count));
         this.tableCenter.setFame(playerId, count);
     }
@@ -518,7 +533,11 @@ class Knarr implements KnarrGame {
 
     
     public onTableDestinationClick(destination: Destination): void {
-        this.takeDestination(destination.id);
+        if (this.gamedatas.gamestate.name == 'reserveDestination') {
+            this.reserveDestination(destination.id);
+        } else {
+            this.takeDestination(destination.id);
+        }
     }
 
     public onHandCardClick(card: Card): void {
@@ -565,6 +584,16 @@ class Knarr implements KnarrGame {
         }
 
         this.takeAction('takeDestination', {
+            id
+        });
+    }
+  	
+    public reserveDestination(id: number) {
+        if(!(this as any).checkAction('reserveDestination')) {
+            return;
+        }
+
+        this.takeAction('reserveDestination', {
             id
         });
     }

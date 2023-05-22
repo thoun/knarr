@@ -1586,6 +1586,7 @@ var ArtifactsManager = /** @class */ (function (_super) {
             setupFrontDiv: function (card, div) {
                 div.dataset.number = '' + card;
             },
+            isCardVisible: function () { return true; },
         }) || this;
         _this.game = game;
         return _this;
@@ -1721,7 +1722,6 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.moveFame = function () {
         var _this = this;
         this.fame.forEach(function (points, playerId) {
-            console.log(points, playerId);
             var markerDiv = document.getElementById("player-".concat(playerId, "-fame-marker"));
             var coordinates = _this.getFameCoordinates(points);
             var left = coordinates[0];
@@ -1758,6 +1758,9 @@ var TableCenter = /** @class */ (function () {
             element.classList.toggle('disabled', selectable && disabled);
             element.classList.toggle('selectable', selectable && !disabled);
         });
+    };
+    TableCenter.prototype.getVisibleDestinations = function () {
+        return __spreadArray(__spreadArray([], this.destinations['A'].getCards(), true), this.destinations['B'].getCards(), true);
     };
     return TableCenter;
 }());
@@ -2039,6 +2042,9 @@ var Knarr = /** @class */ (function () {
             case 'discardCard':
                 this.onEnteringDiscardCard(args.args);
                 break;
+            case 'reserveDestination':
+                this.onEnteringReserveDestination();
+                break;
         }
     };
     Knarr.prototype.setGamestateDescription = function (property) {
@@ -2093,6 +2099,11 @@ var Knarr = /** @class */ (function () {
             (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(true, args.selectedDestination.cost);
         }
     };
+    Knarr.prototype.onEnteringReserveDestination = function () {
+        if (this.isCurrentPlayerActive()) {
+            this.tableCenter.setDestinationsSelectable(true, this.tableCenter.getVisibleDestinations());
+        }
+    };
     Knarr.prototype.onLeavingState = function (stateName) {
         log('Leaving state: ' + stateName);
         switch (stateName) {
@@ -2110,6 +2121,9 @@ var Knarr = /** @class */ (function () {
                 break;
             case 'discardCard':
                 this.onLeavingDiscardCard();
+                break;
+            case 'reserveDestination':
+                this.onLeavingReserveDestination();
                 break;
         }
     };
@@ -2133,6 +2147,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.onLeavingDiscardCard = function () {
         var _a;
         (_a = this.getCurrentPlayerTable()) === null || _a === void 0 ? void 0 : _a.setCardsSelectable(false);
+    };
+    Knarr.prototype.onLeavingReserveDestination = function () {
+        this.tableCenter.setDestinationsSelectable(false);
     };
     Knarr.prototype.setPayDestinationLabelAndState = function (args) {
         if (!args) {
@@ -2337,7 +2354,6 @@ var Knarr = /** @class */ (function () {
         this.tableCenter.setScore(playerId, score);
     };
     Knarr.prototype.setFame = function (playerId, count) {
-        console.log('setFame', playerId, count);
         this.fameCounters[playerId].toValue(getVpByFame(count));
         this.tableCenter.setFame(playerId, count);
     };
@@ -2350,7 +2366,12 @@ var Knarr = /** @class */ (function () {
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
     };
     Knarr.prototype.onTableDestinationClick = function (destination) {
-        this.takeDestination(destination.id);
+        if (this.gamedatas.gamestate.name == 'reserveDestination') {
+            this.reserveDestination(destination.id);
+        }
+        else {
+            this.takeDestination(destination.id);
+        }
     };
     Knarr.prototype.onHandCardClick = function (card) {
         this.playCard(card.id);
@@ -2390,6 +2411,14 @@ var Knarr = /** @class */ (function () {
             return;
         }
         this.takeAction('takeDestination', {
+            id: id
+        });
+    };
+    Knarr.prototype.reserveDestination = function (id) {
+        if (!this.checkAction('reserveDestination')) {
+            return;
+        }
+        this.takeAction('reserveDestination', {
             id: id
         });
     };

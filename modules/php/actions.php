@@ -293,7 +293,7 @@ trait ActionTrait {
             'letter' => $type,
         ]);
 
-        $this->redirectAfterAction($playerId, true);
+        $this->gamestate->nextState('next');
     }
 
     public function discardTableCard(int $id) {
