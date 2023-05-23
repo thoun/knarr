@@ -46,7 +46,10 @@ interface KnarrGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas
-    centerCards: Card[];
+    cardDeckTop?: Card;
+    cardDeckCount: number;
+    centerDestinationsDeckTop: { [letter: string]: Destination };
+    centerDestinationsDeckCount: { [letter: string]: number };
     centerDestinations: { [letter: string]: Destination[] };
     boatSideOption: number;
     variantOption: number;
@@ -115,6 +118,8 @@ interface NotifPlayCardArgs {
 interface NotifNewCardArgs {
     playerId: number;
     card: Card;
+    cardDeckTop?: Card;
+    cardDeckCount: number;
 }
 
 // takeDestination
@@ -127,7 +132,9 @@ interface NotifTakeDestinationArgs {
 // newTableDestination
 interface NotifNewTableDestinationArgs {
     destination: Destination;
-    letter: string;
+    letter: string;    
+    destinationDeckTop?: Destination;
+    destinationDeckCount: number;
 }
 
 // trade

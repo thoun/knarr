@@ -37,7 +37,7 @@ class Destination extends DestinationType {
         }
     } 
 
-    public static function onlyId(/*Destination|null*/ $card) {
+    public static function onlyId(?Destination $card) {
         if ($card == null) {
             return null;
         }
@@ -46,6 +46,7 @@ class Destination extends DestinationType {
             'card_id' => $card->id,
             'card_location' => $card->location,
             'card_location_arg' => $card->locationArg,
+            'card_type' => $card->type,
         ], null);
     }
 

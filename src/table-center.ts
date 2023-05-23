@@ -2,6 +2,8 @@ const POINT_CASE_SIZE_LEFT = 38.8;
 const POINT_CASE_SIZE_TOP = 37.6;
 
 class TableCenter {
+    public destinationsDecks: Deck<Destination>[] = [];
+    public cardDeck: Deck<Card>;
     public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
@@ -12,6 +14,14 @@ class TableCenter {
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
         ['A', 'B'].forEach(letter => {
+            this.destinationsDecks[letter] = new Deck<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}-deck`), {
+                cardNumber: gamedatas.centerDestinationsDeckCount[letter],
+                topCard: gamedatas.centerDestinationsDeckTop[letter],
+                counter: {
+                    position: 'right',
+                },
+            });
+
             this.destinations[letter] = new SlotStock<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}`), {
                 slotsIds: [1, 2, 3],
                 mapCardToSlot: card => card.locationArg,
@@ -19,6 +29,12 @@ class TableCenter {
             this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
             this.destinations[letter].onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
         })
+
+        this.cardDeck = new Deck<Card>(game.cardsManager, document.getElementById(`card-deck`), {
+            cardNumber: gamedatas.cardDeckCount,
+            topCard: gamedatas.cardDeckTop,
+            counter: {},
+        });
 
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
@@ -60,10 +76,11 @@ class TableCenter {
         });
     }
     
-    public newTableDestination(destination: Destination, letter: string) {
+    public newTableDestination(destination: Destination, letter: string, destinationDeckCount: number, destinationDeckTop?: Destination) {
         this.destinations[letter].addCard(destination, {
             fromElement: document.getElementById(`board`)
         });
+        this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
     } 
     
     public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {

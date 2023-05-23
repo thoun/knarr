@@ -123,6 +123,8 @@ trait ActionTrait {
 
         self::notifyAllPlayers('newTableCard', '', [
             'card' => $newTableCard,
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
         ]);
 
         $this->setGameStateValue(RECRUIT_DONE, 1);
@@ -235,6 +237,8 @@ trait ActionTrait {
             self::notifyAllPlayers('newTableDestination', '', [
                 'destination' => $newDestination,
                 'letter' => $type,
+                'destinationDeckTop' => Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$type))),
+                'destinationDeckCount' => intval($this->destinations->countCardInLocation('deck'.$type)),
             ]);
         }
 

@@ -402,6 +402,8 @@ trait UtilTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
             'card_type' => $this->getGainName($card->gain), // for logs
             'card_color' => $this->getColorName($card->color), // for logs
         ]);

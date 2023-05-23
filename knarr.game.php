@@ -202,11 +202,19 @@ class Knarr extends Table {
             }
         }
 
+        $result['cardDeckTop'] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
+        $result['cardDeckCount'] = intval($this->cards->countCardInLocation('deck'));
         $result['centerCards'] = $this->getCardsByLocation('slot');
-        $result['centerDestinations'] = [
-            'A' => $this->getDestinationsByLocation('slotA'),
-            'B' => $this->getDestinationsByLocation('slotB'),
-        ];
+        $result['centerDestinationsDeckTop'] = [];
+        $result['centerDestinationsDeckCount'] = [];
+        $result['centerDestinations'] = [];
+
+        foreach (['A', 'B'] as $letter) {
+            $result['centerDestinationsDeckTop'][$letter] = Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$letter)));
+            $result['centerDestinationsDeckCount'][$letter] = intval($this->destinations->countCardInLocation('deck'.$letter));
+            $result['centerDestinations'][$letter] = $this->getDestinationsByLocation('slot'.$letter);
+        }
+
         $result['firstPlayerId'] = $firstPlayerId;
         $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
   

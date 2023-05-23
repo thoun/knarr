@@ -5,12 +5,17 @@ class DestinationsManager extends CardManager<Destination> {
             setupDiv: (card: Destination, div: HTMLElement) => {
                 div.classList.add('knarr-destination');
                 div.dataset.cardId = ''+card.id;
+                div.dataset.type = ''+card.type;
             },
             setupFrontDiv: (card: Destination, div: HTMLElement) => { 
-                div.dataset.type = ''+card.type;
                 div.dataset.number = ''+card.number;
-                game.setTooltip(div.id, this.getTooltip(card));
+                if (card.number) {
+                    game.setTooltip(div.id, this.getTooltip(card));
+                }
             },
+            isCardVisible: card => Boolean(card.number),
+            cardWidth: 221,
+            cardHeight: 120,
         });
     }
 

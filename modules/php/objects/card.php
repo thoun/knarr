@@ -30,7 +30,7 @@ class Card extends CardType {
         $this->gain = array_key_exists('card_type_arg', $dbCard) || array_key_exists('type_arg', $dbCard) ? intval($dbCard['card_type_arg'] ?? $dbCard['type_arg']) : null;
     } 
 
-    public static function onlyId(/*Card|null*/ $card) {
+    public static function onlyId(?Card $card) {
         if ($card == null) {
             return null;
         }

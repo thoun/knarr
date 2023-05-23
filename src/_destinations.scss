@@ -13,20 +13,12 @@
   .card-sides {
       .card-side {
           border-radius: 8px;
+          background-size: 200% auto;
+          background-image: url('img/destinations.jpg');
 
           &>* {
               pointer-events: none;
               user-select: none;
-          }
-
-          /*&.back {  
-              background-size: auto 100%;
-              background-image: url('img/card-back.jpg');
-          }*/
-
-          &.front {
-              background-size: 200% auto;
-              background-image: url('img/destinations.jpg');
           }
       }
   }    
@@ -59,18 +51,18 @@
   }
 
   @for $type from 1 through 2 {
-    .front[data-type="#{$type}"] {
+    &[data-type="#{$type}"] .card-side {
         background-position-x: #{($type - 1) * 100%};
     }
   }
 
     @for $number from 1 through 20 {
-        .front[data-type="1"][data-number="#{$number}"] {
+        &[data-type="1"] .front[data-number="#{$number}"] {
             background-position-y: #{$number * 100% / 20};
         }
     }
     @for $number from 21 through 35 {
-        .front[data-type="2"][data-number="#{$number}"] {
+        &[data-type="2"] .front[data-number="#{$number}"] {
             background-position-y: #{($number - 20) * 100% / 20};
         }
     }

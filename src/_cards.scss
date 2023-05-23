@@ -13,20 +13,12 @@
     .card-sides {
         .card-side {
             border-radius: 8px;
+            background-size: auto 100%;
+            background-image: url('img/cards.jpg');
 
             &>* {
                 pointer-events: none;
                 user-select: none;
-            }
-
-            /*&.back {  
-                background-size: auto 100%;
-                background-image: url('img/card-back.jpg');
-            }*/
-
-            &.front {
-                background-size: auto 100%;
-                background-image: url('img/cards.jpg');
             }
         }
     }    

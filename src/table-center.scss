@@ -1,10 +1,18 @@
-#table-center {
-  min-width: 690px;
-
+#table-center-wrapper {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+}
+
+#table-center {
+  min-width: 818px;
+
+  display: grid;
+  grid-template-columns: 120px 690px;
   gap: 8px;
-  align-items: center;
+
+  .table-destinations-deck {
+    margin-left: -102px;
+  }
 
   #table-destinations-A, #table-destinations-B {
     .slot {      

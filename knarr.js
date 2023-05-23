@@ -1517,6 +1517,8 @@ var CardsManager = /** @class */ (function (_super) {
                 game.setTooltip(div.id, _this.getTooltip(card));
             },
             isCardVisible: function (card) { return Boolean(card.color); },
+            cardWidth: 120,
+            cardHeight: 221,
         }) || this;
         _this.game = game;
         return _this;
@@ -1535,12 +1537,17 @@ var DestinationsManager = /** @class */ (function (_super) {
             setupDiv: function (card, div) {
                 div.classList.add('knarr-destination');
                 div.dataset.cardId = '' + card.id;
+                div.dataset.type = '' + card.type;
             },
             setupFrontDiv: function (card, div) {
-                div.dataset.type = '' + card.type;
                 div.dataset.number = '' + card.number;
-                game.setTooltip(div.id, _this.getTooltip(card));
+                if (card.number) {
+                    game.setTooltip(div.id, _this.getTooltip(card));
+                }
             },
+            isCardVisible: function (card) { return Boolean(card.number); },
+            cardWidth: 221,
+            cardHeight: 120,
         }) || this;
         _this.game = game;
         return _this;
@@ -1624,16 +1631,29 @@ var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
         var _this = this;
         this.game = game;
+        this.destinationsDecks = [];
         this.destinations = [];
         this.vp = new Map();
         this.fame = new Map();
         ['A', 'B'].forEach(function (letter) {
+            _this.destinationsDecks[letter] = new Deck(game.destinationsManager, document.getElementById("table-destinations-".concat(letter, "-deck")), {
+                cardNumber: gamedatas.centerDestinationsDeckCount[letter],
+                topCard: gamedatas.centerDestinationsDeckTop[letter],
+                counter: {
+                    position: 'right',
+                },
+            });
             _this.destinations[letter] = new SlotStock(game.destinationsManager, document.getElementById("table-destinations-".concat(letter)), {
                 slotsIds: [1, 2, 3],
                 mapCardToSlot: function (card) { return card.locationArg; },
             });
             _this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
             _this.destinations[letter].onCardClick = function (card) { return _this.game.onTableDestinationClick(card); };
+        });
+        this.cardDeck = new Deck(game.cardsManager, document.getElementById("card-deck"), {
+            cardNumber: gamedatas.cardDeckCount,
+            topCard: gamedatas.cardDeckTop,
+            counter: {},
         });
         this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
             slotsIds: [1, 2, 3, 4, 5],
@@ -1667,10 +1687,11 @@ var TableCenter = /** @class */ (function () {
             fromElement: document.getElementById("board")
         });
     };
-    TableCenter.prototype.newTableDestination = function (destination, letter) {
+    TableCenter.prototype.newTableDestination = function (destination, letter, destinationDeckCount, destinationDeckTop) {
         this.destinations[letter].addCard(destination, {
             fromElement: document.getElementById("board")
         });
+        this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
     };
     TableCenter.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
         var _this = this;
@@ -2039,9 +2060,9 @@ var Knarr = /** @class */ (function () {
             onDimensionsChange: function () {
                 var tablesAndCenter = document.getElementById('tables-and-center');
                 var clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1350);
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478);
                 var wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
-                var isDoublePlayerColumn = clientWidth > 1670;
+                var isDoublePlayerColumn = clientWidth > 1798;
                 if (wasDoublePlayerColumn != isDoublePlayerColumn) {
                     tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
                     _this.playersTables.forEach(function (table) { return table.setDoubleColumn(isDoublePlayerColumn); });
@@ -2575,6 +2596,7 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.notif_newTableCard = function (notif) {
         this.tableCenter.newTableCard(notif.args.card);
+        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     };
     Knarr.prototype.notif_takeDestination = function (notif) {
         var playerId = notif.args.playerId;
@@ -2585,7 +2607,7 @@ var Knarr = /** @class */ (function () {
         this.getPlayerTable(notif.args.playerId).discardCards(notif.args.cards);
     };
     Knarr.prototype.notif_newTableDestination = function (notif) {
-        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
+        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter, notif.args.destinationDeckCount, notif.args.destinationDeckTop);
     };
     Knarr.prototype.notif_score = function (notif) {
         this.setScore(notif.args.playerId, +notif.args.newScore);
@@ -2604,6 +2626,7 @@ var Knarr = /** @class */ (function () {
         var playerId = notif.args.playerId;
         var playerTable = this.getPlayerTable(playerId);
         playerTable.playCard(notif.args.card, document.getElementById('board'));
+        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     };
     Knarr.prototype.notif_discardTableCard = function (notif) {
         this.tableCenter.cards.removeCard(notif.args.card);

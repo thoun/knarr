@@ -400,18 +400,12 @@ body > .card {
 }
 .knarr-card .card-sides .card-side {
   border-radius: 8px;
-  /*&.back {  
-      background-size: auto 100%;
-      background-image: url('img/card-back.jpg');
-  }*/
+  background-size: auto 100%;
+  background-image: url("img/cards.jpg");
 }
 .knarr-card .card-sides .card-side > * {
   pointer-events: none;
   user-select: none;
-}
-.knarr-card .card-sides .card-side.front {
-  background-size: auto 100%;
-  background-image: url("img/cards.jpg");
 }
 .knarr-card.selectable:not(.disabled) {
   cursor: pointer;
@@ -510,18 +504,12 @@ body > .card {
 }
 .knarr-destination .card-sides .card-side {
   border-radius: 8px;
-  /*&.back {  
-      background-size: auto 100%;
-      background-image: url('img/card-back.jpg');
-  }*/
+  background-size: 200% auto;
+  background-image: url("img/destinations.jpg");
 }
 .knarr-destination .card-sides .card-side > * {
   pointer-events: none;
   user-select: none;
-}
-.knarr-destination .card-sides .card-side.front {
-  background-size: 200% auto;
-  background-image: url("img/destinations.jpg");
 }
 .knarr-destination.selectable:not(.disabled) {
   cursor: pointer;
@@ -544,115 +532,115 @@ body > .card {
 .knarr-destination.selected-pay-destination .card-side {
   box-shadow: unset;
 }
-.knarr-destination .front[data-type="1"] {
+.knarr-destination[data-type="1"] .card-side {
   background-position-x: 0%;
 }
-.knarr-destination .front[data-type="2"] {
+.knarr-destination[data-type="2"] .card-side {
   background-position-x: 100%;
 }
-.knarr-destination .front[data-type="1"][data-number="1"] {
+.knarr-destination[data-type="1"] .front[data-number="1"] {
   background-position-y: 5%;
 }
-.knarr-destination .front[data-type="1"][data-number="2"] {
+.knarr-destination[data-type="1"] .front[data-number="2"] {
   background-position-y: 10%;
 }
-.knarr-destination .front[data-type="1"][data-number="3"] {
+.knarr-destination[data-type="1"] .front[data-number="3"] {
   background-position-y: 15%;
 }
-.knarr-destination .front[data-type="1"][data-number="4"] {
+.knarr-destination[data-type="1"] .front[data-number="4"] {
   background-position-y: 20%;
 }
-.knarr-destination .front[data-type="1"][data-number="5"] {
+.knarr-destination[data-type="1"] .front[data-number="5"] {
   background-position-y: 25%;
 }
-.knarr-destination .front[data-type="1"][data-number="6"] {
+.knarr-destination[data-type="1"] .front[data-number="6"] {
   background-position-y: 30%;
 }
-.knarr-destination .front[data-type="1"][data-number="7"] {
+.knarr-destination[data-type="1"] .front[data-number="7"] {
   background-position-y: 35%;
 }
-.knarr-destination .front[data-type="1"][data-number="8"] {
+.knarr-destination[data-type="1"] .front[data-number="8"] {
   background-position-y: 40%;
 }
-.knarr-destination .front[data-type="1"][data-number="9"] {
+.knarr-destination[data-type="1"] .front[data-number="9"] {
   background-position-y: 45%;
 }
-.knarr-destination .front[data-type="1"][data-number="10"] {
+.knarr-destination[data-type="1"] .front[data-number="10"] {
   background-position-y: 50%;
 }
-.knarr-destination .front[data-type="1"][data-number="11"] {
+.knarr-destination[data-type="1"] .front[data-number="11"] {
   background-position-y: 55%;
 }
-.knarr-destination .front[data-type="1"][data-number="12"] {
+.knarr-destination[data-type="1"] .front[data-number="12"] {
   background-position-y: 60%;
 }
-.knarr-destination .front[data-type="1"][data-number="13"] {
+.knarr-destination[data-type="1"] .front[data-number="13"] {
   background-position-y: 65%;
 }
-.knarr-destination .front[data-type="1"][data-number="14"] {
+.knarr-destination[data-type="1"] .front[data-number="14"] {
   background-position-y: 70%;
 }
-.knarr-destination .front[data-type="1"][data-number="15"] {
+.knarr-destination[data-type="1"] .front[data-number="15"] {
   background-position-y: 75%;
 }
-.knarr-destination .front[data-type="1"][data-number="16"] {
+.knarr-destination[data-type="1"] .front[data-number="16"] {
   background-position-y: 80%;
 }
-.knarr-destination .front[data-type="1"][data-number="17"] {
+.knarr-destination[data-type="1"] .front[data-number="17"] {
   background-position-y: 85%;
 }
-.knarr-destination .front[data-type="1"][data-number="18"] {
+.knarr-destination[data-type="1"] .front[data-number="18"] {
   background-position-y: 90%;
 }
-.knarr-destination .front[data-type="1"][data-number="19"] {
+.knarr-destination[data-type="1"] .front[data-number="19"] {
   background-position-y: 95%;
 }
-.knarr-destination .front[data-type="1"][data-number="20"] {
+.knarr-destination[data-type="1"] .front[data-number="20"] {
   background-position-y: 100%;
 }
-.knarr-destination .front[data-type="2"][data-number="21"] {
+.knarr-destination[data-type="2"] .front[data-number="21"] {
   background-position-y: 5%;
 }
-.knarr-destination .front[data-type="2"][data-number="22"] {
+.knarr-destination[data-type="2"] .front[data-number="22"] {
   background-position-y: 10%;
 }
-.knarr-destination .front[data-type="2"][data-number="23"] {
+.knarr-destination[data-type="2"] .front[data-number="23"] {
   background-position-y: 15%;
 }
-.knarr-destination .front[data-type="2"][data-number="24"] {
+.knarr-destination[data-type="2"] .front[data-number="24"] {
   background-position-y: 20%;
 }
-.knarr-destination .front[data-type="2"][data-number="25"] {
+.knarr-destination[data-type="2"] .front[data-number="25"] {
   background-position-y: 25%;
 }
-.knarr-destination .front[data-type="2"][data-number="26"] {
+.knarr-destination[data-type="2"] .front[data-number="26"] {
   background-position-y: 30%;
 }
-.knarr-destination .front[data-type="2"][data-number="27"] {
+.knarr-destination[data-type="2"] .front[data-number="27"] {
   background-position-y: 35%;
 }
-.knarr-destination .front[data-type="2"][data-number="28"] {
+.knarr-destination[data-type="2"] .front[data-number="28"] {
   background-position-y: 40%;
 }
-.knarr-destination .front[data-type="2"][data-number="29"] {
+.knarr-destination[data-type="2"] .front[data-number="29"] {
   background-position-y: 45%;
 }
-.knarr-destination .front[data-type="2"][data-number="30"] {
+.knarr-destination[data-type="2"] .front[data-number="30"] {
   background-position-y: 50%;
 }
-.knarr-destination .front[data-type="2"][data-number="31"] {
+.knarr-destination[data-type="2"] .front[data-number="31"] {
   background-position-y: 55%;
 }
-.knarr-destination .front[data-type="2"][data-number="32"] {
+.knarr-destination[data-type="2"] .front[data-number="32"] {
   background-position-y: 60%;
 }
-.knarr-destination .front[data-type="2"][data-number="33"] {
+.knarr-destination[data-type="2"] .front[data-number="33"] {
   background-position-y: 65%;
 }
-.knarr-destination .front[data-type="2"][data-number="34"] {
+.knarr-destination[data-type="2"] .front[data-number="34"] {
   background-position-y: 70%;
 }
-.knarr-destination .front[data-type="2"][data-number="35"] {
+.knarr-destination[data-type="2"] .front[data-number="35"] {
   background-position-y: 75%;
 }
 
@@ -705,12 +693,19 @@ body > .card {
   background-position-y: 100%;
 }
 
-#table-center {
-  min-width: 690px;
+#table-center-wrapper {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+}
+
+#table-center {
+  min-width: 818px;
+  display: grid;
+  grid-template-columns: 120px 690px;
   gap: 8px;
-  align-items: center;
+}
+#table-center .table-destinations-deck {
+  margin-left: -102px;
 }
 #table-center #table-destinations-A .slot, #table-center #table-destinations-B .slot {
   width: 221px;
@@ -1067,32 +1062,8 @@ html, .mode_3d #game_play_area_background {
   background-position: top;
 }
 
-#zoom-wrapper {
-  position: relative;
-}
-#zoom-wrapper #zoom-controls {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-#zoom-wrapper #zoom-controls button {
-  width: 40px;
-  height: 40px;
-  background: url("img/zoom.svg");
-  background-size: auto 220%;
-}
-#zoom-wrapper #zoom-controls button:not(.disabled) {
-  cursor: pointer;
-}
-#zoom-wrapper #zoom-controls button.disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-#zoom-wrapper #zoom-controls #zoom-in {
-  background-position: 6% 94%;
-}
-#zoom-wrapper #zoom-controls #zoom-out {
-  background-position: 82% 94%;
+#bga-zoom-wrapper {
+  padding-top: 32px;
 }
 
 #round-counter-row {

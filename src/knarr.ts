@@ -106,9 +106,9 @@ class Knarr implements KnarrGame {
             onDimensionsChange: () => {
                 const tablesAndCenter = document.getElementById('tables-and-center');
                 const clientWidth = tablesAndCenter.clientWidth;
-                tablesAndCenter.classList.toggle('double-column', clientWidth > 1350);
+                tablesAndCenter.classList.toggle('double-column', clientWidth > 1478);
                 const wasDoublePlayerColumn = tablesAndCenter.classList.contains('double-player-column');
-                const isDoublePlayerColumn = clientWidth > 1670;
+                const isDoublePlayerColumn = clientWidth > 1798;
                 if (wasDoublePlayerColumn != isDoublePlayerColumn) {
                     tablesAndCenter.classList.toggle('double-player-column', isDoublePlayerColumn);
                     this.playersTables.forEach(table => table.setDoubleColumn(isDoublePlayerColumn));
@@ -749,6 +749,8 @@ class Knarr implements KnarrGame {
 
     notif_newTableCard(notif: Notif<NotifNewCardArgs>) {
         this.tableCenter.newTableCard(notif.args.card);
+
+        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     }
 
     notif_takeDestination(notif: Notif<NotifTakeDestinationArgs>) {
@@ -763,7 +765,7 @@ class Knarr implements KnarrGame {
     }
 
     notif_newTableDestination(notif: Notif<NotifNewTableDestinationArgs>) {
-        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter);
+        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter, notif.args.destinationDeckCount, notif.args.destinationDeckTop);
     }
 
     notif_score(notif: Notif<NotifScoreArgs>) {
@@ -784,11 +786,13 @@ class Knarr implements KnarrGame {
         this.updateGains(playerId, notif.args.effectiveGains);
     }
 
-    notif_takeDeckCard(notif: Notif<NotifPlayCardArgs>) {
+    notif_takeDeckCard(notif: Notif<NotifNewCardArgs>) {
         const playerId = notif.args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
         playerTable.playCard(notif.args.card, document.getElementById('board'));
+
+        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     }
 
     notif_discardTableCard(notif: Notif<NotifDiscardTableCardArgs>) {
