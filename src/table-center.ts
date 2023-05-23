@@ -33,8 +33,8 @@ class TableCenter {
         // points
         players.forEach(player =>
             html += `
-            <div id="player-${player.id}-vp-marker" class="vp marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
-            <div id="player-${player.id}-fame-marker" class="fame marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
+            <div id="player-${player.id}-vp-marker" class="vp marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
+            <div id="player-${player.id}-fame-marker" class="fame marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
             `
         );
         dojo.place(html, 'board');
@@ -171,5 +171,9 @@ class TableCenter {
             ...this.destinations['A'].getCards(),
             ...this.destinations['B'].getCards(),
         ];
+    }
+
+    public highlightPlayerTokens(playerId: number | null) {
+        document.querySelectorAll('#board .marker').forEach((elem: HTMLElement) => elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId));
     }
 }

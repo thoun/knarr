@@ -1646,7 +1646,7 @@ var TableCenter = /** @class */ (function () {
         var html = '';
         // points
         players.forEach(function (player) {
-            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"vp marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"fame marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            ");
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"vp marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"fame marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            ");
         });
         dojo.place(html, 'board');
         players.forEach(function (player) {
@@ -1762,6 +1762,9 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.getVisibleDestinations = function () {
         return __spreadArray(__spreadArray([], this.destinations['A'].getCards(), true), this.destinations['B'].getCards(), true);
     };
+    TableCenter.prototype.highlightPlayerTokens = function (playerId) {
+        document.querySelectorAll('#board .marker').forEach(function (elem) { return elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId); });
+    };
     return TableCenter;
 }());
 var isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
@@ -1832,6 +1835,10 @@ var PlayerTable = /** @class */ (function () {
             });
             this.reservedDestinations.addCards(player.reservedDestinations);
         }
+        [document.getElementById("player-table-".concat(this.playerId, "-name")), document.getElementById("player-table-".concat(this.playerId, "-boat"))].forEach(function (elem) {
+            elem.addEventListener('mouseenter', function () { return _this.game.highlightPlayerTokens(_this.playerId); });
+            elem.addEventListener('mouseleave', function () { return _this.game.highlightPlayerTokens(null); });
+        });
     }
     PlayerTable.prototype.updateCounter = function (type, count) {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
@@ -2393,6 +2400,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.setBracelets = function (playerId, count) {
         this.braceletCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
+    };
+    Knarr.prototype.highlightPlayerTokens = function (playerId) {
+        this.tableCenter.highlightPlayerTokens(playerId);
     };
     Knarr.prototype.onTableDestinationClick = function (destination) {
         if (this.gamedatas.gamestate.name == 'reserveDestination') {

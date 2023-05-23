@@ -72,6 +72,7 @@ interface KnarrGame extends Game {
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
+    highlightPlayerTokens(playerId: number | null): void;
     onTableDestinationClick(destination: Destination): void;
     onHandCardClick(card: Card): void;
     onTableCardClick(card: Card): void;

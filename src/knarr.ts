@@ -538,6 +538,9 @@ class Knarr implements KnarrGame {
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
     }
 
+    public highlightPlayerTokens(playerId: number | null): void {
+        this.tableCenter.highlightPlayerTokens(playerId);
+    }
     
     public onTableDestinationClick(destination: Destination): void {
         if (this.gamedatas.gamestate.name == 'reserveDestination') {

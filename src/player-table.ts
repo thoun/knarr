@@ -112,6 +112,11 @@ class PlayerTable {
             });            
             this.reservedDestinations.addCards(player.reservedDestinations);
         }
+
+        [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
+            elem.addEventListener('mouseenter', () => this.game.highlightPlayerTokens(this.playerId));
+            elem.addEventListener('mouseleave', () => this.game.highlightPlayerTokens(null));
+        });
     }
 
     public updateCounter(type: 'recruits' | 'bracelets', count: number) {

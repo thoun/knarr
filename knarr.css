@@ -768,6 +768,16 @@ body > .card {
 #table-center #board .marker.color-blind[data-player-no="4"]::after {
   content: "◆";
 }
+#table-center #board .marker.highlight::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 5px 5px orange;
+}
 #table-center #table-cards .slot {
   width: 120px;
   height: 221px;
