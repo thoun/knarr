@@ -49,8 +49,8 @@ class TableCenter {
         // points
         players.forEach(player =>
             html += `
-            <div id="player-${player.id}-vp-marker" class="vp marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
-            <div id="player-${player.id}-fame-marker" class="fame marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"></div>
+            <div id="player-${player.id}-vp-marker" class="marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
+            <div id="player-${player.id}-fame-marker" class="marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner fame"></div></div>
             `
         );
         dojo.place(html, 'board');

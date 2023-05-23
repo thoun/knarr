@@ -1666,7 +1666,7 @@ var TableCenter = /** @class */ (function () {
         var html = '';
         // points
         players.forEach(function (player) {
-            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"vp marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"fame marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"></div>\n            ");
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner fame\"></div></div>\n            ");
         });
         dojo.place(html, 'board');
         players.forEach(function (player) {

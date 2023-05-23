@@ -36,22 +36,30 @@
       transition: transform 0.5s; 
       pointer-events: none;
 
-      &.vp {
-        background-image: url('img/vp-pawns.png');
+      .inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        
+        &.vp {
+          background-image: url('img/vp-pawns.png');
+        }
+        &.fame {
+          background-image: url('img/fame-pawns.png');
+        }
       }
-      &.fame {
-        background-image: url('img/fame-pawns.png');
-      }
-      
+        
       @each $playerColor in $playerColors {
         $i: index($playerColors, $playerColor) - 1;
-        &[data-color="#{$playerColor}"] { 
+        &[data-color="#{$playerColor}"] .inner { 
           background-position-x: #{$i * 100% / 3};
         }
       }
       
       &.color-blind {
-        &::after {
+        .inner::after {
           font-size: 120%;
           display: flex;
           align-content: center;
@@ -59,19 +67,19 @@
           margin-top: -4px;
         }
 
-        &[data-player-no="1"]::after {
+        &[data-player-no="1"] .inner::after {
           content: '●'; // circle
         }
 
-        &[data-player-no="2"]::after {
+        &[data-player-no="2"] .inner::after {
           content: '▲'; // triangle
         }
 
-        &[data-player-no="3"]::after {
+        &[data-player-no="3"] .inner::after {
           content: '■'; // square
         }
 
-        &[data-player-no="4"]::after {
+        &[data-player-no="4"] .inner::after {
           content: '◆'; // diamond
         }
       }
@@ -84,7 +92,7 @@
           bottom: 0;
           left: 0;
           right: 0;
-          //background: orange;
+          background: orange;
           border-radius: 50%;
           box-shadow: 0 0 5px 5px orange;
         }

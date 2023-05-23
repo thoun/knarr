@@ -726,41 +726,48 @@ body > .card {
   transition: transform 0.5s;
   pointer-events: none;
 }
-#table-center #board .marker.vp {
+#table-center #board .marker .inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+#table-center #board .marker .inner.vp {
   background-image: url("img/vp-pawns.png");
 }
-#table-center #board .marker.fame {
+#table-center #board .marker .inner.fame {
   background-image: url("img/fame-pawns.png");
 }
-#table-center #board .marker[data-color="7c5654"] {
+#table-center #board .marker[data-color="7c5654"] .inner {
   background-position-x: 0%;
 }
-#table-center #board .marker[data-color=d6d6d7] {
+#table-center #board .marker[data-color=d6d6d7] .inner {
   background-position-x: 33.3333333333%;
 }
-#table-center #board .marker[data-color=b79d86] {
+#table-center #board .marker[data-color=b79d86] .inner {
   background-position-x: 66.6666666667%;
 }
-#table-center #board .marker[data-color="1e2c36"] {
+#table-center #board .marker[data-color="1e2c36"] .inner {
   background-position-x: 100%;
 }
-#table-center #board .marker.color-blind::after {
+#table-center #board .marker.color-blind .inner::after {
   font-size: 120%;
   display: flex;
   align-content: center;
   justify-content: center;
   margin-top: -4px;
 }
-#table-center #board .marker.color-blind[data-player-no="1"]::after {
+#table-center #board .marker.color-blind[data-player-no="1"] .inner::after {
   content: "●";
 }
-#table-center #board .marker.color-blind[data-player-no="2"]::after {
+#table-center #board .marker.color-blind[data-player-no="2"] .inner::after {
   content: "▲";
 }
-#table-center #board .marker.color-blind[data-player-no="3"]::after {
+#table-center #board .marker.color-blind[data-player-no="3"] .inner::after {
   content: "■";
 }
-#table-center #board .marker.color-blind[data-player-no="4"]::after {
+#table-center #board .marker.color-blind[data-player-no="4"] .inner::after {
   content: "◆";
 }
 #table-center #board .marker.highlight::before {
@@ -770,6 +777,7 @@ body > .card {
   bottom: 0;
   left: 0;
   right: 0;
+  background: orange;
   border-radius: 50%;
   box-shadow: 0 0 5px 5px orange;
 }

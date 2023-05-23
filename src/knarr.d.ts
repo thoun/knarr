@@ -48,6 +48,7 @@ interface KnarrGamedatas {
     // Add here variables you set up in getAllDatas
     cardDeckTop?: Card;
     cardDeckCount: number;
+    centerCards: Card[];
     centerDestinationsDeckTop: { [letter: string]: Destination };
     centerDestinationsDeckCount: { [letter: string]: number };
     centerDestinations: { [letter: string]: Destination[] };
