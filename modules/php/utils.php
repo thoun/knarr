@@ -385,12 +385,12 @@ trait UtilTrait {
     function getArtifactName(int $artifact) {
         switch ($artifact) {
             case ARTIFACT_ARTIFACT_MEAD_CUP_CUP: return clienttranslate("Mead Cup");
-            case ARTIFACT_SILVER_COINS: return clienttranslate("Silver coins");
-            case ARTIFACT_CALDRON: return clienttranslate("Caldron");
+            case ARTIFACT_SILVER_COIN: return clienttranslate("Silver coin");
+            case ARTIFACT_CAULDRON: return clienttranslate("Cauldron");
             case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
             case ARTIFACT_HELMET: return clienttranslate("Helmet");
             case ARTIFACT_AMULET: return clienttranslate("Amulet");
-            case ARTIFACT_WEATHERCLOCK: return clienttranslate("Weatherclock");
+            case ARTIFACT_WEATHERVANE: return clienttranslate("Weathervane");
         }
     }
 
@@ -462,7 +462,7 @@ trait UtilTrait {
 
     function checkArtifact(int $playerId, int $artifact) {
         switch ($artifact) {
-            case ARTIFACT_SILVER_COINS:
+            case ARTIFACT_SILVER_COIN:
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);
@@ -483,7 +483,7 @@ trait UtilTrait {
                     }
                 }
                 break;
-            case ARTIFACT_GOLDEN_BRACELET: // TODO
+            case ARTIFACT_GOLDEN_BRACELET:
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);
@@ -511,7 +511,7 @@ trait UtilTrait {
                     ]);
                 }
                 break;
-            case ARTIFACT_WEATHERCLOCK:
+            case ARTIFACT_WEATHERVANE:
                 if ($this->completedAPlayedLine($playerId)) {
                     $this->setGameStateValue(EXPLORE_DONE, 0);
 

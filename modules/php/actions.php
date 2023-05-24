@@ -63,7 +63,7 @@ trait ActionTrait {
         if ($argChooseNewCard['allFree']) {
             self::notifyAllPlayers('log', clienttranslate('${player_name} can recruit any viking for free thanks to ${artifact_name} effect'), [
                 'player_name' => $this->getPlayerName($playerId),
-                'artifact_name' => $this->getArtifactName(ARTIFACT_CALDRON), // for logs
+                'artifact_name' => $this->getArtifactName(ARTIFACT_CAULDRON), // for logs
                 'i18n' => ['artifact_name'],
             ]);
         }

@@ -510,9 +510,6 @@ class Knarr implements KnarrGame {
                     case REPUTATION:
                         this.setReputation(playerId, this.tableCenter.getReputation(playerId) + amount);
                         break;
-                    case CARD:
-                        // TODO
-                        break;
                 }
             }
         });

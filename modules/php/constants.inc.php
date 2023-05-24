@@ -30,12 +30,12 @@ define('CARD', 5);
  * Artifacts
  */
 define('ARTIFACT_ARTIFACT_MEAD_CUP_CUP', 1);
-define('ARTIFACT_SILVER_COINS', 2);
-define('ARTIFACT_CALDRON', 3);
+define('ARTIFACT_SILVER_COIN', 2);
+define('ARTIFACT_CAULDRON', 3);
 define('ARTIFACT_GOLDEN_BRACELET', 4);
 define('ARTIFACT_HELMET', 5);
 define('ARTIFACT_AMULET', 6);
-define('ARTIFACT_WEATHERCLOCK', 7);
+define('ARTIFACT_WEATHERVANE', 7);
 
 /*
  * State constants

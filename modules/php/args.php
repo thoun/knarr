@@ -54,7 +54,7 @@ trait ArgsTrait {
         $allFree = false;
         if ($this->getVariantOption() >= 2) {
             $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
-            if (in_array(ARTIFACT_CALDRON, $artifacts)) {
+            if (in_array(ARTIFACT_CAULDRON, $artifacts)) {
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);

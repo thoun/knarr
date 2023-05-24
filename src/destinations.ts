@@ -36,14 +36,14 @@ class DestinationsManager extends CardManager<Destination> {
 
     public getType(type: number): string {
         switch (type) {
-            case 1: return _("TODO terre d'échange");
-            case 2: return _("TODO terre d'influence");
+            case 1: return _("Trading Lands");
+            case 2: return _("Lands of Influence");
         }
     }
 
     private getTooltip(destination: Destination): string {
         let message = `
-        <strong>${_("Cost:")}</strong> ${this.getCost(destination.cost)} (recruits can be used as jokers)
+        <strong>${_("Exploration cost:")}</strong> ${this.getCost(destination.cost)} (recruits can be used as jokers)
         <br>
         <strong>${_("Immediate gains:")}</strong> ${this.getGains(destination.immediateGains)}
         <br>

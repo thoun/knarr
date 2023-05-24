@@ -16,24 +16,24 @@ class ArtifactsManager extends CardManager<number> {
     private getArtifactName(number: number): string {
         switch (number) {
             case 1: return _("Mead Cup");
-            case 2: return _("Silver coins");
-            case 3: return _("Caldron");
+            case 2: return _("Silver coin");
+            case 3: return _("Cauldron");
             case 4: return _("Golden bracelet");
             case 5: return _("Helmet");
             case 6: return _("Amulet");
-            case 7: return _("Weatherclock");
+            case 7: return _("Weathervane");
         }     
     }
 
     private getArtifactEffect(number: number): string {
-        switch (number) { // TODO
-            case 1: return _("Si vous effectuez l’action Explorer, vous pouvez défausser un viking du plateau et le remplacer par le 1er de la pioche.");
-            case 2: return _("Pour chaque viking recruté au-delà du 3e viking de même couleur, vous gagnez 1 point de victoire.");
-            case 3: return _("Si vous recrutez le 2nd viking de même couleur, vous pouvez prendre la carte viking de votre choix au lieu de celle imposée par la carte jouée.");
-            case 4: return _("Si vous recrutez le 3e viking de même couleur, vous pouvez réserver une carte destination de votre choix. Prenez-la parmi les cartes visibles et posez-la à côté de votre aire de jeu. Lorsque vous faites l’action Explorer, vous pouvez désormais choisir d’explorer une destination réservée à la place d’une destination visible. Vous pouvez avoir jusqu’à deux cartes destination réservées.");
-            case 5: return _("Si vous placez la carte terre d’influence que vous venez d’explorer, directement sur une carte terre d’échange, vous pouvez effectuer immédiatement l’action Recruter.");
-            case 6: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez prendre un bracelet en argent, une recrue et un point de renommée.");
-            case 7: return _("Si vous complétez une ligne de cinq vikings de couleurs différentes, vous pouvez effectuer immédiatement l’action Explorer. Vous devez toujours payer le coût d’exploration.");
+        switch (number) {
+            case 1: return _("If a player takes an Explore action, they may discard a viking from the board and replace them with the first card from the deck.");
+            case 2: return _("For each viking of the same color a player Recruits beyond their 3rd viking of that color, they gain 1 Victory Point.");
+            case 3: return _("If a player Recruits a 2nd viking of the same color, they may take the Viking card of their choice instead of the one imposed by the card they played.");
+            case 4: return _("If a player recruits a 3rd viking of the same color, they can reserve a Destination card of their choice. It is taken from the available cards and placed next to their playing area. When that player takes an Explore action, they may choose to Explore a destination they have reserved instead of an available destination. Each player can have up to 2 reserved Destination cards at a time.");
+            case 5: return _("If a player places a Lands of Influence card which they have just Explored directly onto a Trading Lands card, they may immediately carry out a Recruit action.");
+            case 6: return _("If a player completes a line of vikings with all 5 different colors, they can take 1 silver bracelet and 1 recruit, and gains 1 Reputation Point.");
+            case 7: return _("If a player completes a line of vikings with all 5 different colors, they can immediately carry out an Explore action. They still have to pay the exploration cost.");
         }     
     }
 
