@@ -260,7 +260,7 @@ trait ActionTrait {
                 }
             }
 
-            if (in_array(ARTIFACT_HYDROMEL_CUP, $artifacts)) {
+            if (in_array(ARTIFACT_ARTIFACT_MEAD_CUP_CUP, $artifacts)) {
                 $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
             }
         }
@@ -296,6 +296,8 @@ trait ActionTrait {
         self::notifyAllPlayers('newTableDestination', '', [
             'destination' => $newDestination,
             'letter' => $type,
+            'destinationDeckTop' => Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$type))),
+            'destinationDeckCount' => intval($this->destinations->countCardInLocation('deck'.$type)),
         ]);
 
         $this->gamestate->nextState('next');

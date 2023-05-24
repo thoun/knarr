@@ -107,6 +107,11 @@
     }
   }
 
+  #card-deck[data-empty="true"] {
+    background: #FFFFFF66;
+    border-radius: 8px;
+  }
+
   .bga-cards_deck-counter {
     pointer-events: all;
 
@@ -115,7 +120,7 @@
     }
 
     &#discard-counter {
-      background-color: lightgray;
+      background-color: #aaaaaa;
       --bga-cards-deck-left: 75%;
     }
   }

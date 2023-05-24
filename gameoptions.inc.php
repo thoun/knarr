@@ -49,8 +49,8 @@ require_once("modules/php/constants.inc.php");
                 'name' => totranslate('Disabled'),
             ],
             2 => [
-                'name' => totranslate('Enabled (with [TODO Coupe Hydromel] for 2-players mode)'),
-                'tmdisplay' => totranslate('Artefact variant (with [TODO Coupe Hydromel] for 2-players mode)'),
+                'name' => totranslate('Enabled (with Mead Cup for 2-players mode)'),
+                'tmdisplay' => totranslate('Artefact variant (with Mead Cup for 2-players mode)'),
             ],
             3 => [
                 'name' => totranslate('Enabled'),

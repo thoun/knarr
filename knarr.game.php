@@ -63,6 +63,7 @@ class Knarr extends Table {
         $this->cards = $this->getNew("module.common.deck");
         $this->cards->init("card");
         $this->cards->autoreshuffle = true;     
+        $this->cards->autoreshuffle_trigger = ['obj' => $this, 'method' => 'cardDeckAutoReshuffle'];
 		
         $this->destinations = $this->getNew("module.common.deck");
         $this->destinations->init("destination");
@@ -293,31 +294,14 @@ class Knarr extends Table {
     
     */
     
-    function upgradeTableDb( $from_version )
-    {
+    function upgradeTableDb($from_version) {
         // $from_version is the current version of this game database, in numerical form.
         // For example, if the game was running with a release of your game named "140430-1345",
         // $from_version is equal to 1404301345
-        
-        // Example:
-//        if( $from_version <= 1404301345 )
-//        {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
-//        }
-//        if( $from_version <= 1405061421 )
-//        {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
-//        }
-//        // Please add your future database scheme changes here
-//
-//
 
-
+        if($from_version <= 2305231853) {
+            // ! important ! Use DBPREFIX_<table_name> for all tables
+            self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player RENAME COLUMN player_fame TO player_reputation");
+        }
     }    
 }

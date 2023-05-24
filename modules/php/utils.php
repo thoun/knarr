@@ -384,7 +384,7 @@ trait UtilTrait {
 
     function getArtifactName(int $artifact) {
         switch ($artifact) {
-            case ARTIFACT_HYDROMEL_CUP: return clienttranslate("Hydromel cup");
+            case ARTIFACT_ARTIFACT_MEAD_CUP_CUP: return clienttranslate("Mead Cup");
             case ARTIFACT_SILVER_COINS: return clienttranslate("Silver coins");
             case ARTIFACT_CALDRON: return clienttranslate("Caldron");
             case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
@@ -549,5 +549,13 @@ trait UtilTrait {
         }
 
         return $gains;
+    }
+
+    public function cardDeckAutoReshuffle() {
+        $this->notifyAllPlayers('cardDeckReset', clienttranslate('The card deck has been reshuffled'), [            
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
+        ]);
     }
 }

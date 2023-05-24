@@ -18,14 +18,15 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
   }
 }
 
+/* TODO
 @font-face {
   font-family: 'komika parch';
   src: url('img/komikap-webfont.woff2') format('woff2'),
        url('img/komikap-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
+*/
 
 html, .mode_3d #game_play_area_background {
   background: url('img/background.jpg') #b5b4b4;

@@ -140,17 +140,18 @@ class PlayerTable {
 
         for (let i = 1; i <= 5; i++) {
             this.played[i].setSelectionMode(selectable ? 'multiple' : 'none');
-            this.played[i].getCards().forEach(card => {
-                const element = this.played[i].getCardElement(card);
-                let disabled = !selectable || cost == null;
-                if (!disabled) {
-                    if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
-                        disabled = !colors.includes(card.color);
+            if (selectable) {
+                const selectableCards = this.played[i].getCards().filter(card => {
+                    let disabled = !selectable || cost == null;
+                    if (!disabled) {
+                        if (colors.length != 1 || (colors.length == 1 && !equalOrDifferent)) {
+                            disabled = !colors.includes(card.color);
+                        }
                     }
-                }
-                element.classList.toggle('disabled', selectable && disabled);
-                element.classList.toggle('selectable', selectable && !disabled);
-            });
+                    return !disabled;
+                });
+                this.played[i].setSelectableCards(selectableCards);
+            }
         }
     }
 
@@ -174,12 +175,7 @@ class PlayerTable {
         }
 
         this.reservedDestinations.setSelectionMode(selectable ? 'single' : 'none');
-        this.reservedDestinations.getCards().forEach(card => {
-            const element = this.reservedDestinations.getCardElement(card);
-            const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
-            element.classList.toggle('disabled', selectable && disabled);
-            element.classList.toggle('selectable', selectable && !disabled);
-        });
+        this.reservedDestinations.setSelectableCards(selectableCards);
     }
     
     public showColumns(number: number) {
@@ -198,17 +194,16 @@ class PlayerTable {
         const color = selectedCards.length ? selectedCards[0].color : null;
 
         for (let i = 1; i <= 5; i++) {
-            this.played[i].getCards().forEach(card => {
-                const element = this.played[i].getCardElement(card);
-                
+            const selectableCards = this.played[i].getCards().filter(card => {                
                 let disabled = false;
                 if (this.limitSelection === DIFFERENT) {
                     disabled = selectedColors.includes(card.color) && !selectedCards.includes(card);
                 } else if (this.limitSelection === EQUAL) {
                     disabled = color !== null && card.color != color;
                 }
-                element.classList.toggle('disabled', disabled);
+                return !disabled;
             });
+            this.played[i].setSelectableCards(selectableCards);
         }
     }
     

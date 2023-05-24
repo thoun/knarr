@@ -406,19 +406,16 @@ body > .card {
   pointer-events: none;
   user-select: none;
 }
-.knarr-card.selectable:not(.disabled) {
-  cursor: pointer;
-}
-.knarr-card.selectable:not(.disabled):not(.selected) {
+.knarr-card.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
-.knarr-card.selectable:not(.disabled) .card-side {
+.knarr-card.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.knarr-card.selected:not(.disabled) {
+.knarr-card.bga-cards_selected-card:not(.bga-cards_disabled-card) {
   box-shadow: 0 0 5px 5px orange;
 }
-.knarr-card.selected:not(.disabled) .card-side {
+.knarr-card.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
 .knarr-card .front[data-color="1"][data-gain="1"] {
@@ -506,19 +503,16 @@ body > .card {
   pointer-events: none;
   user-select: none;
 }
-.knarr-destination.selectable:not(.disabled) {
-  cursor: pointer;
-}
-.knarr-destination.selectable:not(.disabled):not(.selected) {
+.knarr-destination.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
 }
-.knarr-destination.selectable:not(.disabled) .card-side {
+.knarr-destination.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.knarr-destination.selected:not(.disabled) {
+.knarr-destination.bga-cards_selected-card:not(.bga-cards_disabled-card) {
   box-shadow: 0 0 5px 5px orange;
 }
-.knarr-destination.selected:not(.disabled) .card-side {
+.knarr-destination.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
 .knarr-destination.selected-pay-destination {
@@ -780,6 +774,10 @@ body > .card {
   width: 120px;
   height: 221px;
 }
+#table-center #card-deck[data-empty=true] {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+}
 #table-center .bga-cards_deck-counter {
   pointer-events: all;
 }
@@ -787,7 +785,7 @@ body > .card {
   --bga-cards-deck-left: 25%;
 }
 #table-center .bga-cards_deck-counter#discard-counter {
-  background-color: lightgray;
+  background-color: #aaaaaa;
   --bga-cards-deck-left: 75%;
 }
 
@@ -1062,12 +1060,15 @@ body > .card {
     margin-top: 8px;
   }
 }
+/* TODO
 @font-face {
-  font-family: "komika parch";
-  src: url("img/komikap-webfont.woff2") format("woff2"), url("img/komikap-webfont.woff") format("woff");
+  font-family: 'komika parch';
+  src: url('img/komikap-webfont.woff2') format('woff2'),
+       url('img/komikap-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
 }
+*/
 html, .mode_3d #game_play_area_background {
   background: url("img/background.jpg") #b5b4b4;
   background-size: 100% auto;

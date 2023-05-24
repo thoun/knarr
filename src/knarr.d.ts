@@ -169,3 +169,10 @@ interface NotifScoreArgs {
     newScore: number;
     incScore: number;
 }
+
+// cardDeckReset
+interface NotifCardDeckResetArgs {  
+    cardDeckTop?: Card;
+    cardDeckCount: number;
+    cardDiscardCount: number;
+}

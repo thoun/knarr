@@ -18,9 +18,8 @@
         }
     }    
 
-    &.selectable:not(.disabled) {
-        cursor: pointer;
-        &:not(.selected) {
+    &.bga-cards_selectable-card:not(.bga-cards_disabled-card) {
+        &:not(.bga-cards_selected-card) {
             animation: selectable-card-animation 1s alternate infinite ease-in-out;
         }
 
@@ -29,7 +28,7 @@
         }
     }    
 
-    &.selected:not(.disabled) {
+    &.bga-cards_selected-card:not(.bga-cards_disabled-card) {
         box-shadow: 0 0 5px 5px orange;
 
         .card-side {

@@ -35,13 +35,14 @@ class TableCenter {
         this.cardDeck = new Deck<Card>(game.cardsManager, cardDeckDiv, {
             cardNumber: gamedatas.cardDeckCount,
             topCard: gamedatas.cardDeckTop,
-            counter: {},
+            counter: {
+                counterId: 'deck-counter',
+            },
         });
-        const deckCounterDiv = cardDeckDiv.querySelector('.bga-cards_deck-counter');
-        deckCounterDiv.id = "deck-counter";
         cardDeckDiv.insertAdjacentHTML('beforeend', `
             <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
         `);
+        const deckCounterDiv = document.getElementById('deck-counter');
         const discardCounterDiv = document.getElementById('discard-counter');
         this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
         this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
@@ -73,7 +74,7 @@ class TableCenter {
         this.moveReputation();
 
         if (gamedatas.variantOption >= 2) {
-            document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div id="artifacts"></div>`);
+            document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div></div><div id="artifacts"></div>`);
         
             this.artifactsManager = new ArtifactsManager(this.game);
             this.artifacts = new LineStock<number>(this.artifactsManager, document.getElementById(`artifacts`));
@@ -97,12 +98,7 @@ class TableCenter {
     public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {
         ['A', 'B'].forEach(letter => {
             this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
-            this.destinations[letter].getCards().forEach(card => {
-                const element = this.destinations[letter].getCardElement(card);
-                const disabled = selectable && selectableCards != null && !selectableCards.some(s => s.id == card.id);
-                element.classList.toggle('disabled', selectable && disabled);
-                element.classList.toggle('selectable', selectable && !disabled);
-            });
+            this.destinations[letter].setSelectableCards(selectableCards);
         });
     }
 
@@ -182,16 +178,10 @@ class TableCenter {
 
     public setCardsSelectable(selectable: boolean, freeColor: number | null = null, recruits: number | null = null) {
         this.cards.setSelectionMode(selectable ? 'single' : 'none');
-
-        this.cards.getCards().forEach(card => {
-            const element = this.cards.getCardElement(card);
-            let disabled = !selectable;
-            if (!disabled) {
-                    disabled = freeColor !== null && card.locationArg != freeColor && recruits < 1;
-            }
-            element.classList.toggle('disabled', selectable && disabled);
-            element.classList.toggle('selectable', selectable && !disabled);
-        });
+        if (selectable) {
+            const selectableCards = this.cards.getCards().filter(card => freeColor === null || card.locationArg == freeColor || recruits >= 1);
+            this.cards.setSelectableCards(selectableCards);
+        }
     }
     
     public getVisibleDestinations(): Destination[] {

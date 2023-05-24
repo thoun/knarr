@@ -15,7 +15,7 @@ class ArtifactsManager extends CardManager<number> {
 
     private getArtifactName(number: number): string {
         switch (number) {
-            case 1: return _("Hydromel cup");
+            case 1: return _("Mead Cup");
             case 2: return _("Silver coins");
             case 3: return _("Caldron");
             case 4: return _("Golden bracelet");

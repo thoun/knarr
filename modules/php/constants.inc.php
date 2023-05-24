@@ -29,7 +29,7 @@ define('CARD', 5);
 /*
  * Artifacts
  */
-define('ARTIFACT_HYDROMEL_CUP', 1);
+define('ARTIFACT_ARTIFACT_MEAD_CUP_CUP', 1);
 define('ARTIFACT_SILVER_COINS', 2);
 define('ARTIFACT_CALDRON', 3);
 define('ARTIFACT_GOLDEN_BRACELET', 4);

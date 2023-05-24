@@ -17,6 +17,8 @@ trait DebugUtilTrait {
 
         //$this->debugAddDestinations(2343492, 'A', 15);
         //$this->debugAddDestinations(2343492, 'B', 10);
+
+        $this->cards->pickCardsForLocation(13, 'deck', 'void');
         
         //$this->debugLastTurn();
     }
