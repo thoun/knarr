@@ -14,6 +14,8 @@ class CardsManager extends CardManager<Card> {
             isCardVisible: card => Boolean(card.color),
             cardWidth: 120,
             cardHeight: 221,
+            selectableCardClass: 'selectable',
+            selectedCardClass: 'selected',
         });
     }
 

@@ -164,12 +164,6 @@ class PlayerTable {
         return cards;
     }
     
-    public discardCards(cards: Card[]) {
-        for (let i = 1; i <= 5; i++) {
-            this.played[i].removeCards(cards);
-        }
-    }
-    
     public reserveDestination(destination: Destination) {
         this.reservedDestinations.addCard(destination);
     }

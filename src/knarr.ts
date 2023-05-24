@@ -761,7 +761,9 @@ class Knarr implements KnarrGame {
     }
 
     notif_discardCards(notif: Notif<NotifDiscardCardsArgs>) {
-        this.getPlayerTable(notif.args.playerId).discardCards(notif.args.cards);
+        this.tableCenter.cardDiscard.addCards(notif.args.cards, undefined, undefined, 50);/*.then(
+            () =>*/ this.tableCenter.setDiscardCount(notif.args.cardDiscardCount)
+        /*);*/
     }
 
     notif_newTableDestination(notif: Notif<NotifNewTableDestinationArgs>) {

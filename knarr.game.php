@@ -204,6 +204,7 @@ class Knarr extends Table {
 
         $result['cardDeckTop'] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
         $result['cardDeckCount'] = intval($this->cards->countCardInLocation('deck'));
+        $result['cardDiscardCount'] = intval($this->cards->countCardInLocation('discard'));
         $result['centerCards'] = $this->getCardsByLocation('slot');
         $result['centerDestinationsDeckTop'] = [];
         $result['centerDestinationsDeckCount'] = [];

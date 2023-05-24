@@ -4,6 +4,7 @@ const POINT_CASE_SIZE_TOP = 37.6;
 class TableCenter {
     public destinationsDecks: Deck<Destination>[] = [];
     public cardDeck: Deck<Card>;
+    public cardDiscard: VoidStock<Card>;
     public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
@@ -30,11 +31,21 @@ class TableCenter {
             this.destinations[letter].onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
         })
 
-        this.cardDeck = new Deck<Card>(game.cardsManager, document.getElementById(`card-deck`), {
+        const cardDeckDiv = document.getElementById(`card-deck`);
+        this.cardDeck = new Deck<Card>(game.cardsManager, cardDeckDiv, {
             cardNumber: gamedatas.cardDeckCount,
             topCard: gamedatas.cardDeckTop,
             counter: {},
         });
+        const deckCounterDiv = cardDeckDiv.querySelector('.bga-cards_deck-counter');
+        deckCounterDiv.id = "deck-counter";
+        cardDeckDiv.insertAdjacentHTML('beforeend', `
+            <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
+        `);
+        const discardCounterDiv = document.getElementById('discard-counter');
+        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
+        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
+        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
 
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
@@ -192,5 +203,10 @@ class TableCenter {
 
     public highlightPlayerTokens(playerId: number | null) {
         document.querySelectorAll('#board .marker').forEach((elem: HTMLElement) => elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId));
+    }
+    
+    public setDiscardCount(cardDiscardCount: number) {
+        const discardCounterDiv = document.getElementById('discard-counter');
+        discardCounterDiv.innerHTML = ''+cardDiscardCount;
     }
 }

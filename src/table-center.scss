@@ -106,4 +106,17 @@
       height: 221px;
     }
   }
+
+  .bga-cards_deck-counter {
+    pointer-events: all;
+
+    &#deck-counter {      
+      --bga-cards-deck-left: 25%;
+    }
+
+    &#discard-counter {
+      background-color: lightgray;
+      --bga-cards-deck-left: 75%;
+    }
+  }
 }

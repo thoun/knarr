@@ -196,6 +196,7 @@ trait ActionTrait {
                 'player_name' => $this->getPlayerName($playerId),
                 'cards' => $cardsToDiscard,
                 'number' => $recruits, // for logs
+                'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
             ]);
         }
 
@@ -407,6 +408,7 @@ trait ActionTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'cards' => [$card],
+            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
         ]);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'next');

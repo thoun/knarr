@@ -13,7 +13,7 @@
     "bga-zoom": "thoun/bga-zoom#0.1.0",
     "bga-jump-to": "thoun/bga-jump-to#0.1.0",
     "bga-animations": "thoun/bga-animations#0.1.1",
-    "bga-cards": "thoun/bga-cards#1.0.3"
+    "bga-cards": "thoun/bga-cards#1.1.0"
   },
   "devDependencies": {
     "sass": "^1.32.6",

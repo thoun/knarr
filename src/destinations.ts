@@ -16,6 +16,8 @@ class DestinationsManager extends CardManager<Destination> {
             isCardVisible: card => Boolean(card.number),
             cardWidth: 221,
             cardHeight: 120,
+            selectableCardClass: 'selectable',
+            selectedCardClass: 'selected',
         });
     }
 

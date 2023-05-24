@@ -223,12 +223,13 @@ body > .card {
   user-select: none;
 }
 
-.card-stock.selectable .card:not(.disabled) {
+.card-stock .card.bga-cards_selectable-card:not(.bga-cards_disabled-card) {
   cursor: pointer;
 }
 
-.card-stock .card.selectable:not(.disabled) {
-  cursor: pointer;
+.card-stock .card.bga-cards_disabled-card {
+  cursor: not-allowed;
+  filter: contrast(0.6);
 }
 
 .card-stock.line-stock {
@@ -327,11 +328,11 @@ body > .card {
   visibility: hidden;
 }
 
-.card-stock.deck[data-empty=true] .bga-cards-deck-counter.hide-when-empty {
+.card-stock.deck[data-empty=true] .bga-cards_deck-counter.hide-when-empty {
   display: none;
 }
 
-.bga-cards-deck-counter {
+.bga-cards_deck-counter {
   --bga-cards-deck-counter-size: 20px;
   position: absolute;
   z-index: 1;
@@ -342,9 +343,11 @@ body > .card {
   display: flex;
   justify-content: center;
   align-items: center;
+  user-select: none;
+  pointer-events: none;
 }
 
-.bga-cards-deck-counter.round {
+.bga-cards_deck-counter.round {
   color: black;
   background: white;
   border-radius: 50%;
@@ -352,13 +355,13 @@ body > .card {
   font-size: 14px;
 }
 
-.bga-cards-deck-counter.text-shadow {
+.bga-cards_deck-counter.text-shadow {
   color: white;
   text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
   font-size: 20px;
 }
 
-.bga-cards-deck-counter.hidden {
+.bga-cards_deck-counter.hidden {
   display: none;
 }
 
@@ -393,10 +396,6 @@ body > .card {
   width: 120px;
   height: 221px;
   border-radius: 8px;
-}
-.knarr-card.disabled {
-  cursor: not-allowed;
-  filter: contrast(0.6);
 }
 .knarr-card .card-sides .card-side {
   border-radius: 8px;
@@ -485,10 +484,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px white;
+    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
   }
   100% {
-    box-shadow: 0 0 5px 3px white;
+    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
 }
 .knarr-destination {
@@ -497,10 +496,6 @@ body > .card {
   width: 221px;
   height: 120px;
   border-radius: 8px;
-}
-.knarr-destination.disabled {
-  cursor: not-allowed;
-  filter: contrast(0.6);
 }
 .knarr-destination .card-sides .card-side {
   border-radius: 8px;
@@ -646,10 +641,10 @@ body > .card {
 
 @keyframes selectable-card-animation {
   0% {
-    box-shadow: 0 0 3px 2px white;
+    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
   }
   100% {
-    box-shadow: 0 0 5px 3px white;
+    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
 }
 .card.artifact {
@@ -784,6 +779,16 @@ body > .card {
 #table-center #table-cards .slot {
   width: 120px;
   height: 221px;
+}
+#table-center .bga-cards_deck-counter {
+  pointer-events: all;
+}
+#table-center .bga-cards_deck-counter#deck-counter {
+  --bga-cards-deck-left: 25%;
+}
+#table-center .bga-cards_deck-counter#discard-counter {
+  background-color: lightgray;
+  --bga-cards-deck-left: 75%;
 }
 
 .player-board {

@@ -48,6 +48,7 @@ interface KnarrGamedatas {
     // Add here variables you set up in getAllDatas
     cardDeckTop?: Card;
     cardDeckCount: number;
+    cardDiscardCount: number;
     centerCards: Card[];
     centerDestinationsDeckTop: { [letter: string]: Destination };
     centerDestinationsDeckCount: { [letter: string]: number };
@@ -148,6 +149,7 @@ interface NotifTradeArgs {
 interface NotifDiscardCardsArgs {
     playerId: number;
     cards: Card[];
+    cardDiscardCount: number;
 }
 
 // discardTableCard

@@ -14,9 +14,9 @@ bga-animations@thoun/bga-animations#0.1.1:
   version "1.0.0"
   resolved "https://codeload.github.com/thoun/bga-animations/tar.gz/a196ecc67f33e591b9dd4df04afdb987b24f427f"
 
-bga-cards@thoun/bga-cards#1.0.3:
+bga-cards@thoun/bga-cards#1.1.0:
   version "1.0.0"
-  resolved "https://codeload.github.com/thoun/bga-cards/tar.gz/b9be82ef84c497647d8301e131bb8f156362dfff"
+  resolved "https://codeload.github.com/thoun/bga-cards/tar.gz/4913a847c5d1228f34499615dfd072908fcc1194"
 
 bga-jump-to@thoun/bga-jump-to#0.1.0:
   version "1.0.0"
