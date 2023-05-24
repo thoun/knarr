@@ -11,7 +11,7 @@ const ACTION_TIMER_DURATION = 5;
 const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 const LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'Knarr-jump-to-folded';
 
-const VP_BY_FAME = {
+const VP_BY_REPUTATION = {
     0: 0,
     3: 1,
     6: 2,
@@ -25,11 +25,11 @@ const DIFFERENT = 0;
 const VP = 1;
 const BRACELET = 2;
 const RECRUIT = 3;
-const FAME = 4;
+const REPUTATION = 4;
 const CARD = 5;
 
-function getVpByFame(fame: number) {
-    return Object.entries(VP_BY_FAME).findLast(entry => fame >= Number(entry[0]))[1];
+function getVpByReputation(reputation: number) {
+    return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
 
 class Knarr implements KnarrGame {
@@ -42,7 +42,7 @@ class Knarr implements KnarrGame {
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
     //private handCounters: Counter[] = [];
-    private fameCounters: Counter[] = [];
+    private reputationCounters: Counter[] = [];
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
     
@@ -432,9 +432,9 @@ class Knarr implements KnarrGame {
                 </div>*/
             let html = `<div class="counters">
             
-                <div id="fame-counter-wrapper-${player.id}" class="fame-counter">
-                    <div class="fame icon"></div>
-                    <span id="fame-counter-${player.id}"></span> <span class="fame-legend"><div class="vp icon"></div> / ${_('round')}</span>
+                <div id="reputation-counter-wrapper-${player.id}" class="reputation-counter">
+                    <div class="reputation icon"></div>
+                    <span id="reputation-counter-${player.id}"></span> <span class="reputation-legend"><div class="vp icon"></div> / ${_('round')}</span>
                 </div>
 
             </div><div class="counters">
@@ -459,9 +459,9 @@ class Knarr implements KnarrGame {
             handCounter.setValue(player.handCount);
             this.handCounters[playerId] = handCounter;*/
 
-            this.fameCounters[playerId] = new ebg.counter();
-            this.fameCounters[playerId].create(`fame-counter-${playerId}`);
-            this.fameCounters[playerId].setValue(getVpByFame(player.fame));
+            this.reputationCounters[playerId] = new ebg.counter();
+            this.reputationCounters[playerId].create(`reputation-counter-${playerId}`);
+            this.reputationCounters[playerId].setValue(getVpByReputation(player.reputation));
 
             this.recruitCounters[playerId] = new ebg.counter();
             this.recruitCounters[playerId].create(`recruit-counter-${playerId}`);
@@ -473,7 +473,7 @@ class Knarr implements KnarrGame {
         });
 
         this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
-        this.setTooltipToClass('fame-counter', _('Fame'));
+        this.setTooltipToClass('reputation-counter', _('Reputation'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     }
@@ -507,8 +507,8 @@ class Knarr implements KnarrGame {
                     case RECRUIT:
                         this.setRecruits(playerId, this.recruitCounters[playerId].getValue() + amount);
                         break;
-                    case FAME:
-                        this.setFame(playerId, this.tableCenter.getFame(playerId) + amount);
+                    case REPUTATION:
+                        this.setReputation(playerId, this.tableCenter.getReputation(playerId) + amount);
                         break;
                     case CARD:
                         // TODO
@@ -523,9 +523,9 @@ class Knarr implements KnarrGame {
         this.tableCenter.setScore(playerId, score);
     }
 
-    private setFame(playerId: number, count: number) {
-        this.fameCounters[playerId].toValue(getVpByFame(count));
-        this.tableCenter.setFame(playerId, count);
+    private setReputation(playerId: number, count: number) {
+        this.reputationCounters[playerId].toValue(getVpByReputation(count));
+        this.tableCenter.setReputation(playerId, count);
     }
 
     private setRecruits(playerId: number, count: number) {
@@ -822,7 +822,7 @@ class Knarr implements KnarrGame {
             case 1: return _("Victory Point");
             case 2: return _("Bracelet");
             case 3: return _("Recruit");
-            case 4: return _("Fame");
+            case 4: return _("Reputation");
             case 5: return _("Card");
         }
     }

@@ -13,7 +13,7 @@ trait DebugUtilTrait {
 
         //$this->debugSetPlayerScore(2343492, 10);
         //$this->debugSetScore(39);
-        //$this->debugSetFame(8);
+        //$this->debugSetReputation(8);
 
         //$this->debugAddDestinations(2343492, 'A', 15);
         //$this->debugAddDestinations(2343492, 'B', 10);
@@ -29,12 +29,12 @@ trait DebugUtilTrait {
 		$this->DbQuery("UPDATE player SET `player_score` = $score WHERE player_id = $playerId");
     }
 
-    function debugSetFame($score) {
-		$this->DbQuery("UPDATE player SET `player_fame` = $score");
+    function debugSetReputation($score) {
+		$this->DbQuery("UPDATE player SET `player_reputation` = $score");
     }
     
-    function debugSetPlayerFame($playerId, $score) {
-		$this->DbQuery("UPDATE player SET `player_fame` = $score WHERE player_id = $playerId");
+    function debugSetPlayerReputation($playerId, $score) {
+		$this->DbQuery("UPDATE player SET `player_reputation` = $score WHERE player_id = $playerId");
     }
 
     function debugLastTurn() {

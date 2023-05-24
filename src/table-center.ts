@@ -8,7 +8,7 @@ class TableCenter {
     public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
-    private fame = new Map<number, number>(); 
+    private reputation = new Map<number, number>(); 
 
     private artifactsManager: ArtifactsManager;
     private artifacts: LineStock<number>;
@@ -61,16 +61,16 @@ class TableCenter {
         players.forEach(player =>
             html += `
             <div id="player-${player.id}-vp-marker" class="marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-            <div id="player-${player.id}-fame-marker" class="marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner fame"></div></div>
+            <div id="player-${player.id}-reputation-marker" class="marker ${/*this.game.isColorBlindMode() ? 'color-blind' : */''}" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
             `
         );
         dojo.place(html, 'board');
         players.forEach(player => {
             this.vp.set(Number(player.id), Number(player.score));
-            this.fame.set(Number(player.id), Math.min(14, Number(player.fame)));
+            this.reputation.set(Number(player.id), Math.min(14, Number(player.reputation)));
         });
         this.moveVP();
-        this.moveFame();
+        this.moveReputation();
 
         if (gamedatas.variantOption >= 2) {
             document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div id="artifacts"></div>`);
@@ -141,7 +141,7 @@ class TableCenter {
         this.moveVP();
     }
 
-    private getFameCoordinates(points: number) {
+    private getReputationCoordinates(points: number) {
         const cases = points;
 
         const top = cases % 2 ? -14 : 0;
@@ -150,17 +150,17 @@ class TableCenter {
         return [368 + left, 123 + top];
     }
 
-    private moveFame() {
-        this.fame.forEach((points, playerId) => {
-            const markerDiv = document.getElementById(`player-${playerId}-fame-marker`);
+    private moveReputation() {
+        this.reputation.forEach((points, playerId) => {
+            const markerDiv = document.getElementById(`player-${playerId}-reputation-marker`);
 
-            const coordinates = this.getFameCoordinates(points);
+            const coordinates = this.getReputationCoordinates(points);
             const left = coordinates[0];
             const top = coordinates[1];
     
             let topShift = 0;
             let leftShift = 0;
-            this.fame.forEach((iPoints, iPlayerId) => {
+            this.reputation.forEach((iPoints, iPlayerId) => {
                 if (iPoints === points && iPlayerId < playerId) {
                     topShift += 5;
                     //leftShift += 5;
@@ -171,13 +171,13 @@ class TableCenter {
         });
     }
     
-    public setFame(playerId: number, fame: number) {
-        this.fame.set(playerId, Math.min(14, fame));
-        this.moveFame();
+    public setReputation(playerId: number, reputation: number) {
+        this.reputation.set(playerId, Math.min(14, reputation));
+        this.moveReputation();
     }
     
-    public getFame(playerId: number): number {
-        return this.fame.get(playerId);
+    public getReputation(playerId: number): number {
+        return this.reputation.get(playerId);
     }
 
     public setCardsSelectable(selectable: boolean, freeColor: number | null = null, recruits: number | null = null) {

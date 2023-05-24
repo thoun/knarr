@@ -56,7 +56,7 @@ $basicGameStates = [
         "description" => clienttranslate("Game setup"),
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => [ "" => ST_SCORE_FAME ]
+        "transitions" => [ "" => ST_SCORE_REPUTATION ]
     ],
    
     // Final state.
@@ -205,11 +205,11 @@ $playerActionsGameStates = [
 
 $gameGameStates = [
 
-    ST_SCORE_FAME => [
-        "name" => "scoreFame",
-        "description" => clienttranslate('Scoring fame points...'),
+    ST_SCORE_REPUTATION => [
+        "name" => "scoreReputation",
+        "description" => clienttranslate('Scoring reputation points...'),
         "type" => "game",
-        "action" => "stScoreFame",
+        "action" => "stScoreReputation",
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
         ]
@@ -235,7 +235,7 @@ $gameGameStates = [
         "type" => "game",
         "action" => "stNextPlayer",
         "transitions" => [
-            "nextPlayer" => ST_SCORE_FAME,
+            "nextPlayer" => ST_SCORE_REPUTATION,
             "endScore" => ST_END_SCORE,
         ],
     ],

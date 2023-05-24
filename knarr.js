@@ -1727,7 +1727,7 @@ var TableCenter = /** @class */ (function () {
         this.destinationsDecks = [];
         this.destinations = [];
         this.vp = new Map();
-        this.fame = new Map();
+        this.reputation = new Map();
         ['A', 'B'].forEach(function (letter) {
             _this.destinationsDecks[letter] = new Deck(game.destinationsManager, document.getElementById("table-destinations-".concat(letter, "-deck")), {
                 cardNumber: gamedatas.centerDestinationsDeckCount[letter],
@@ -1767,15 +1767,15 @@ var TableCenter = /** @class */ (function () {
         var html = '';
         // points
         players.forEach(function (player) {
-            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-fame-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner fame\"></div></div>\n            ");
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-reputation-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner reputation\"></div></div>\n            ");
         });
         dojo.place(html, 'board');
         players.forEach(function (player) {
             _this.vp.set(Number(player.id), Number(player.score));
-            _this.fame.set(Number(player.id), Math.min(14, Number(player.fame)));
+            _this.reputation.set(Number(player.id), Math.min(14, Number(player.reputation)));
         });
         this.moveVP();
-        this.moveFame();
+        this.moveReputation();
         if (gamedatas.variantOption >= 2) {
             document.getElementById('table-center').insertAdjacentHTML('afterbegin', "<div id=\"artifacts\"></div>");
             this.artifactsManager = new ArtifactsManager(this.game);
@@ -1835,22 +1835,22 @@ var TableCenter = /** @class */ (function () {
         this.vp.set(playerId, points);
         this.moveVP();
     };
-    TableCenter.prototype.getFameCoordinates = function (points) {
+    TableCenter.prototype.getReputationCoordinates = function (points) {
         var cases = points;
         var top = cases % 2 ? -14 : 0;
         var left = cases * 16.9;
         return [368 + left, 123 + top];
     };
-    TableCenter.prototype.moveFame = function () {
+    TableCenter.prototype.moveReputation = function () {
         var _this = this;
-        this.fame.forEach(function (points, playerId) {
-            var markerDiv = document.getElementById("player-".concat(playerId, "-fame-marker"));
-            var coordinates = _this.getFameCoordinates(points);
+        this.reputation.forEach(function (points, playerId) {
+            var markerDiv = document.getElementById("player-".concat(playerId, "-reputation-marker"));
+            var coordinates = _this.getReputationCoordinates(points);
             var left = coordinates[0];
             var top = coordinates[1];
             var topShift = 0;
             var leftShift = 0;
-            _this.fame.forEach(function (iPoints, iPlayerId) {
+            _this.reputation.forEach(function (iPoints, iPlayerId) {
                 if (iPoints === points && iPlayerId < playerId) {
                     topShift += 5;
                     //leftShift += 5;
@@ -1859,12 +1859,12 @@ var TableCenter = /** @class */ (function () {
             markerDiv.style.transform = "translateX(".concat(left + leftShift, "px) translateY(").concat(top + topShift, "px)");
         });
     };
-    TableCenter.prototype.setFame = function (playerId, fame) {
-        this.fame.set(playerId, Math.min(14, fame));
-        this.moveFame();
+    TableCenter.prototype.setReputation = function (playerId, reputation) {
+        this.reputation.set(playerId, Math.min(14, reputation));
+        this.moveReputation();
     };
-    TableCenter.prototype.getFame = function (playerId) {
-        return this.fame.get(playerId);
+    TableCenter.prototype.getReputation = function (playerId) {
+        return this.reputation.get(playerId);
     };
     TableCenter.prototype.setCardsSelectable = function (selectable, freeColor, recruits) {
         var _this = this;
@@ -2084,7 +2084,7 @@ var ANIMATION_MS = 500;
 var ACTION_TIMER_DURATION = 5;
 var LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 var LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'Knarr-jump-to-folded';
-var VP_BY_FAME = {
+var VP_BY_REPUTATION = {
     0: 0,
     3: 1,
     6: 2,
@@ -2096,16 +2096,16 @@ var DIFFERENT = 0;
 var VP = 1;
 var BRACELET = 2;
 var RECRUIT = 3;
-var FAME = 4;
+var REPUTATION = 4;
 var CARD = 5;
-function getVpByFame(fame) {
-    return Object.entries(VP_BY_FAME).findLast(function (entry) { return fame >= Number(entry[0]); })[1];
+function getVpByReputation(reputation) {
+    return Object.entries(VP_BY_REPUTATION).findLast(function (entry) { return reputation >= Number(entry[0]); })[1];
 }
 var Knarr = /** @class */ (function () {
     function Knarr() {
         this.playersTables = [];
         //private handCounters: Counter[] = [];
-        this.fameCounters = [];
+        this.reputationCounters = [];
         this.recruitCounters = [];
         this.braceletCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
@@ -2447,15 +2447,15 @@ var Knarr = /** @class */ (function () {
                     <div class="player-hand-card"></div>
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>*/
-            var html = "<div class=\"counters\">\n            \n                <div id=\"fame-counter-wrapper-".concat(player.id, "\" class=\"fame-counter\">\n                    <div class=\"fame icon\"></div>\n                    <span id=\"fame-counter-").concat(player.id, "\"></span> <span class=\"fame-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
+            var html = "<div class=\"counters\">\n            \n                <div id=\"reputation-counter-wrapper-".concat(player.id, "\" class=\"reputation-counter\">\n                    <div class=\"reputation icon\"></div>\n                    <span id=\"reputation-counter-").concat(player.id, "\"></span> <span class=\"reputation-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
             dojo.place(html, "player_board_".concat(player.id));
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
             handCounter.setValue(player.handCount);
             this.handCounters[playerId] = handCounter;*/
-            _this.fameCounters[playerId] = new ebg.counter();
-            _this.fameCounters[playerId].create("fame-counter-".concat(playerId));
-            _this.fameCounters[playerId].setValue(getVpByFame(player.fame));
+            _this.reputationCounters[playerId] = new ebg.counter();
+            _this.reputationCounters[playerId].create("reputation-counter-".concat(playerId));
+            _this.reputationCounters[playerId].setValue(getVpByReputation(player.reputation));
             _this.recruitCounters[playerId] = new ebg.counter();
             _this.recruitCounters[playerId].create("recruit-counter-".concat(playerId));
             _this.recruitCounters[playerId].setValue(player.recruit);
@@ -2464,7 +2464,7 @@ var Knarr = /** @class */ (function () {
             _this.braceletCounters[playerId].setValue(player.bracelet);
         });
         this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
-        this.setTooltipToClass('fame-counter', _('Fame'));
+        this.setTooltipToClass('reputation-counter', _('Reputation'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
     };
@@ -2495,8 +2495,8 @@ var Knarr = /** @class */ (function () {
                     case RECRUIT:
                         _this.setRecruits(playerId, _this.recruitCounters[playerId].getValue() + amount);
                         break;
-                    case FAME:
-                        _this.setFame(playerId, _this.tableCenter.getFame(playerId) + amount);
+                    case REPUTATION:
+                        _this.setReputation(playerId, _this.tableCenter.getReputation(playerId) + amount);
                         break;
                     case CARD:
                         // TODO
@@ -2510,9 +2510,9 @@ var Knarr = /** @class */ (function () {
         (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
         this.tableCenter.setScore(playerId, score);
     };
-    Knarr.prototype.setFame = function (playerId, count) {
-        this.fameCounters[playerId].toValue(getVpByFame(count));
-        this.tableCenter.setFame(playerId, count);
+    Knarr.prototype.setReputation = function (playerId, count) {
+        this.reputationCounters[playerId].toValue(getVpByReputation(count));
+        this.tableCenter.setReputation(playerId, count);
     };
     Knarr.prototype.setRecruits = function (playerId, count) {
         this.recruitCounters[playerId].toValue(count);
@@ -2751,7 +2751,7 @@ var Knarr = /** @class */ (function () {
             case 1: return _("Victory Point");
             case 2: return _("Bracelet");
             case 3: return _("Recruit");
-            case 4: return _("Fame");
+            case 4: return _("Reputation");
             case 5: return _("Card");
         }
     };

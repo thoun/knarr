@@ -23,7 +23,7 @@ interface Destination {
 
 interface KnarrPlayer extends Player {
     playerNo: number;
-    fame: number;
+    reputation: number;
     recruit: number;
     bracelet: number;
     //handCount: number;

@@ -317,9 +317,9 @@ trait UtilTrait {
                     $effectiveGains[RECRUIT] = min($amount, 3 - $player->recruit);
                     $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + ".$effectiveGains[RECRUIT]." WHERE player_id = $playerId");
                     break;
-                case FAME:
-                    $effectiveGains[FAME] = min($amount, 14 - $player->fame);
-                    $this->DbQuery("UPDATE player SET `player_fame` = `player_fame` + ".$effectiveGains[FAME]." WHERE player_id = $playerId");
+                case REPUTATION:
+                    $effectiveGains[REPUTATION] = min($amount, 14 - $player->reputation);
+                    $this->DbQuery("UPDATE player SET `player_reputation` = `player_reputation` + ".$effectiveGains[REPUTATION]." WHERE player_id = $playerId");
                     break;
                 case CARD: 
                     $available = $this->getAvailableDeckCards();
@@ -367,7 +367,7 @@ trait UtilTrait {
             case VP: return clienttranslate("Victory Point");
             case BRACELET: return clienttranslate("Bracelet");
             case RECRUIT: return clienttranslate("Recruit");
-            case FAME: return clienttranslate("Fame");
+            case REPUTATION: return clienttranslate("Reputation");
             case CARD: return clienttranslate("Card");
         }
     }
@@ -497,7 +497,7 @@ trait UtilTrait {
                     $groupGains = [
                         BRACELET => 1,
                         RECRUIT => 1,
-                        FAME => 1,
+                        REPUTATION => 1,
                     ];
                     $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:amulet');
 

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `destination` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 -- Example 2: add a custom field to the standard "player" table
-ALTER TABLE `player` ADD `player_fame` tinyint UNSIGNED NOT NULL DEFAULT 0;
+ALTER TABLE `player` ADD `player_reputation` tinyint UNSIGNED NOT NULL DEFAULT 0;
 ALTER TABLE `player` ADD `player_recruit` tinyint UNSIGNED NOT NULL DEFAULT 1;
 ALTER TABLE `player` ADD `player_bracelet` tinyint UNSIGNED NOT NULL DEFAULT 1;
 

@@ -731,8 +731,8 @@ body > .card {
 #table-center #board .marker .inner.vp {
   background-image: url("img/vp-pawns.png");
 }
-#table-center #board .marker .inner.fame {
-  background-image: url("img/fame-pawns.png");
+#table-center #board .marker .inner.reputation {
+  background-image: url("img/reputation-pawns.png");
 }
 #table-center #board .marker[data-color="7c5654"] .inner {
   background-position-x: 0%;
@@ -824,11 +824,11 @@ body > .card {
   background-position: center;
   vertical-align: middle;
 }
-.player-board .fame-legend {
+.player-board .reputation-legend {
   font-size: 75%;
   vertical-align: middle;
 }
-.player-board .fame-legend .icon {
+.player-board .reputation-legend .icon {
   width: 20px;
   height: 20px;
   margin-right: 2px;
@@ -1107,7 +1107,7 @@ html, .mode_3d #game_play_area_background {
 .icon.vp, .icon[data-type="1"] {
   background-position-x: 0%;
 }
-.icon.fame, .icon[data-type="4"] {
+.icon.reputation, .icon[data-type="4"] {
   background-position-x: 25%;
 }
 .icon.bracelet, .icon[data-type="2"] {
