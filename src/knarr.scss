@@ -9,6 +9,7 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 @import 'table-center';
 @import 'playerboards';
 @import 'player-table';
+@import 'help';
 
 /* make space between buttons on touch devices */
 @media (hover: none) {
@@ -77,7 +78,7 @@ html, .mode_3d #game_play_area_background {
   &.recruit, &[data-type="3"] {
     background-position-x: #{3 * 100% / 4};
   }
-  &[data-type="5"] {
+  &.take-card, &[data-type="5"] {
     background-position-x: #{4 * 100% / 4};
   }
 }

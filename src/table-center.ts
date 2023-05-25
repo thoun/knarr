@@ -10,7 +10,6 @@ class TableCenter {
     private vp = new Map<number, number>();
     private reputation = new Map<number, number>(); 
 
-    private artifactsManager: ArtifactsManager;
     private artifacts: LineStock<number>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
@@ -76,8 +75,7 @@ class TableCenter {
         if (gamedatas.variantOption >= 2) {
             document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div></div><div id="artifacts"></div>`);
         
-            this.artifactsManager = new ArtifactsManager(this.game);
-            this.artifacts = new LineStock<number>(this.artifactsManager, document.getElementById(`artifacts`));
+            this.artifacts = new LineStock<number>(this.game.artifactsManager, document.getElementById(`artifacts`));
             this.artifacts.addCards(gamedatas.artifacts);
         }
     }

@@ -4,13 +4,17 @@ class ArtifactsManager extends CardManager<number> {
             getId: (card) => `artifact-${card}`,
             setupDiv: (card: number, div: HTMLElement) => { 
                 div.classList.add('artifact');
-                game.setTooltip(div.id, this.getTooltip(card));
             },
-            setupFrontDiv: (card: number, div: HTMLElement) => { 
-                div.dataset.number = ''+card;
-            },
+            setupFrontDiv: (card: number, div: HTMLElement) => this.setupFrontDiv(card, div),
             isCardVisible: () => true,
         });
+    }
+    
+    private setupFrontDiv(card: number, div: HTMLElement, ignoreTooltip: boolean = false) { 
+        div.dataset.number = ''+card;
+        if (!ignoreTooltip) {
+            this.game.setTooltip(div.id, this.getTooltip(card));
+        }
     }
 
     private getArtifactName(number: number): string {
@@ -37,12 +41,26 @@ class ArtifactsManager extends CardManager<number> {
         }     
     }
 
-    private getTooltip(number: number): string {
+    public getTooltip(number: number): string {
         return `
             <div class="artifact-tooltip">
                 <div class="title">${this.getArtifactName(number)}</div>
                 <div class="effect">${this.getArtifactEffect(number)}</div>
             </div>
         `;
+    }
+    
+    public setForHelp(card: number, divId: string): void {
+        const div = document.getElementById(divId);
+        div.classList.add('card', 'artifact');
+        div.dataset.side = 'front';
+        div.innerHTML = `
+        <div class="card-sides">
+            <div class="card-side front">
+            </div>
+            <div class="card-side back">
+            </div>
+        </div>`
+        this.setupFrontDiv(card, div.querySelector('.front'), true);
     }
 }

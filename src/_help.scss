@@ -4,7 +4,7 @@
     left: 5px;
     width: 50px;
     height: 50px;
-    background: #60c2cb;
+    background: #5890a9;
     font-weight: bold;
     color: white;
     border-radius: 25px;
@@ -13,6 +13,8 @@
     z-index: 949;
     font-size: 28pt;
 }
+
+
 
 #color-help-button {
     position: fixed;
@@ -26,43 +28,41 @@
     z-index: 949;
     overflow: hidden;
     background-size: contain;
+    background-repeat: no-repeat;
     transition: width 0.5s, height 0.5s, border-radius 0.5s, background-image 0.5s;
 
+    .color {
+        opacity: 0;
+        width: 18px;
+        height: 18px;
+    }
+
     .label {
-        position: absolute;
-        color: white;
         font-size: 10pt;
         opacity: 0;
-        text-transform: uppercase;
         display: flex;
-        justify-content: center;
+        justify-content: start;
         align-items: center;
-        width: 69px;
+        width: 100%;
         height: 42px;
-        word-break: break-word;
-
-        @for $i from 0 through 5 {
-            &[data-row="#{$i}"] {
-              top: #{11 + $i * 49.8}px;
-            }
-        }
-        @for $i from 0 through 1 {
-            &[data-column="#{$i}"] {
-              left: #{38 + $i * 105}px;
-            }
-        }
+        word-break: break-word;  
+        color: black;      
     }
 
     &[data-folded="true"] {
         background-image: url('img/logo-coloradd.svg');
     }
     &[data-folded="false"] {
-        background-image: url('img/color-legend.jpg');
-        width: 223px;
-        height: 312px;
+        width: 120px;
+        height: auto;
         border-radius: 10px;
+        display: grid;
+        grid-template-columns: 40px 80px;
+        align-items: center;
+        justify-items: center;
+        background: #dfe8e8;
         
-        .label {
+        .label, .color {
             opacity: 1;
         }
     }
@@ -96,15 +96,12 @@
     overflow: auto;
 
     h1 {
-        color: #63c5cf;
+        color: #5890a9;
         font-size: 18px;
         margin: 8px 0;
     }
 
     .help-section {    
-        color: white;
-        background-color: #63c5cf;
-        border-radius: 8px;
         padding: 5px;
         margin: 3px 0;
 
@@ -112,11 +109,7 @@
 
         &>div:not(:first-child) {
             margin-left: 5px;
-
-            &:not([id]) {
-                flex: 1;
-                margin-left: 5px;
-            } 
+            flex: 1;
         } 
     }
 }

@@ -1705,16 +1705,20 @@ var ArtifactsManager = /** @class */ (function (_super) {
             getId: function (card) { return "artifact-".concat(card); },
             setupDiv: function (card, div) {
                 div.classList.add('artifact');
-                game.setTooltip(div.id, _this.getTooltip(card));
             },
-            setupFrontDiv: function (card, div) {
-                div.dataset.number = '' + card;
-            },
+            setupFrontDiv: function (card, div) { return _this.setupFrontDiv(card, div); },
             isCardVisible: function () { return true; },
         }) || this;
         _this.game = game;
         return _this;
     }
+    ArtifactsManager.prototype.setupFrontDiv = function (card, div, ignoreTooltip) {
+        if (ignoreTooltip === void 0) { ignoreTooltip = false; }
+        div.dataset.number = '' + card;
+        if (!ignoreTooltip) {
+            this.game.setTooltip(div.id, this.getTooltip(card));
+        }
+    };
     ArtifactsManager.prototype.getArtifactName = function (number) {
         switch (number) {
             case 1: return _("Mead Cup");
@@ -1739,6 +1743,13 @@ var ArtifactsManager = /** @class */ (function (_super) {
     };
     ArtifactsManager.prototype.getTooltip = function (number) {
         return "\n            <div class=\"artifact-tooltip\">\n                <div class=\"title\">".concat(this.getArtifactName(number), "</div>\n                <div class=\"effect\">").concat(this.getArtifactEffect(number), "</div>\n            </div>\n        ");
+    };
+    ArtifactsManager.prototype.setForHelp = function (card, divId) {
+        var div = document.getElementById(divId);
+        div.classList.add('card', 'artifact');
+        div.dataset.side = 'front';
+        div.innerHTML = "\n        <div class=\"card-sides\">\n            <div class=\"card-side front\">\n            </div>\n            <div class=\"card-side back\">\n            </div>\n        </div>";
+        this.setupFrontDiv(card, div.querySelector('.front'), true);
     };
     return ArtifactsManager;
 }(CardManager));
@@ -1803,8 +1814,7 @@ var TableCenter = /** @class */ (function () {
         this.moveReputation();
         if (gamedatas.variantOption >= 2) {
             document.getElementById('table-center').insertAdjacentHTML('afterbegin', "<div></div><div id=\"artifacts\"></div>");
-            this.artifactsManager = new ArtifactsManager(this.game);
-            this.artifacts = new LineStock(this.artifactsManager, document.getElementById("artifacts"));
+            this.artifacts = new LineStock(this.game.artifactsManager, document.getElementById("artifacts"));
             this.artifacts.addCards(gamedatas.artifacts);
         }
     }
@@ -2138,6 +2148,7 @@ var Knarr = /** @class */ (function () {
         log('gamedatas', gamedatas);
         this.cardsManager = new CardsManager(this);
         this.destinationsManager = new DestinationsManager(this);
+        this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
@@ -2172,6 +2183,7 @@ var Knarr = /** @class */ (function () {
         if (gamedatas.lastTurn) {
             this.notif_lastTurn(false);
         }
+        this.addHelp();
         this.setupNotifications();
         this.setupPreferences();
         log("Ending game setup");
@@ -2521,6 +2533,30 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.highlightPlayerTokens = function (playerId) {
         this.tableCenter.highlightPlayerTokens(playerId);
+    };
+    Knarr.prototype.addHelp = function () {
+        var _this = this;
+        var labels = [1, 2, 3, 4, 5].map(function (number) { return "<div class=\"color\" data-color=\"".concat(number, "\"></div><span class=\"label\"> ").concat(_this.getColor(number), "</span>"); }).join('');
+        dojo.place("\n            <button id=\"knarr-help-button\">?</button>\n            <button id=\"color-help-button\" data-folded=\"true\">".concat(labels, "</button>\n        "), 'left-side');
+        document.getElementById('knarr-help-button').addEventListener('click', function () { return _this.showHelp(); });
+        var helpButton = document.getElementById('color-help-button');
+        helpButton.addEventListener('click', function () { return helpButton.dataset.folded = helpButton.dataset.folded == 'true' ? 'false' : 'true'; });
+    };
+    Knarr.prototype.showHelp = function () {
+        var helpDialog = new ebg.popindialog();
+        helpDialog.create('knarrHelpDialog');
+        helpDialog.setTitle(_("Card help").toUpperCase());
+        var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
+        for (var i = 1; i <= 7; i++) {
+            html += "\n            <div class=\"help-section\">\n                <div id=\"help-artifact-".concat(i, "\"></div>\n                <div>").concat(this.artifactsManager.getTooltip(i), "</div>\n            </div> ");
+        }
+        html += "</div>";
+        // Show the dialog
+        helpDialog.setContent(html);
+        helpDialog.show();
+        for (var i = 1; i <= 7; i++) {
+            this.artifactsManager.setForHelp(i, "help-artifact-".concat(i));
+        }
     };
     Knarr.prototype.onTableDestinationClick = function (destination) {
         if (this.gamedatas.gamestate.name == 'reserveDestination') {

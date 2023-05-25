@@ -1053,6 +1053,110 @@ body > .card {
   display: flex;
 }
 
+#knarr-help-button {
+  position: fixed;
+  bottom: 12px;
+  left: 5px;
+  width: 50px;
+  height: 50px;
+  background: #5890a9;
+  font-weight: bold;
+  color: white;
+  border-radius: 25px;
+  box-shadow: 3px 5px 5px 0px rgb(0, 0, 0);
+  cursor: pointer;
+  z-index: 949;
+  font-size: 28pt;
+}
+
+#color-help-button {
+  position: fixed;
+  bottom: 12px;
+  left: 65px;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  box-shadow: 3px 5px 5px 0px rgb(0, 0, 0);
+  cursor: pointer;
+  z-index: 949;
+  overflow: hidden;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: width 0.5s, height 0.5s, border-radius 0.5s, background-image 0.5s;
+}
+#color-help-button .color {
+  opacity: 0;
+  width: 18px;
+  height: 18px;
+}
+#color-help-button .label {
+  font-size: 10pt;
+  opacity: 0;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  word-break: break-word;
+  color: black;
+}
+#color-help-button[data-folded=true] {
+  background-image: url("img/logo-coloradd.svg");
+}
+#color-help-button[data-folded=false] {
+  width: 120px;
+  height: auto;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 40px 80px;
+  align-items: center;
+  justify-items: center;
+  background: #dfe8e8;
+}
+#color-help-button[data-folded=false] .label, #color-help-button[data-folded=false] .color {
+  opacity: 1;
+}
+
+/* we show help button if user has no mouse ( = no tooltips) */
+@media (hover: hover) {
+  #knarr-help-button, #color-help-button {
+    bottom: 5px;
+  }
+}
+#popin_knarrHelpDialog_contents {
+  max-width: 100vw;
+  overflow-x: auto;
+}
+
+#popin_knarrHelpDialog {
+  background: white;
+  background-repeat: repeat;
+  max-width: 100vw;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+#help-popin {
+  width: 520px;
+  max-width: 35rem;
+  max-height: calc(80vh - 80px);
+  overflow: auto;
+}
+#help-popin h1 {
+  color: #5890a9;
+  font-size: 18px;
+  margin: 8px 0;
+}
+#help-popin .help-section {
+  padding: 5px;
+  margin: 3px 0;
+  display: flex;
+}
+#help-popin .help-section > div:not(:first-child) {
+  margin-left: 5px;
+  flex: 1;
+}
+
 /* make space between buttons on touch devices */
 @media (hover: none) {
   #page-title .action-button.bgabutton, #page-title .bgabutton {
@@ -1117,7 +1221,7 @@ html, .mode_3d #game_play_area_background {
 .icon.recruit, .icon[data-type="3"] {
   background-position-x: 75%;
 }
-.icon[data-type="5"] {
+.icon.take-card, .icon[data-type="5"] {
   background-position-x: 100%;
 }
 

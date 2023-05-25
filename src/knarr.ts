@@ -35,6 +35,7 @@ function getVpByReputation(reputation: number) {
 class Knarr implements KnarrGame {
     public cardsManager: CardsManager;
     public destinationsManager: DestinationsManager;
+    public artifactsManager: ArtifactsManager;
 
     private zoomManager: ZoomManager;
     private animationManager: AnimationManager;
@@ -82,7 +83,8 @@ class Knarr implements KnarrGame {
 
 
         this.cardsManager = new CardsManager(this);
-        this.destinationsManager = new DestinationsManager(this);
+        this.destinationsManager = new DestinationsManager(this);        
+        this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
         new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
@@ -120,6 +122,7 @@ class Knarr implements KnarrGame {
             this.notif_lastTurn(false);
         }
 
+        this.addHelp();
         this.setupNotifications();
         this.setupPreferences();
 
@@ -537,6 +540,68 @@ class Knarr implements KnarrGame {
 
     public highlightPlayerTokens(playerId: number | null): void {
         this.tableCenter.highlightPlayerTokens(playerId);
+    }
+    
+    private addHelp() {
+        let labels = [1, 2, 3, 4, 5].map(number => `<div class="color" data-color="${number}"></div><span class="label"> ${this.getColor(number)}</span>`).join('');
+        dojo.place(`
+            <button id="knarr-help-button">?</button>
+            <button id="color-help-button" data-folded="true">${labels}</button>
+        `, 'left-side');
+        document.getElementById('knarr-help-button').addEventListener('click', () => this.showHelp());
+        const helpButton = document.getElementById('color-help-button');
+        helpButton.addEventListener('click', () => helpButton.dataset.folded = helpButton.dataset.folded == 'true' ? 'false' : 'true');
+    }
+
+    private showHelp() {
+        const helpDialog = new ebg.popindialog();
+        helpDialog.create('knarrHelpDialog');
+        helpDialog.setTitle(_("Card help").toUpperCase());
+        
+        let html = `
+        <div id="help-popin">
+            <h1>${_("Assets")}</h2>
+            <div class="help-section">
+                <div class="icon vp"></div>
+                <div class="help-label">${_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon recruit"></div>
+                <div class="help-label">${_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon bracelet"></div>
+                <div class="help-label">${_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("They are used for Trading.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon reputation"></div>
+                <div class="help-label">${_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon take-card"></div>
+                <div class="help-label">${_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets).")}</div>
+            </div>
+
+            <h1>${_("Powers of the artifacts (variant option)")}</h1>
+        `;
+
+        for (let i = 1; i <=7; i++) {
+            html += `
+            <div class="help-section">
+                <div id="help-artifact-${i}"></div>
+                <div>${this.artifactsManager.getTooltip(i)}</div>
+            </div> `;
+        }
+        html += `</div>`;
+        
+        // Show the dialog
+        helpDialog.setContent(html);
+
+        helpDialog.show();
+
+        for (let i = 1; i <=7; i++) {
+            this.artifactsManager.setForHelp(i, `help-artifact-${i}`);
+        }
     }
     
     public onTableDestinationClick(destination: Destination): void {

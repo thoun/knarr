@@ -64,6 +64,7 @@ interface KnarrGamedatas {
 interface KnarrGame extends Game {
     cardsManager: CardsManager;
     destinationsManager: DestinationsManager;
+    artifactsManager: ArtifactsManager;
 
     getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
