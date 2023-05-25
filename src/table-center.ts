@@ -81,15 +81,11 @@ class TableCenter {
     }
     
     public newTableCard(card: Card) {
-        this.cards.addCard(card, {
-            fromElement: document.getElementById(`board`)
-        });
+        this.cards.addCard(card);
     }
     
     public newTableDestination(destination: Destination, letter: string, destinationDeckCount: number, destinationDeckTop?: Destination) {
-        this.destinations[letter].addCard(destination, {
-            fromElement: document.getElementById(`board`)
-        });
+        this.destinations[letter].addCard(destination);
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
     } 
     

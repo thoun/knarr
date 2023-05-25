@@ -68,6 +68,19 @@ trait ActionTrait {
             ]);
         }
 
+        $this->incStat(1, 'playedCards');
+        $this->incStat(1, 'playedCards', $playerId);
+
+        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $this->incStat($allGains, 'assetsCollectedByPlayedCards');
+        $this->incStat($allGains, 'assetsCollectedByPlayedCards', $playerId);
+        foreach ($effectiveGains as $type => $count) {
+            if ($count > 0) {
+                $this->incStat($count, 'assetsCollectedByPlayedCards'.$type);
+                $this->incStat($count, 'assetsCollectedByPlayedCards'.$type, $playerId);
+            }
+        }
+
         $this->gamestate->nextState('chooseNewCard');
     }
 
@@ -89,6 +102,9 @@ trait ActionTrait {
                 throw new BgaUserException("Not enough recruits");
             } else {
                 $this->incPlayerRecruit($playerId, -1, clienttranslate('${player_name} pays a recruit to choose the new card'), []);
+        
+                $this->incStat(1, 'recruitsUsedToChooseCard');
+                $this->incStat(1, 'recruitsUsedToChooseCard', $playerId);
             }
         }
         
@@ -186,6 +202,8 @@ trait ActionTrait {
             $this->incPlayerRecruit($playerId, -$recruits, clienttranslate('${player_name} pays ${number} recruit(s) for the selected destination'), [
                 'number' => $recruits, // for logs
             ]);
+            $this->incStat($recruits, 'recruitsUsedToPayDestination');
+            $this->incStat($recruits, 'recruitsUsedToPayDestination', $playerId);
         }
 
         if (count($cardsToDiscard)) {
@@ -214,6 +232,21 @@ trait ActionTrait {
             'gains' => $effectiveGains, // for logs
             'letter' => $type, // for logs
         ]);
+                    
+        $this->incStat(1, 'discoveredDestinations');
+        $this->incStat(1, 'discoveredDestinations', $playerId);
+        $this->incStat(1, 'discoveredDestinations'.$destination->type);
+        $this->incStat(1, 'discoveredDestinations'.$destination->type, $playerId);
+
+        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $this->incStat($allGains, 'assetsCollectedByDestination');
+        $this->incStat($allGains, 'assetsCollectedByDestination', $playerId);
+        foreach ($effectiveGains as $type => $count) {
+            if ($count > 0) {
+                $this->incStat($count, 'assetsCollectedByDestination'.$type);
+                $this->incStat($count, 'assetsCollectedByDestination'.$type, $playerId);
+            }
+        }
 
         $remainingCardsToTake = $this->getGlobalVariable(REMAINING_CARDS_TO_TAKE);
         if ($remainingCardsToTake != null) {
@@ -257,11 +290,17 @@ trait ActionTrait {
                         'artifact_name' => $this->getArtifactName(ARTIFACT_HELMET), // for logs
                         'i18n' => ['artifact_name'],
                     ]);
+
+                    $this->incStat(1, 'activatedArtifacts');
+                    $this->incStat(1, 'activatedArtifacts', $playerId);
                 }
             }
 
             if (in_array(ARTIFACT_ARTIFACT_MEAD_CUP_CUP, $artifacts)) {
                 $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
+
+                $this->incStat(1, 'activatedArtifacts');
+                $this->incStat(1, 'activatedArtifacts', $playerId);
             }
         }
 
@@ -332,6 +371,8 @@ trait ActionTrait {
 
         self::notifyAllPlayers('newTableCard', '', [
             'card' => $newTableCard,
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
         ]);
 
         $this->redirectAfterAction($playerId, true);
@@ -368,6 +409,23 @@ trait ActionTrait {
             'effectiveGains' => $effectiveGains,
             'gains' => $effectiveGains, // for logs
         ]);
+
+        $this->incStat(1, 'tradeActions');
+        $this->incStat(1, 'tradeActions', $playerId);
+        $this->incStat(1, 'tradeActions'.$number);
+        $this->incStat(1, 'tradeActions'.$number, $playerId);
+        $this->incStat($number, 'braceletsUsed');
+        $this->incStat($number, 'braceletsUsed', $playerId);
+
+        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $this->incStat($allGains, 'assetsCollectedByTrade');
+        $this->incStat($allGains, 'assetsCollectedByTrade', $playerId);
+        foreach ($effectiveGains as $type => $count) {
+            if ($count > 0) {
+                $this->incStat($count, 'assetsCollectedByTrade'.$type);
+                $this->incStat($count, 'assetsCollectedByTrade'.$type, $playerId);
+            }
+        }
 
         if ($this->getGlobalVariable(REMAINING_CARDS_TO_TAKE) != null) {
             $this->gamestate->nextState('discardCardsForDeck');
@@ -412,6 +470,9 @@ trait ActionTrait {
             'cards' => [$card],
             'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
         ]);
+
+        $this->incStat(1, 'discardedCards');
+        $this->incStat(1, 'discardedCards', $playerId);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'next');
     }

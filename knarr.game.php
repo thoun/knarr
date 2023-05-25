@@ -105,6 +105,7 @@ class Knarr extends Table {
         self::reloadPlayersBasicInfos();
         
         /************ Start the game initialization *****/
+        $variantOption = $this->getVariantOption();
 
         // Init global values with their initial values
         $this->setGameStateInitialValue(LAST_TURN, 0);
@@ -120,19 +121,38 @@ class Knarr extends Table {
         $this->initStat('table', 'roundNumber', 0);
         foreach(['table', 'player'] as $type) {
             foreach([
-                "playedCards", "playedCards1", "playedCards2", "playedCards3", "playedCards4",
-                "collectedResources", "collectedResources1", "collectedResources2", "collectedResources3", "collectedResources4", "collectedResources5",
-                "pointCards1", "pointCards2", "pointCards3", "pointCards4",
-                "sacrifices", "discardedResourcesEndOfTurn", "collectedResourcesFromFire",
+                "reputationPoints", 
+                // cards
+                "playedCards", 
+                "assetsCollectedByPlayedCards", "assetsCollectedByPlayedCards1", "assetsCollectedByPlayedCards2", "assetsCollectedByPlayedCards3", "assetsCollectedByPlayedCards4", 
+                "recruitsUsedToChooseCard", "discardedCards",
+                // destinations
+                "discoveredDestinations", "discoveredDestinations1", "discoveredDestinations2",
+                "assetsCollectedByDestination", "assetsCollectedByDestination1", "assetsCollectedByDestination2", "assetsCollectedByDestination3", "assetsCollectedByDestination4", "assetsCollectedByDestination5",
+                "recruitsUsedToPayDestination",
+                // trade
+                "tradeActions", "tradeActions1", "tradeActions2", "tradeActions3", "braceletsUsed",
+                "assetsCollectedByTrade", "assetsCollectedByTrade1", "assetsCollectedByTrade2", "assetsCollectedByTrade3", "assetsCollectedByTrade4", "assetsCollectedByTrade5",
+                //	miscellaneous
+                "recruitsMissed", "braceletsMissed",
             ] as $name) {
                 $this->initStat($type, $name, 0);
+            }
+        }
+        if ($variantOption >= 2) {
+            foreach(['table', 'player'] as $type) {
+                foreach([
+                    // artifacts
+                    "activatedArtifacts",
+                ] as $name) {
+                    $this->initStat($type, $name, 0);
+                }
             }
         }
 
         // setup the initial game situation here
         $this->setupCards(array_keys($players));
         $this->setupDestinations();
-        $variantOption = $this->getVariantOption();
         if ($variantOption >= 2) {
             $this->setupArtifacts($variantOption, count($players));
         }

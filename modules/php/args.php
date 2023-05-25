@@ -59,6 +59,9 @@ trait ArgsTrait {
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);
                     $allFree = $playedCardsColors[$playedCardColor] == 2;
+
+                    $this->incStat(1, 'activatedArtifacts');
+                    $this->incStat(1, 'activatedArtifacts', $playerId);
                 }
             }
         }

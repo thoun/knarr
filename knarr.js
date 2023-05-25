@@ -1631,6 +1631,7 @@ var CardsManager = /** @class */ (function (_super) {
             setupFrontDiv: function (card, div) {
                 div.dataset.color = '' + card.color;
                 div.dataset.gain = '' + card.gain;
+                console.log(card, div.dataset);
                 game.setTooltip(div.id, _this.getTooltip(card));
             },
             isCardVisible: function (card) { return Boolean(card.color); },
@@ -1819,14 +1820,10 @@ var TableCenter = /** @class */ (function () {
         }
     }
     TableCenter.prototype.newTableCard = function (card) {
-        this.cards.addCard(card, {
-            fromElement: document.getElementById("board")
-        });
+        this.cards.addCard(card);
     };
     TableCenter.prototype.newTableDestination = function (destination, letter, destinationDeckCount, destinationDeckTop) {
-        this.destinations[letter].addCard(destination, {
-            fromElement: document.getElementById("board")
-        });
+        this.destinations[letter].addCard(destination);
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
     };
     TableCenter.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
@@ -2703,12 +2700,12 @@ var Knarr = /** @class */ (function () {
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['takeDeckCard', ANIMATION_MS],
-            ['discardTableCard', ANIMATION_MS],
+            ['discardTableCard', ANIMATION_MS * 1.5],
             ['reserveDestination', ANIMATION_MS],
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
-            ['cardDeckReset', ANIMATION_MS],
+            ['cardDeckReset', ANIMATION_MS * 1.5],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
@@ -2729,6 +2726,7 @@ var Knarr = /** @class */ (function () {
         (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
     };
     Knarr.prototype.notif_newTableCard = function (notif) {
+        log('notif_newTableCard', notif.args);
         this.tableCenter.newTableCard(notif.args.card);
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     };
@@ -2766,7 +2764,8 @@ var Knarr = /** @class */ (function () {
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
     };
     Knarr.prototype.notif_discardTableCard = function (notif) {
-        this.tableCenter.cards.removeCard(notif.args.card);
+        log('notif_discardTableCard', notif.args);
+        this.tableCenter.cardDiscard.addCard(notif.args.card);
     };
     Knarr.prototype.notif_reserveDestination = function (notif) {
         var playerId = notif.args.playerId;
@@ -2774,6 +2773,7 @@ var Knarr = /** @class */ (function () {
         playerTable.reserveDestination(notif.args.destination);
     };
     Knarr.prototype.notif_cardDeckReset = function (notif) {
+        log('notif_cardDeckReset', notif.args);
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
         this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
     };

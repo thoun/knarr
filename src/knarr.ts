@@ -778,12 +778,12 @@ class Knarr implements KnarrGame {
             ['newTableDestination', ANIMATION_MS],
             ['trade', ANIMATION_MS],
             ['takeDeckCard', ANIMATION_MS],
-            ['discardTableCard', ANIMATION_MS],
+            ['discardTableCard', ANIMATION_MS * 1.5], // so we are sure slide to void stock is over when cardDeckReset fires (else card will be slightly shifter)
             ['reserveDestination', ANIMATION_MS],
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
-            ['cardDeckReset', ANIMATION_MS],
+            ['cardDeckReset', ANIMATION_MS * 1.5],
             ['lastTurn', 1],
         ];
     
@@ -811,6 +811,8 @@ class Knarr implements KnarrGame {
     }
 
     notif_newTableCard(notif: Notif<NotifNewCardArgs>) {
+        log('notif_newTableCard', notif.args);
+        
         this.tableCenter.newTableCard(notif.args.card);
 
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
@@ -861,7 +863,9 @@ class Knarr implements KnarrGame {
     }
 
     notif_discardTableCard(notif: Notif<NotifDiscardTableCardArgs>) {
-        this.tableCenter.cards.removeCard(notif.args.card);
+        log('notif_discardTableCard', notif.args);
+
+        this.tableCenter.cardDiscard.addCard(notif.args.card);
     }
 
     notif_reserveDestination(notif: Notif<NotifReserveDestinationArgs>) {
@@ -872,6 +876,8 @@ class Knarr implements KnarrGame {
     }
 
     notif_cardDeckReset(notif: Notif<NotifCardDeckResetArgs>) {
+        log('notif_cardDeckReset', notif.args);
+
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
         this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
     }

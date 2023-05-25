@@ -312,10 +312,20 @@ trait UtilTrait {
                 case BRACELET: 
                     $effectiveGains[BRACELET] = min($amount, 3 - $player->bracelet);
                     $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + ".$effectiveGains[BRACELET]." WHERE player_id = $playerId");
+
+                    if ($effectiveGains[BRACELET] < $amount) {
+                        $this->incStat($amount - $effectiveGains[BRACELET], 'braceletsMissed');
+                        $this->incStat($amount - $effectiveGains[BRACELET], 'braceletsMissed', $playerId);
+                    }
                     break;
                 case RECRUIT:
                     $effectiveGains[RECRUIT] = min($amount, 3 - $player->recruit);
                     $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + ".$effectiveGains[RECRUIT]." WHERE player_id = $playerId");
+
+                    if ($effectiveGains[RECRUIT] < $amount) {
+                        $this->incStat($amount - $effectiveGains[RECRUIT], 'recruitsMissed');
+                        $this->incStat($amount - $effectiveGains[RECRUIT], 'recruitsMissed', $playerId);
+                    }
                     break;
                 case REPUTATION:
                     $effectiveGains[REPUTATION] = min($amount, 14 - $player->reputation);
@@ -480,6 +490,9 @@ trait UtilTrait {
                             'artifact_name' => $this->getArtifactName($artifact), // for logs
                             'i18n' => ['artifact_name'],
                         ]);
+
+                        $this->incStat(1, 'activatedArtifacts');
+                        $this->incStat(1, 'activatedArtifacts', $playerId);
                     }
                 }
                 break;
@@ -489,6 +502,9 @@ trait UtilTrait {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] == 3) {
                         $this->setGameStateValue(GO_RESERVE, 1);
+
+                        $this->incStat(1, 'activatedArtifacts');
+                        $this->incStat(1, 'activatedArtifacts', $playerId);
                     }
                 }
                 break;
@@ -509,6 +525,9 @@ trait UtilTrait {
                         'artifact_name' => $this->getArtifactName($artifact), // for logs
                         'i18n' => ['artifact_name'],
                     ]);
+
+                    $this->incStat(1, 'activatedArtifacts');
+                    $this->incStat(1, 'activatedArtifacts', $playerId);
                 }
                 break;
             case ARTIFACT_WEATHERVANE:
@@ -521,6 +540,9 @@ trait UtilTrait {
                         'artifact_name' => $this->getArtifactName($artifact), // for logs
                         'i18n' => ['artifact_name'],
                     ]);
+
+                    $this->incStat(1, 'activatedArtifacts');
+                    $this->incStat(1, 'activatedArtifacts', $playerId);
                 }
                 break;
 

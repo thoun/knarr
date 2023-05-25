@@ -48,94 +48,180 @@
 */
 
 $commonStats = [
-    "playedCards" => [
+    // repuration
+    "reputationPoints" => [
         "id" => 20,
+        "name" => totranslate("Points gained with reputation"),
+        "type" => "int"
+    ],
+
+    // played cards
+    "playedCards" => [
+        "id" => 21,
         "name" => totranslate("Played cards"),
         "type" => "int"
     ],
-    "playedCards1" => [
-        "id" => 21,
-        "name" => totranslate("Played cards (house)"),
-        "type" => "int"
-    ],
-    "playedCards2" => [
+    "assetsCollectedByPlayedCards" => [
         "id" => 22,
-        "name" => totranslate("Played cards (storage)"),
+        "name" => totranslate("Assets gained by played cards"),
         "type" => "int"
     ],
-    "playedCards3" => [
+    "assetsCollectedByPlayedCards1" => [
         "id" => 23,
-        "name" => totranslate("Played cards (human)"),
+        "name" => totranslate("Victory points gained by played cards"),
         "type" => "int"
     ],
-    "playedCards4" => [
+    "assetsCollectedByPlayedCards2" => [
         "id" => 24,
-        "name" => totranslate("Played cards (tool)"),
+        "name" => totranslate("Bracelets gained by played cards"),
         "type" => "int"
     ],
-    "collectedResources" => [
+    "assetsCollectedByPlayedCards3" => [
+        "id" => 25,
+        "name" => totranslate("Recruits gained by played cards"),
+        "type" => "int"
+    ],
+    "assetsCollectedByPlayedCards4" => [
+        "id" => 26,
+        "name" => totranslate("Reputation gained by played cards"),
+        "type" => "int"
+    ],
+    "recruitsUsedToChooseCard" => [
         "id" => 30,
-        "name" => totranslate("Collected resources"),
+        "name" => totranslate("Recruits used to choose card"),
         "type" => "int"
     ],
-    "collectedResources1" => [
-        "id" => 31,
-        "name" => totranslate("Collected resources (berry)"),
+    "discardedCards" => [
+        "id" => 39,
+        "name" => totranslate("Discarded cards to reform deck"),
         "type" => "int"
     ],
-    "collectedResources2" => [
-        "id" => 32,
-        "name" => totranslate("Collected resources (meat)"),
+    
+    // destinations
+    "discoveredDestinations" => [
+        "id" => 40,
+        "name" => totranslate("Discovered destinations"),
         "type" => "int"
-    ],
-    "collectedResources3" => [
-        "id" => 33,
-        "name" => totranslate("Collected resources (flint)"),
-        "type" => "int"
-    ],
-    "collectedResources4" => [
-        "id" => 34,
-        "name" => totranslate("Collected resources (skin)"),
-        "type" => "int"
-    ],
-    "collectedResources5" => [
-        "id" => 35,
-        "name" => totranslate("Collected resources (bone)"),
-        "type" => "int"
-    ],
-    "pointCards1" => [
+    ],    
+    "discoveredDestinations1" => [
         "id" => 41,
-        "name" => totranslate("Points with houses"),
+        "name" => totranslate("Discovered trading Lands"),
         "type" => "int"
-    ],
-    "pointCards2" => [
+    ],    
+    "discoveredDestinations2" => [
         "id" => 42,
-        "name" => totranslate("Points with storages"),
+        "name" => totranslate("Discovered Lands of influence"),
         "type" => "int"
     ],
-    "pointCards3" => [
+    "assetsCollectedByDestination" => [
         "id" => 43,
-        "name" => totranslate("Points with humans"),
+        "name" => totranslate("Assets gained by destinations"),
         "type" => "int"
     ],
-    "pointCards4" => [
+    "assetsCollectedByDestination1" => [
         "id" => 44,
-        "name" => totranslate("Points with tools"),
+        "name" => totranslate("Victory points gained by destinations"),
         "type" => "int"
     ],
-    "sacrifices" => [
+    "assetsCollectedByDestination2" => [
+        "id" => 45,
+        "name" => totranslate("Bracelets gained by destinations"),
+        "type" => "int"
+    ],
+    "assetsCollectedByDestination3" => [
+        "id" => 46,
+        "name" => totranslate("Recruits gained by destinations"),
+        "type" => "int"
+    ],
+    "assetsCollectedByDestination4" => [
+        "id" => 47,
+        "name" => totranslate("Reputation gained by destinations"),
+        "type" => "int"
+    ],
+    "assetsCollectedByDestination5" => [
+        "id" => 48,
+        "name" => totranslate("Cards gained by destinations"),
+        "type" => "int"
+    ],
+    "recruitsUsedToPayDestination" => [
         "id" => 50,
-        "name" => totranslate("Sacrifices"),
+        "name" => totranslate("Recruits used to take a destination"),
         "type" => "int"
     ],
-    "discardedResourcesEndOfTurn" => [
-        "id" => 51,
-        "name" => totranslate("Discarded resources at end of turn"),
+
+    // trade
+    "tradeActions" => [
+        "id" => 60,
+        "name" => totranslate("Trade actions"),
+        "type" => "int"
+    ],   
+    "tradeActions1" => [
+        "id" => 61,
+        "name" => totranslate("Trade actions with 1 bracelet"),
+        "type" => "int"
+    ],  
+    "tradeActions2" => [
+        "id" => 62,
+        "name" => totranslate("Trade actions with 2 bracelets"),
+        "type" => "int"
+    ],  
+    "tradeActions3" => [
+        "id" => 63,
+        "name" => totranslate("Trade actions with 3 bracelets"),
+        "type" => "int"
+    ], 
+    "braceletsUsed" => [
+        "id" => 64,
+        "name" => totranslate("Bracelets used for trade"),
+        "type" => "int"
+    ], 
+    "assetsCollectedByTrade" => [
+        "id" => 65,
+        "name" => totranslate("Assets gained by trade"),
         "type" => "int"
     ],
-    "collectedResourcesFromFire" => [
-        "id" => 52,
-        "name" => totranslate("Collected resources from fire"),
+    "assetsCollectedByTrade1" => [
+        "id" => 66,
+        "name" => totranslate("Victory points gained by trade"),
+        "type" => "int"
+    ],
+    "assetsCollectedByTrade2" => [
+        "id" => 67,
+        "name" => totranslate("Bracelets gained by trade"),
+        "type" => "int"
+    ],
+    "assetsCollectedByTrade3" => [
+        "id" => 68,
+        "name" => totranslate("Recruits gained by trade"),
+        "type" => "int"
+    ],
+    "assetsCollectedByTrade4" => [
+        "id" => 69,
+        "name" => totranslate("Reputation gained by trade"),
+        "type" => "int"
+    ],
+    "assetsCollectedByTrade5" => [
+        "id" => 70,
+        "name" => totranslate("Cards gained by trade"),
+        "type" => "int"
+    ],  
+
+    // artifacts
+    "activatedArtifacts" => [
+        "id" => 80,
+        "name" => totranslate("Activated artifacts"),
+        "type" => "int"
+    ],
+    
+    //	miscellaneous
+    "recruitsMissed" => [
+        "id" => 90,
+        "name" => totranslate("Recruits missed (already at 3)"),
+        "type" => "int"
+    ],
+    "braceletsMissed" => [
+        "id" => 91,
+        "name" => totranslate("Bracelets missed (already at 3)"),
         "type" => "int"
     ],
 ];

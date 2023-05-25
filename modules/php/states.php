@@ -24,6 +24,8 @@ trait StateTrait {
         }
 
         $this->incPlayerScore($playerId, $inc, clienttranslate('${player_name} scores ${incScore} with reputation'));
+        $this->incStat($inc, 'reputationPoints');
+        $this->incStat($inc, 'reputationPoints', $playerId);
         
         $this->gamestate->nextState('next');
     }
@@ -57,15 +59,16 @@ trait StateTrait {
 
     function stAfterDiscardCard() {
         $remainingCardsToTake = $this->getGlobalVariable(REMAINING_CARDS_TO_TAKE);
+        $playerId = $remainingCardsToTake->playerId;
 
         if ($remainingCardsToTake->phase == 'recruit') {
             $this->deleteGlobalVariable(REMAINING_CARDS_TO_TAKE);
-            $this->endOfRecruit($remainingCardsToTake->playerId, $remainingCardsToTake->slotColor);
+            $this->endOfRecruit($playerId, $remainingCardsToTake->slotColor);
         } else {
             $available = $this->getAvailableDeckCards();
             $effectiveGain = min($remainingCardsToTake->remaining, $available);
             for ($i = 0; $i < $effectiveGain; $i++) {
-                $this->powerTakeCard($remainingCardsToTake->playerId);
+                $this->powerTakeCard($playerId);
             }
             if ($effectiveGain < $remainingCardsToTake->remaining) {
                 $remainingCardsToTake->remaining = $remainingCardsToTake->remaining - $effectiveGain;
@@ -74,9 +77,15 @@ trait StateTrait {
             } else {
                 $this->deleteGlobalVariable(REMAINING_CARDS_TO_TAKE);
                 if ($remainingCardsToTake->phase == 'explore') {
-                    $this->endExplore($remainingCardsToTake->playerId, $remainingCardsToTake->fromReserve, $remainingCardsToTake->destination, $remainingCardsToTake->destinationIndex);
+                    $this->incStat($effectiveGain, 'assetsCollectedByDestination5');
+                    $this->incStat($effectiveGain, 'assetsCollectedByDestination5', $playerId);
+
+                    $this->endExplore($playerId, $remainingCardsToTake->fromReserve, $remainingCardsToTake->destination, $remainingCardsToTake->destinationIndex);
                 } else if ($remainingCardsToTake->phase == 'trade') {
-                    $this->endTrade($remainingCardsToTake->playerId);
+                    $this->incStat($effectiveGain, 'assetsCollectedByTrade5');
+                    $this->incStat($effectiveGain, 'assetsCollectedByTrade5', $playerId);
+
+                    $this->endTrade($playerId);
                 }
             }
         }

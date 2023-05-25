@@ -9,6 +9,7 @@ class CardsManager extends CardManager<Card> {
             setupFrontDiv: (card: Card, div: HTMLElement) => { 
                 div.dataset.color = ''+card.color;
                 div.dataset.gain = ''+card.gain;
+                console.log(card, div.dataset);
                 game.setTooltip(div.id, this.getTooltip(card));
             },
             isCardVisible: card => Boolean(card.color),
