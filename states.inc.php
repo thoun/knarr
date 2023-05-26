@@ -172,8 +172,8 @@ $playerActionsGameStates = [
 
     ST_PLAYER_TRADE => [
         "name" => "trade",
-        "description" => clienttranslate('${actplayer} must choose how many bracelet to spend'),
-        "descriptionmyturn" => clienttranslate('${you} must choose how many bracelet to spend'),
+        "description" => clienttranslate('${actplayer} must choose how many bracelets to spend'),
+        "descriptionmyturn" => clienttranslate('${you} must choose how many bracelets to spend'),
         "type" => "activeplayer",
         "args" => "argTrade",
         "possibleactions" => [ 

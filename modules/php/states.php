@@ -23,7 +23,7 @@ trait StateTrait {
             }
         }
 
-        $this->incPlayerScore($playerId, $inc, clienttranslate('${player_name} scores ${incScore} with reputation'));
+        $this->incPlayerScore($playerId, $inc, clienttranslate('${player_name} scores ${incScore} Victory Point(s) with reputation'));
         $this->incStat($inc, 'reputationPoints');
         $this->incStat($inc, 'reputationPoints', $playerId);
         
@@ -105,7 +105,7 @@ trait StateTrait {
         if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
             $this->setGameStateValue(LAST_TURN, 1);
 
-            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} took the last token on the fire, triggering the end of the game !'), [
+            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} reached 40 Victory Points, triggering the end of the game !'), [
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
             ]);

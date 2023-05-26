@@ -36,25 +36,25 @@ require_once("modules/php/constants.inc.php");
             ],
             2 => [
                 'name' => totranslate('Advanced'),
-                'tmdisplay' => totranslate('Advanced board side'),
+                'tmdisplay' => totranslate('Advanced boat side'),
             ],
         ],
         'default' => 1,
     ],
 
     VARIANT_OPTION => [
-        'name' => totranslate('Artefact variant'),
+        'name' => totranslate('Artifact variant'),
         'values' => [
             1 => [
                 'name' => totranslate('Disabled'),
             ],
             2 => [
-                'name' => totranslate('Enabled (with Mead Cup for 2-players mode)'),
-                'tmdisplay' => totranslate('Artefact variant (with Mead Cup for 2-players mode)'),
+                'name' => totranslate('Enabled (with Mead Cup for 2 players)'),
+                'tmdisplay' => totranslate('Artifact variant (with Mead Cup for 2 players)'),
             ],
             3 => [
                 'name' => totranslate('Enabled'),
-                'tmdisplay' => totranslate('Artefact variant'),
+                'tmdisplay' => totranslate('Artifact variant'),
             ],
         ],
         'default' => 1,

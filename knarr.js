@@ -2472,7 +2472,6 @@ var Knarr = /** @class */ (function () {
             _this.braceletCounters[playerId].create("bracelet-counter-".concat(playerId));
             _this.braceletCounters[playerId].setValue(player.bracelet);
         });
-        this.setTooltipToClass('playerhand-counter', _('Number of cards in hand'));
         this.setTooltipToClass('reputation-counter', _('Reputation'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));

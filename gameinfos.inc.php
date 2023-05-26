@@ -137,7 +137,7 @@ $gameinfos = [
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => [
-    totranslate("TODO"),
+    totranslate("You are the leader of a band of Vikings that you send to new destinations. Manage the recruitment of your crew and choose the best territories to explore. Depending on the destinations reached (for trading or influence) and the Vikings that accompany you, you can increase your reputation to gain even more wealth."),
 ],
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
