@@ -10,17 +10,17 @@ anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-bga-animations@thoun/bga-animations#0.1.1:
+bga-animations@thoun/bga-animations#0.1.2:
   version "1.0.0"
-  resolved "https://codeload.github.com/thoun/bga-animations/tar.gz/a196ecc67f33e591b9dd4df04afdb987b24f427f"
+  resolved "https://codeload.github.com/thoun/bga-animations/tar.gz/11e89c8c2a81f3bd46d4f5535c088b3d8539c38a"
 
-bga-cards@thoun/bga-cards#1.1.1:
+bga-cards@thoun/bga-cards#1.1.2:
   version "1.0.0"
-  resolved "https://codeload.github.com/thoun/bga-cards/tar.gz/7ecae18e98b385b363ba74298e5a19dae389c9bb"
+  resolved "https://codeload.github.com/thoun/bga-cards/tar.gz/75dfd908a7af391927338cb370ea67db86b6d3cb"
 
-bga-jump-to@thoun/bga-jump-to#0.1.0:
+bga-jump-to@thoun/bga-jump-to#1.0.0:
   version "1.0.0"
-  resolved "https://codeload.github.com/thoun/bga-jump-to/tar.gz/ec9d61e895c3a5b801aea47bb86682fc7120e0fe"
+  resolved "https://codeload.github.com/thoun/bga-jump-to/tar.gz/4aec4554cf458a56f7ea24bd257a076b34a2080e"
 
 bga-zoom@thoun/bga-zoom#0.1.0:
   version "1.0.0"
@@ -139,7 +139,7 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
-typescript@^4.1.3:
-  version "4.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
-  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
+typescript@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.0.4.tgz#b217fd20119bd61a94d4011274e0ab369058da3b"
+  integrity sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==

@@ -111,7 +111,7 @@ trait StateTrait {
             ]);
         }
 
-        $this->activeNextPlayer();       
+        $this->activeNextPlayer();
         $playerId = $this->getActivePlayerId();
 
         $this->giveExtraTime($playerId);
