@@ -12,11 +12,11 @@
   "dependencies": {
     "bga-zoom": "thoun/bga-zoom#0.1.0",
     "bga-jump-to": "thoun/bga-jump-to#1.0.0",
-    "bga-animations": "thoun/bga-animations#0.1.2",
-    "bga-cards": "thoun/bga-cards#1.1.2"
+    "bga-animations": "thoun/bga-animations#1.0.1",
+    "bga-cards": "thoun/bga-cards#2.0.0"
   },
   "devDependencies": {
-    "sass": "^1.32.6",
+    "sass": "^1.62.1",
     "typescript": "^5.0.4"
   }
 }

@@ -782,7 +782,7 @@ class Knarr implements KnarrGame {
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
-            ['cardDeckReset', ANIMATION_MS * 1.5],
+            ['cardDeckReset', ANIMATION_MS * 3],
             ['lastTurn', 1],
         ];
     
@@ -879,6 +879,8 @@ class Knarr implements KnarrGame {
 
         this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
         this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
+
+        this.tableCenter.cardDeck.shuffle().then(result => console.log('shuffle=', result));
     }
     
     /** 
