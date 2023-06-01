@@ -151,9 +151,6 @@ class Knarr implements KnarrGame {
             case 'discardTableCard':
                 this.onEnteringDiscardTableCard();
                 break;
-            case 'discardCard':
-                this.onEnteringDiscardCard(args.args);
-                break;
             case 'reserveDestination':
                 this.onEnteringReserveDestination();
                 break;
@@ -344,6 +341,11 @@ class Knarr implements KnarrGame {
                         }
                     });
                     (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
+                    break;
+
+                // multiplayer state    
+                case 'discardCard':
+                    this.onEnteringDiscardCard(args);
                     break;
                     
             }
@@ -782,105 +784,105 @@ class Knarr implements KnarrGame {
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
-            ['cardDeckReset', ANIMATION_MS * 3],
+            ['cardDeckReset', undefined],
             ['lastTurn', 1],
         ];
     
         notifs.forEach((notif) => {
-            dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
+            dojo.subscribe(notif[0], this, (notifDetails: Notif<any>) => {
+                log(`notif_${notif[0]}`, notifDetails.args);
+
+                const promise = this[`notif_${notif[0]}`](notifDetails.args);
+
+                // tell the UI notification ends, if the function returned a promise
+                promise?.then(() => (this as any).notifqueue.onSynchronousNotificationEnd());
+            });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
     }
 
-    notif_playCard(notif: Notif<NotifPlayCardArgs>) {
-        const playerId = notif.args.playerId;
+    notif_playCard(args: NotifPlayCardArgs) {
+        const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.playCard(notif.args.card);
+        playerTable.playCard(args.card);
 
-        this.updateGains(playerId, notif.args.effectiveGains);
+        this.updateGains(playerId, args.effectiveGains);
     }
 
-    notif_takeCard(notif: Notif<NotifNewCardArgs>) {
-        const playerId = notif.args.playerId;
+    notif_takeCard(args: NotifNewCardArgs) {
+        const playerId = args.playerId;
         const currentPlayer = this.getPlayerId() == playerId;
         const playerTable = this.getPlayerTable(playerId);
         
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
+        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
     }
 
-    notif_newTableCard(notif: Notif<NotifNewCardArgs>) {
-        log('notif_newTableCard', notif.args);
-        
-        this.tableCenter.newTableCard(notif.args.card);
-
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
+    notif_newTableCard(args: NotifNewCardArgs) {
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        this.tableCenter.newTableCard(args.card);
     }
 
-    notif_takeDestination(notif: Notif<NotifTakeDestinationArgs>) {
-        const playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).destinations.addCard(notif.args.destination);
+    notif_takeDestination(args: NotifTakeDestinationArgs) {
+        const playerId = args.playerId;
+        this.getPlayerTable(playerId).destinations.addCard(args.destination);
 
-        this.updateGains(playerId, notif.args.effectiveGains);
+        this.updateGains(playerId, args.effectiveGains);
     }
 
-    notif_discardCards(notif: Notif<NotifDiscardCardsArgs>) {
-        this.tableCenter.cardDiscard.addCards(notif.args.cards, undefined, undefined, 50);/*.then(
-            () =>*/ this.tableCenter.setDiscardCount(notif.args.cardDiscardCount)
-        /*);*/
+    notif_discardCards(args: NotifDiscardCardsArgs) {
+        this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(
+            () => this.tableCenter.setDiscardCount(args.cardDiscardCount)
+        );
     }
 
-    notif_newTableDestination(notif: Notif<NotifNewTableDestinationArgs>) {
-        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter, notif.args.destinationDeckCount, notif.args.destinationDeckTop);
+    notif_newTableDestination(args: NotifNewTableDestinationArgs) {
+        this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
     }
 
-    notif_score(notif: Notif<NotifScoreArgs>) {
-        this.setScore(notif.args.playerId, +notif.args.newScore);
+    notif_score(args: NotifScoreArgs) {
+        this.setScore(args.playerId, +args.newScore);
     }
 
-    notif_bracelet(notif: Notif<NotifScoreArgs>) {
-        this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    notif_bracelet(args: NotifScoreArgs) {
+        this.setBracelets(args.playerId, +args.newScore);
     }
 
-    notif_recruit(notif: Notif<NotifScoreArgs>) {
-        this.setRecruits(notif.args.playerId, +notif.args.newScore);
+    notif_recruit(args: NotifScoreArgs) {
+        this.setRecruits(args.playerId, +args.newScore);
     }
 
-    notif_trade(notif: Notif<NotifTradeArgs>) {
-        const playerId = notif.args.playerId;
+    notif_trade(args: NotifTradeArgs) {
+        const playerId = args.playerId;
 
-        this.updateGains(playerId, notif.args.effectiveGains);
+        this.updateGains(playerId, args.effectiveGains);
     }
 
-    notif_takeDeckCard(notif: Notif<NotifNewCardArgs>) {
-        const playerId = notif.args.playerId;
+    notif_takeDeckCard(args: NotifNewCardArgs) {
+        const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.playCard(notif.args.card, document.getElementById('board'));
+        playerTable.playCard(args.card, document.getElementById('board'));
 
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
     }
 
-    notif_discardTableCard(notif: Notif<NotifDiscardTableCardArgs>) {
-        log('notif_discardTableCard', notif.args);
-
-        this.tableCenter.cardDiscard.addCard(notif.args.card);
+    notif_discardTableCard(args: NotifDiscardTableCardArgs) {
+        this.tableCenter.cardDiscard.addCard(args.card);
     }
 
-    notif_reserveDestination(notif: Notif<NotifReserveDestinationArgs>) {
-        const playerId = notif.args.playerId;
+    notif_reserveDestination(args: NotifReserveDestinationArgs) {
+        const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.reserveDestination(notif.args.destination);
+        playerTable.reserveDestination(args.destination);
     }
 
-    notif_cardDeckReset(notif: Notif<NotifCardDeckResetArgs>) {
-        log('notif_cardDeckReset', notif.args);
+    notif_cardDeckReset(args: NotifCardDeckResetArgs) {
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        this.tableCenter.setDiscardCount(args.cardDiscardCount);
 
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
-        this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
-
-        this.tableCenter.cardDeck.shuffle().then(result => console.log('shuffle=', result));
+        return this.tableCenter.cardDeck.shuffle();
     }
     
     /** 

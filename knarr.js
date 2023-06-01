@@ -2460,9 +2460,6 @@ var Knarr = /** @class */ (function () {
             case 'discardTableCard':
                 this.onEnteringDiscardTableCard();
                 break;
-            case 'discardCard':
-                this.onEnteringDiscardCard(args.args);
-                break;
             case 'reserveDestination':
                 this.onEnteringReserveDestination();
                 break;
@@ -2641,6 +2638,10 @@ var Knarr = /** @class */ (function () {
                         }
                     });
                     this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
+                    break;
+                // multiplayer state    
+                case 'discardCard':
+                    this.onEnteringDiscardCard(args);
                     break;
             }
         }
@@ -2959,78 +2960,78 @@ var Knarr = /** @class */ (function () {
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
-            ['cardDeckReset', ANIMATION_MS * 3],
+            ['cardDeckReset', undefined],
             ['lastTurn', 1],
         ];
         notifs.forEach(function (notif) {
-            dojo.subscribe(notif[0], _this, "notif_".concat(notif[0]));
+            dojo.subscribe(notif[0], _this, function (notifDetails) {
+                log("notif_".concat(notif[0]), notifDetails.args);
+                var promise = _this["notif_".concat(notif[0])](notifDetails.args);
+                // tell the UI notification ends, if the function returned a promise
+                promise === null || promise === void 0 ? void 0 : promise.then(function () { return _this.notifqueue.onSynchronousNotificationEnd(); });
+            });
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
     };
-    Knarr.prototype.notif_playCard = function (notif) {
-        var playerId = notif.args.playerId;
+    Knarr.prototype.notif_playCard = function (args) {
+        var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.playCard(notif.args.card);
-        this.updateGains(playerId, notif.args.effectiveGains);
+        playerTable.playCard(args.card);
+        this.updateGains(playerId, args.effectiveGains);
     };
-    Knarr.prototype.notif_takeCard = function (notif) {
-        var playerId = notif.args.playerId;
+    Knarr.prototype.notif_takeCard = function (args) {
+        var playerId = args.playerId;
         var currentPlayer = this.getPlayerId() == playerId;
         var playerTable = this.getPlayerTable(playerId);
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(notif.args.card);
+        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
     };
-    Knarr.prototype.notif_newTableCard = function (notif) {
-        log('notif_newTableCard', notif.args);
-        this.tableCenter.newTableCard(notif.args.card);
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
+    Knarr.prototype.notif_newTableCard = function (args) {
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        this.tableCenter.newTableCard(args.card);
     };
-    Knarr.prototype.notif_takeDestination = function (notif) {
-        var playerId = notif.args.playerId;
-        this.getPlayerTable(playerId).destinations.addCard(notif.args.destination);
-        this.updateGains(playerId, notif.args.effectiveGains);
+    Knarr.prototype.notif_takeDestination = function (args) {
+        var playerId = args.playerId;
+        this.getPlayerTable(playerId).destinations.addCard(args.destination);
+        this.updateGains(playerId, args.effectiveGains);
     };
-    Knarr.prototype.notif_discardCards = function (notif) {
-        this.tableCenter.cardDiscard.addCards(notif.args.cards, undefined, undefined, 50); /*.then(
-            () =>*/
-        this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
-        /*);*/
+    Knarr.prototype.notif_discardCards = function (args) {
+        var _this = this;
+        this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(function () { return _this.tableCenter.setDiscardCount(args.cardDiscardCount); });
     };
-    Knarr.prototype.notif_newTableDestination = function (notif) {
-        this.tableCenter.newTableDestination(notif.args.destination, notif.args.letter, notif.args.destinationDeckCount, notif.args.destinationDeckTop);
+    Knarr.prototype.notif_newTableDestination = function (args) {
+        this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
     };
-    Knarr.prototype.notif_score = function (notif) {
-        this.setScore(notif.args.playerId, +notif.args.newScore);
+    Knarr.prototype.notif_score = function (args) {
+        this.setScore(args.playerId, +args.newScore);
     };
-    Knarr.prototype.notif_bracelet = function (notif) {
-        this.setBracelets(notif.args.playerId, +notif.args.newScore);
+    Knarr.prototype.notif_bracelet = function (args) {
+        this.setBracelets(args.playerId, +args.newScore);
     };
-    Knarr.prototype.notif_recruit = function (notif) {
-        this.setRecruits(notif.args.playerId, +notif.args.newScore);
+    Knarr.prototype.notif_recruit = function (args) {
+        this.setRecruits(args.playerId, +args.newScore);
     };
-    Knarr.prototype.notif_trade = function (notif) {
-        var playerId = notif.args.playerId;
-        this.updateGains(playerId, notif.args.effectiveGains);
+    Knarr.prototype.notif_trade = function (args) {
+        var playerId = args.playerId;
+        this.updateGains(playerId, args.effectiveGains);
     };
-    Knarr.prototype.notif_takeDeckCard = function (notif) {
-        var playerId = notif.args.playerId;
+    Knarr.prototype.notif_takeDeckCard = function (args) {
+        var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.playCard(notif.args.card, document.getElementById('board'));
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
+        playerTable.playCard(args.card, document.getElementById('board'));
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
     };
-    Knarr.prototype.notif_discardTableCard = function (notif) {
-        log('notif_discardTableCard', notif.args);
-        this.tableCenter.cardDiscard.addCard(notif.args.card);
+    Knarr.prototype.notif_discardTableCard = function (args) {
+        this.tableCenter.cardDiscard.addCard(args.card);
     };
-    Knarr.prototype.notif_reserveDestination = function (notif) {
-        var playerId = notif.args.playerId;
+    Knarr.prototype.notif_reserveDestination = function (args) {
+        var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.reserveDestination(notif.args.destination);
+        playerTable.reserveDestination(args.destination);
     };
-    Knarr.prototype.notif_cardDeckReset = function (notif) {
-        log('notif_cardDeckReset', notif.args);
-        this.tableCenter.cardDeck.setCardNumber(notif.args.cardDeckCount, notif.args.cardDeckTop);
-        this.tableCenter.setDiscardCount(notif.args.cardDiscardCount);
-        this.tableCenter.cardDeck.shuffle().then(function (result) { return console.log('shuffle=', result); });
+    Knarr.prototype.notif_cardDeckReset = function (args) {
+        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        this.tableCenter.setDiscardCount(args.cardDiscardCount);
+        return this.tableCenter.cardDeck.shuffle();
     };
     /**
      * Show last turn banner.
