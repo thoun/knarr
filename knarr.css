@@ -881,7 +881,7 @@ body > .card {
   justify-content: center;
   align-items: center;
   font-size: 20pt;
-  font-family: "komika parch";
+  font-family: "copperplate-gothic-bold";
 }
 .player-table .boat {
   position: relative;
@@ -1178,15 +1178,12 @@ body > .card {
     margin-top: 8px;
   }
 }
-/* TODO
 @font-face {
-  font-family: 'komika parch';
-  src: url('img/komikap-webfont.woff2') format('woff2'),
-       url('img/komikap-webfont.woff') format('woff');
+  font-family: "copperplate-gothic-bold";
+  src: url("img/copperplate-gothic-bold.woff2") format("woff2"), url("img/copperplate-gothic-bold.woff") format("woff");
   font-weight: normal;
   font-style: normal;
 }
-*/
 html, .mode_3d #game_play_area_background {
   background: url("img/background.jpg") #b5b4b4;
   background-size: 100% auto;
