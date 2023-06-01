@@ -80,13 +80,14 @@ class TableCenter {
         }
     }
     
-    public newTableCard(card: Card) {
-        this.cards.addCard(card);
+    public newTableCard(card: Card): Promise<boolean> {
+        return this.cards.addCard(card);
     }
     
-    public newTableDestination(destination: Destination, letter: string, destinationDeckCount: number, destinationDeckTop?: Destination) {
-        this.destinations[letter].addCard(destination);
+    public newTableDestination(destination: Destination, letter: string, destinationDeckCount: number, destinationDeckTop?: Destination): Promise<boolean> {
+        const promise = this.destinations[letter].addCard(destination);
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
+        return promise;
     } 
     
     public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {

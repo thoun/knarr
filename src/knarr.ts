@@ -331,7 +331,7 @@ class Knarr implements KnarrGame {
                 case 'trade':
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
-                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets[number] == 0));
+                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets));
                         const button = document.getElementById(`trade${number}_button`);
                         if (tradeArgs.bracelets < number) {
                             button.classList.add('disabled');
@@ -695,16 +695,22 @@ class Knarr implements KnarrGame {
         });
     }
   	
-    public trade(number: number, showWarning: boolean) {
+    public trade(number: number, gainsByBracelets: { [bracelets: number]: number } | null) {
         if(!(this as any).checkAction('trade')) {
             return;
         }
 
-        if (showWarning) {
-            (this as any).confirmationDialog(
-                _("Are you sure you want to trade ${bracelets} bracelet(s) ? There is nothing to gain yet with this number of bracelet(s)").replace('${bracelets}', number), 
-                () => this.trade(number, false)
-            );
+        let warning = null;
+        if (gainsByBracelets != null) {
+            if (gainsByBracelets[number] == 0) {
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("There is nothing to gain yet with this number of bracelet(s)");
+            } else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("You would gain the same with one less bracelet");
+            }
+        }
+
+        if (warning != null) {
+            (this as any).confirmationDialog(warning, () => this.trade(number, null));
             return;
         }
 
@@ -771,16 +777,16 @@ class Knarr implements KnarrGame {
         //log( 'notifications subscriptions setup' );
 
         const notifs = [
-            ['playCard', ANIMATION_MS],
-            ['takeCard', ANIMATION_MS],
-            ['newTableCard', ANIMATION_MS],
-            ['takeDestination', ANIMATION_MS],
-            ['discardCards', ANIMATION_MS * 1.5], // so we are sure slide to void stock is over when cardDeckReset fires (else card will be slightly shifter)
-            ['newTableDestination', ANIMATION_MS],
+            ['playCard', undefined],
+            ['takeCard', undefined],
+            ['newTableCard', undefined],
+            ['takeDestination', undefined],
+            ['discardCards', undefined],
+            ['newTableDestination', undefined],
             ['trade', ANIMATION_MS],
-            ['takeDeckCard', ANIMATION_MS],
-            ['discardTableCard', ANIMATION_MS * 1.5], // so we are sure slide to void stock is over when cardDeckReset fires (else card will be slightly shifter)
-            ['reserveDestination', ANIMATION_MS],
+            ['takeDeckCard', undefined],
+            ['discardTableCard', undefined],
+            ['reserveDestination', undefined],
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
@@ -805,9 +811,11 @@ class Knarr implements KnarrGame {
         const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.playCard(args.card);
+        const promise = playerTable.playCard(args.card);
 
         this.updateGains(playerId, args.effectiveGains);
+
+        return promise;
     }
 
     notif_takeCard(args: NotifNewCardArgs) {
@@ -815,29 +823,31 @@ class Knarr implements KnarrGame {
         const currentPlayer = this.getPlayerId() == playerId;
         const playerTable = this.getPlayerTable(playerId);
         
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
+        return (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
     }
 
     notif_newTableCard(args: NotifNewCardArgs) {
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.newTableCard(args.card);
+        return this.tableCenter.newTableCard(args.card);
     }
 
     notif_takeDestination(args: NotifTakeDestinationArgs) {
         const playerId = args.playerId;
-        this.getPlayerTable(playerId).destinations.addCard(args.destination);
+        const promise = this.getPlayerTable(playerId).destinations.addCard(args.destination);
 
         this.updateGains(playerId, args.effectiveGains);
+
+        return promise;
     }
 
     notif_discardCards(args: NotifDiscardCardsArgs) {
-        this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(
+        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(
             () => this.tableCenter.setDiscardCount(args.cardDiscardCount)
         );
     }
 
     notif_newTableDestination(args: NotifNewTableDestinationArgs) {
-        this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
+        return this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
     }
 
     notif_score(args: NotifScoreArgs) {
@@ -862,20 +872,22 @@ class Knarr implements KnarrGame {
         const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.playCard(args.card, document.getElementById('board'));
+        const promise = playerTable.playCard(args.card, document.getElementById('board'));
 
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+
+        return promise;
     }
 
     notif_discardTableCard(args: NotifDiscardTableCardArgs) {
-        this.tableCenter.cardDiscard.addCard(args.card);
+        return this.tableCenter.cardDiscard.addCard(args.card);
     }
 
     notif_reserveDestination(args: NotifReserveDestinationArgs) {
         const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        playerTable.reserveDestination(args.destination);
+        return playerTable.reserveDestination(args.destination);
     }
 
     notif_cardDeckReset(args: NotifCardDeckResetArgs) {

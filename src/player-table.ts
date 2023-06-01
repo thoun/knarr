@@ -124,8 +124,8 @@ class PlayerTable {
         document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
     }
 
-    public playCard(card: Card, fromElement?: HTMLElement) {
-        this.played[card.color].addCard(card, {
+    public playCard(card: Card, fromElement?: HTMLElement): Promise<boolean> {
+        return this.played[card.color].addCard(card, {
             fromElement
         });
     }
@@ -167,7 +167,7 @@ class PlayerTable {
     }
     
     public reserveDestination(destination: Destination) {
-        this.reservedDestinations.addCard(destination);
+        return this.reservedDestinations.addCard(destination);
     }
     
     public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {

@@ -2107,11 +2107,12 @@ var TableCenter = /** @class */ (function () {
         }
     }
     TableCenter.prototype.newTableCard = function (card) {
-        this.cards.addCard(card);
+        return this.cards.addCard(card);
     };
     TableCenter.prototype.newTableDestination = function (destination, letter, destinationDeckCount, destinationDeckTop) {
-        this.destinations[letter].addCard(destination);
+        var promise = this.destinations[letter].addCard(destination);
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
+        return promise;
     };
     TableCenter.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
         var _this = this;
@@ -2279,7 +2280,7 @@ var PlayerTable = /** @class */ (function () {
         document.getElementById("player-table-".concat(this.playerId, "-boat")).dataset[type] = '' + count;
     };
     PlayerTable.prototype.playCard = function (card, fromElement) {
-        this.played[card.color].addCard(card, {
+        return this.played[card.color].addCard(card, {
             fromElement: fromElement
         });
     };
@@ -2315,7 +2316,7 @@ var PlayerTable = /** @class */ (function () {
         return cards;
     };
     PlayerTable.prototype.reserveDestination = function (destination) {
-        this.reservedDestinations.addCard(destination);
+        return this.reservedDestinations.addCard(destination);
     };
     PlayerTable.prototype.setDestinationsSelectable = function (selectable, selectableCards) {
         if (selectableCards === void 0) { selectableCards = null; }
@@ -2660,7 +2661,7 @@ var Knarr = /** @class */ (function () {
                 case 'trade':
                     var tradeArgs_1 = args;
                     [1, 2, 3].forEach(function (number) {
-                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets[number] == 0); });
+                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets); });
                         var button = document.getElementById("trade".concat(number, "_button"));
                         if (tradeArgs_1.bracelets < number) {
                             button.classList.add('disabled');
@@ -2919,13 +2920,22 @@ var Knarr = /** @class */ (function () {
             recruits: recruits
         });
     };
-    Knarr.prototype.trade = function (number, showWarning) {
+    Knarr.prototype.trade = function (number, gainsByBracelets) {
         var _this = this;
         if (!this.checkAction('trade')) {
             return;
         }
-        if (showWarning) {
-            this.confirmationDialog(_("Are you sure you want to trade ${bracelets} bracelet(s) ? There is nothing to gain yet with this number of bracelet(s)").replace('${bracelets}', number), function () { return _this.trade(number, false); });
+        var warning = null;
+        if (gainsByBracelets != null) {
+            if (gainsByBracelets[number] == 0) {
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("There is nothing to gain yet with this number of bracelet(s)");
+            }
+            else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("You would gain the same with one less bracelet");
+            }
+        }
+        if (warning != null) {
+            this.confirmationDialog(warning, function () { return _this.trade(number, null); });
             return;
         }
         this.takeAction('trade', {
@@ -2980,16 +2990,16 @@ var Knarr = /** @class */ (function () {
         //log( 'notifications subscriptions setup' );
         var _this = this;
         var notifs = [
-            ['playCard', ANIMATION_MS],
-            ['takeCard', ANIMATION_MS],
-            ['newTableCard', ANIMATION_MS],
-            ['takeDestination', ANIMATION_MS],
-            ['discardCards', ANIMATION_MS * 1.5],
-            ['newTableDestination', ANIMATION_MS],
+            ['playCard', undefined],
+            ['takeCard', undefined],
+            ['newTableCard', undefined],
+            ['takeDestination', undefined],
+            ['discardCards', undefined],
+            ['newTableDestination', undefined],
             ['trade', ANIMATION_MS],
-            ['takeDeckCard', ANIMATION_MS],
-            ['discardTableCard', ANIMATION_MS * 1.5],
-            ['reserveDestination', ANIMATION_MS],
+            ['takeDeckCard', undefined],
+            ['discardTableCard', undefined],
+            ['reserveDestination', undefined],
             ['score', ANIMATION_MS],
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
@@ -3009,30 +3019,32 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_playCard = function (args) {
         var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.playCard(args.card);
+        var promise = playerTable.playCard(args.card);
         this.updateGains(playerId, args.effectiveGains);
+        return promise;
     };
     Knarr.prototype.notif_takeCard = function (args) {
         var playerId = args.playerId;
         var currentPlayer = this.getPlayerId() == playerId;
         var playerTable = this.getPlayerTable(playerId);
-        (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
+        return (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
     };
     Knarr.prototype.notif_newTableCard = function (args) {
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.newTableCard(args.card);
+        return this.tableCenter.newTableCard(args.card);
     };
     Knarr.prototype.notif_takeDestination = function (args) {
         var playerId = args.playerId;
-        this.getPlayerTable(playerId).destinations.addCard(args.destination);
+        var promise = this.getPlayerTable(playerId).destinations.addCard(args.destination);
         this.updateGains(playerId, args.effectiveGains);
+        return promise;
     };
     Knarr.prototype.notif_discardCards = function (args) {
         var _this = this;
-        this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(function () { return _this.tableCenter.setDiscardCount(args.cardDiscardCount); });
+        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(function () { return _this.tableCenter.setDiscardCount(args.cardDiscardCount); });
     };
     Knarr.prototype.notif_newTableDestination = function (args) {
-        this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
+        return this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
     };
     Knarr.prototype.notif_score = function (args) {
         this.setScore(args.playerId, +args.newScore);
@@ -3050,16 +3062,17 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.notif_takeDeckCard = function (args) {
         var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.playCard(args.card, document.getElementById('board'));
+        var promise = playerTable.playCard(args.card, document.getElementById('board'));
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        return promise;
     };
     Knarr.prototype.notif_discardTableCard = function (args) {
-        this.tableCenter.cardDiscard.addCard(args.card);
+        return this.tableCenter.cardDiscard.addCard(args.card);
     };
     Knarr.prototype.notif_reserveDestination = function (args) {
         var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
-        playerTable.reserveDestination(args.destination);
+        return playerTable.reserveDestination(args.destination);
     };
     Knarr.prototype.notif_cardDeckReset = function (args) {
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
