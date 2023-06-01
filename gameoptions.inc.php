@@ -38,6 +38,9 @@ require_once("modules/php/constants.inc.php");
                 'name' => totranslate('Advanced'),
                 'tmdisplay' => totranslate('Advanced boat side'),
             ],
+            3 => [
+                'name' => totranslate('Random'),
+            ],
         ],
         'default' => 1,
     ],

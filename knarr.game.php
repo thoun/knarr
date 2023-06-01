@@ -107,6 +107,10 @@ class Knarr extends Table {
         /************ Start the game initialization *****/
         $variantOption = $this->getVariantOption();
 
+        if ($this->getBoatSideOption() == 3) {
+            $this->setGameStateValue(BOAT_SIDE_OPTION, bga_rand(1, 2));
+        }
+
         // Init global values with their initial values
         $this->setGameStateInitialValue(LAST_TURN, 0);
         $this->setGameStateInitialValue(RECRUIT_DONE, 0);
