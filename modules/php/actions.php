@@ -140,7 +140,7 @@ trait ActionTrait {
         self::notifyAllPlayers('newTableCard', '', [
             'card' => $newTableCard,
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')) + 1, // to count the new card
         ]);
 
         $this->setGameStateValue(RECRUIT_DONE, 1);
@@ -372,7 +372,7 @@ trait ActionTrait {
         self::notifyAllPlayers('newTableCard', '', [
             'card' => $newTableCard,
             'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')) + 1, // to count the new card
         ]);
 
         $this->redirectAfterAction($playerId, true);
