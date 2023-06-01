@@ -296,7 +296,7 @@ trait ActionTrait {
                 }
             }
 
-            if (in_array(ARTIFACT_ARTIFACT_MEAD_CUP_CUP, $artifacts)) {
+            if (in_array(ARTIFACT_MEAD_CUP, $artifacts)) {
                 $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
 
                 $this->incStat(1, 'activatedArtifacts');
@@ -448,7 +448,11 @@ trait ActionTrait {
     public function endTurn() {
         self::checkAction('endTurn');
 
-        $this->gamestate->nextState('endTurn');
+        $playerId = intval($this->getCurrentPlayerId());
+
+        $endTurn = $this->checkEndTurnArtifacts($playerId);
+
+        $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
     }
 
     public function discardCard(int $id) {

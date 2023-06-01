@@ -31,3 +31,9 @@ Also add one auto-FTP upload extension (for example https://marketplace.visualst
 
 ## Hint
 Make sure ftp-sync.json and node_modules are in .gitignore
+
+# Rules
+Silver coins artifact gain is always one coin, not one for each viking over 3
+
+About artifact activation, rules aren't very clear. It makes :
+*Trade* =>  Action ==> Check artefacts except weathervane / amulet ==> *Trade* ==> Check artefacts weathervane / amulet

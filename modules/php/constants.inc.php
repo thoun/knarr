@@ -29,7 +29,7 @@ define('CARD', 5);
 /*
  * Artifacts
  */
-define('ARTIFACT_ARTIFACT_MEAD_CUP_CUP', 1);
+define('ARTIFACT_MEAD_CUP', 1);
 define('ARTIFACT_SILVER_COIN', 2);
 define('ARTIFACT_CAULDRON', 3);
 define('ARTIFACT_GOLDEN_BRACELET', 4);
@@ -75,6 +75,7 @@ define('GO_DISCARD_TABLE_CARD', 16);
 define('GO_RESERVE', 17);
 define('PLAYED_CARD_COLOR', 20);
 define('SELECTED_DESTINATION', 21);
+define('COMPLETED_LINES', 22);
 
 /*
  * Options

@@ -26,6 +26,8 @@ trait StateTrait {
         $this->incPlayerScore($playerId, $inc, clienttranslate('${player_name} scores ${incScore} Victory Point(s) with reputation'));
         $this->incStat($inc, 'reputationPoints');
         $this->incStat($inc, 'reputationPoints', $playerId);
+
+        $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId));
         
         $this->gamestate->nextState('next');
     }

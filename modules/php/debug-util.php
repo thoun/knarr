@@ -18,7 +18,8 @@ trait DebugUtilTrait {
         //$this->debugAddDestinations(2343492, 'A', 15);
         //$this->debugAddDestinations(2343492, 'B', 10);
 
-        $this->cards->pickCardsForLocation(13, 'deck', 'void');
+        //$this->cards->pickCardsForLocation(13, 'deck', 'void');
+        $this->setGlobalVariable(ARTIFACTS, [1, 6, 7]);
         
         //$this->debugLastTurn();
     }

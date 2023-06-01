@@ -281,7 +281,13 @@ trait UtilTrait {
 
         $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'];
 
-        $this->gamestate->nextState($canPlay ? 'next' : 'endTurn');
+        if ($canPlay) {
+            $this->gamestate->nextState('next');
+        } else {
+            $endTurn = $this->checkEndTurnArtifacts($playerId);
+
+            $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
+        }
     }
     
     function groupGains(array $gains) {
@@ -394,7 +400,7 @@ trait UtilTrait {
 
     function getArtifactName(int $artifact) {
         switch ($artifact) {
-            case ARTIFACT_ARTIFACT_MEAD_CUP_CUP: return clienttranslate("Mead Cup");
+            case ARTIFACT_MEAD_CUP: return clienttranslate("Mead Cup");
             case ARTIFACT_SILVER_COIN: return clienttranslate("Silver coin");
             case ARTIFACT_CAULDRON: return clienttranslate("Cauldron");
             case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
@@ -461,13 +467,29 @@ trait UtilTrait {
         }
     }
 
-    function completedAPlayedLine(int $playerId) {
-        $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-        if ($playedCardColor > 0) {
-            $playedCardsColors = $this->getPlayedCardsColor($playerId);
-            return $playedCardsColors[$playedCardColor] == min($playedCardsColors);
+    function checkEndTurnArtifacts(int $playerId) {
+        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+
+        $endTurn = true;
+
+        foreach ($artifacts as $artifact) {
+            $result = $this->checkEndTurnArtifact($playerId, $artifact);
+            if (!$result) {
+                $endTurn = false;
+            }
         }
-        return false;
+
+        return $endTurn;
+    }
+
+    function getCompletedLines(int $playerId) {
+        $playedCardsColors = $this->getPlayedCardsColor($playerId);
+        return min($playedCardsColors);
+    }
+
+    function completedAPlayedLine(int $playerId) {
+        $completedLines = intval($this->getGameStateValue(COMPLETED_LINES));
+        return $this->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
     }
 
     function checkArtifact(int $playerId, int $artifact) {
@@ -508,6 +530,12 @@ trait UtilTrait {
                     }
                 }
                 break;
+        }
+    }
+
+    function checkEndTurnArtifact(int $playerId, int $artifact) {
+        $endTurn = true;
+        switch ($artifact) {
             case ARTIFACT_AMULET:
                 if ($this->completedAPlayedLine($playerId)) {
                     $groupGains = [
@@ -533,6 +561,7 @@ trait UtilTrait {
             case ARTIFACT_WEATHERVANE:
                 if ($this->completedAPlayedLine($playerId)) {
                     $this->setGameStateValue(EXPLORE_DONE, 0);
+                    $this->setGameStateValue(COMPLETED_LINES, 999); // make sure the bonus turn doesn't retrigger the effect
 
                     self::notifyAllPlayers('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
                         'playerId' => $playerId,
@@ -543,10 +572,12 @@ trait UtilTrait {
 
                     $this->incStat(1, 'activatedArtifacts');
                     $this->incStat(1, 'activatedArtifacts', $playerId);
+                    
+                    $endTurn = false;
                 }
                 break;
-
         }
+        return $endTurn;
     }
 
     function getAvailableDeckCards() {
