@@ -178,7 +178,7 @@ trait ActionTrait {
         }
 
         $destination = $this->getDestinationFromDb($this->destinations->getCard($this->getGameStateValue(SELECTED_DESTINATION)));
-        $fromReserve = $destination->location == 'reserve';
+        $fromReserve = $destination->location == 'reserved';
         
         // will contain only selected cards of player
         $playedCardsByColor = [];

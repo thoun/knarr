@@ -111,6 +111,7 @@ class PlayerTable {
                 center: false,
             });            
             this.reservedDestinations.addCards(player.reservedDestinations);
+            this.reservedDestinations.onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
         }
 
         [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
