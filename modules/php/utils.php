@@ -478,7 +478,7 @@ trait UtilTrait {
                     $playedCardsColors = $this->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] > 3) {
                         $groupGains = [
-                            VP => $playedCardsColors[$playedCardColor] - 3,
+                            VP => 1,
                         ];
                         $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:silver-coins');
     
