@@ -86,14 +86,15 @@ class Knarr implements KnarrGame {
         this.destinationsManager = new DestinationsManager(this);        
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
-        new JumpToManager(this, {
+        /*new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
             entryClasses: 'triangle-point',
             defaultFolded: true,
-        });
+        });*/
+
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
@@ -122,7 +123,23 @@ class Knarr implements KnarrGame {
             this.notif_lastTurn(false);
         }
 
-        this.addHelp();
+        new HelpManager(this, { 
+            buttons: [
+                new BgaHelpPopinButton({
+                    title: _("Card help").toUpperCase(),
+                    html: this.getHelpHtml(),
+                    onPopinCreated: () => this.populateHelp(),
+                    buttonBackground: '#5890a9',
+                }),
+                new BgaHelpExpandableButton({
+                    unfoldedHtml: this.getColorAddHtml(),
+                    foldedContentExtraClasses: 'color-help-folded-content',
+                    unfoldedContentExtraClasses: 'color-help-unfolded-content',
+                    expandedWidth: '120px',
+                    expandedHeight: '210px',
+                }),
+            ]
+        });
         this.setupNotifications();
         this.setupPreferences();
 
@@ -542,23 +559,15 @@ class Knarr implements KnarrGame {
     public highlightPlayerTokens(playerId: number | null): void {
         this.tableCenter.highlightPlayerTokens(playerId);
     }
-    
-    private addHelp() {
-        let labels = [1, 2, 3, 4, 5].map(number => `<div class="color" data-color="${number}"></div><span class="label"> ${this.getColor(number)}</span>`).join('');
-        dojo.place(`
-            <button id="knarr-help-button">?</button>
-            <button id="color-help-button" data-folded="true">${labels}</button>
-        `, 'left-side');
-        document.getElementById('knarr-help-button').addEventListener('click', () => this.showHelp());
-        const helpButton = document.getElementById('color-help-button');
-        helpButton.addEventListener('click', () => helpButton.dataset.folded = helpButton.dataset.folded == 'true' ? 'false' : 'true');
+
+    private getColorAddHtml() {
+        return [1, 2, 3, 4, 5].map(number => `
+            <div class="color" data-color="${number}"></div>
+            <span class="label"> ${this.getColor(number)}</span>
+        `).join('');
     }
 
-    private showHelp() {
-        const helpDialog = new ebg.popindialog();
-        helpDialog.create('knarrHelpDialog');
-        helpDialog.setTitle(_("Card help").toUpperCase());
-        
+    private getHelpHtml() {
         let html = `
         <div id="help-popin">
             <h1>${_("Assets")}</h2>
@@ -594,12 +603,11 @@ class Knarr implements KnarrGame {
             </div> `;
         }
         html += `</div>`;
-        
-        // Show the dialog
-        helpDialog.setContent(html);
 
-        helpDialog.show();
+        return html;
+    }
 
+    private populateHelp() {
         for (let i = 1; i <=7; i++) {
             this.artifactsManager.setForHelp(i, `help-artifact-${i}`);
         }

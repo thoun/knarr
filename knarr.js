@@ -189,6 +189,21 @@ var ZoomManager = /** @class */ (function () {
     };
     return ZoomManager;
 }());
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -198,6 +213,93 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var BgaHelpButton = /** @class */ (function () {
+    function BgaHelpButton() {
+    }
+    return BgaHelpButton;
+}());
+var BgaHelpPopinButton = /** @class */ (function (_super) {
+    __extends(BgaHelpPopinButton, _super);
+    function BgaHelpPopinButton(settings) {
+        var _this = _super.call(this) || this;
+        _this.settings = settings;
+        return _this;
+    }
+    BgaHelpPopinButton.prototype.add = function (toElement) {
+        var _a;
+        var _this = this;
+        var button = document.createElement('button');
+        (_a = button.classList).add.apply(_a, __spreadArray(['bga-help_button', 'bga-help_popin-button'], (this.settings.buttonExtraClasses ? this.settings.buttonExtraClasses.split(/\s+/g) : []), false));
+        button.innerHTML = "?";
+        if (this.settings.buttonBackground) {
+            button.style.setProperty('--background', this.settings.buttonBackground);
+        }
+        if (this.settings.buttonColor) {
+            button.style.setProperty('--color', this.settings.buttonColor);
+        }
+        toElement.appendChild(button);
+        button.addEventListener('click', function () { return _this.showHelp(); });
+    };
+    BgaHelpPopinButton.prototype.showHelp = function () {
+        var _a, _b, _c;
+        var popinDialog = new window.ebg.popindialog();
+        popinDialog.create('bgaHelpDialog');
+        popinDialog.setTitle(this.settings.title);
+        popinDialog.setContent("<div id=\"help-dialog-content\">".concat((_a = this.settings.html) !== null && _a !== void 0 ? _a : '', "</div>"));
+        (_c = (_b = this.settings).onPopinCreated) === null || _c === void 0 ? void 0 : _c.call(_b, document.getElementById('help-dialog-content'));
+        popinDialog.show();
+    };
+    return BgaHelpPopinButton;
+}(BgaHelpButton));
+var BgaHelpExpandableButton = /** @class */ (function (_super) {
+    __extends(BgaHelpExpandableButton, _super);
+    function BgaHelpExpandableButton(settings) {
+        var _this = _super.call(this) || this;
+        _this.settings = settings;
+        return _this;
+    }
+    BgaHelpExpandableButton.prototype.add = function (toElement) {
+        var _a;
+        var _this = this;
+        var _b, _c, _d, _e, _f, _g, _h, _j;
+        var folded = (_b = this.settings.defaultFolded) !== null && _b !== void 0 ? _b : true;
+        if (this.settings.localStorageFoldedKey) {
+            var localStorageValue = localStorage.getItem(this.settings.localStorageFoldedKey);
+            if (localStorageValue) {
+                folded = localStorageValue == 'true';
+            }
+        }
+        var button = document.createElement('button');
+        button.dataset.folded = folded.toString();
+        (_a = button.classList).add.apply(_a, __spreadArray(['bga-help_button', 'bga-help_expandable-button'], (this.settings.buttonExtraClasses ? this.settings.buttonExtraClasses.split(/\s+/g) : []), false));
+        button.innerHTML = "\n            <div class=\"bga-help_folded-content ".concat(((_c = this.settings.foldedContentExtraClasses) !== null && _c !== void 0 ? _c : '').split(/\s+/g), "\">").concat((_d = this.settings.foldedHtml) !== null && _d !== void 0 ? _d : '', "</div>\n            <div class=\"bga-help_unfolded-content  ").concat(((_e = this.settings.unfoldedContentExtraClasses) !== null && _e !== void 0 ? _e : '').split(/\s+/g), "\">").concat((_f = this.settings.unfoldedHtml) !== null && _f !== void 0 ? _f : '', "</div>\n        ");
+        button.style.setProperty('--expanded-width', (_g = this.settings.expandedWidth) !== null && _g !== void 0 ? _g : 'auto');
+        button.style.setProperty('--expanded-height', (_h = this.settings.expandedHeight) !== null && _h !== void 0 ? _h : 'auto');
+        button.style.setProperty('--expanded-radius', (_j = this.settings.expandedRadius) !== null && _j !== void 0 ? _j : '10px');
+        toElement.appendChild(button);
+        button.addEventListener('click', function () {
+            button.dataset.folded = button.dataset.folded == 'true' ? 'false' : 'true';
+            if (_this.settings.localStorageFoldedKey) {
+                localStorage.setItem(_this.settings.localStorageFoldedKey, button.dataset.folded);
+            }
+        });
+    };
+    return BgaHelpExpandableButton;
+}(BgaHelpButton));
+var HelpManager = /** @class */ (function () {
+    function HelpManager(game, settings) {
+        this.game = game;
+        if (!(settings === null || settings === void 0 ? void 0 : settings.buttons)) {
+            throw new Error('HelpManager need a `buttons` list in the settings.');
+        }
+        var leftSide = document.getElementById('left-side');
+        var buttons = document.createElement('div');
+        buttons.id = "bga-help_buttons";
+        leftSide.appendChild(buttons);
+        settings.buttons.forEach(function (button) { return button.add(buttons); });
+    }
+    return HelpManager;
+}());
 /**
  * Jump to entry.
  */
@@ -316,21 +418,6 @@ var BgaAnimation = /** @class */ (function () {
     }
     return BgaAnimation;
 }());
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 /**
  * Just use playSequence from animationManager
  *
@@ -2436,14 +2523,14 @@ var Knarr = /** @class */ (function () {
         this.destinationsManager = new DestinationsManager(this);
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
-        new JumpToManager(this, {
+        /*new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
             entryClasses: 'triangle-point',
             defaultFolded: true,
-        });
+        });*/
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
@@ -2469,7 +2556,23 @@ var Knarr = /** @class */ (function () {
         if (gamedatas.lastTurn) {
             this.notif_lastTurn(false);
         }
-        this.addHelp();
+        new HelpManager(this, {
+            buttons: [
+                new BgaHelpPopinButton({
+                    title: _("Card help").toUpperCase(),
+                    html: this.getHelpHtml(),
+                    onPopinCreated: function () { return _this.populateHelp(); },
+                    buttonBackground: '#5890a9',
+                }),
+                new BgaHelpExpandableButton({
+                    unfoldedHtml: this.getColorAddHtml(),
+                    foldedContentExtraClasses: 'color-help-folded-content',
+                    unfoldedContentExtraClasses: 'color-help-unfolded-content',
+                    expandedWidth: '120px',
+                    expandedHeight: '210px',
+                }),
+            ]
+        });
         this.setupNotifications();
         this.setupPreferences();
         log("Ending game setup");
@@ -2820,26 +2923,19 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.highlightPlayerTokens = function (playerId) {
         this.tableCenter.highlightPlayerTokens(playerId);
     };
-    Knarr.prototype.addHelp = function () {
+    Knarr.prototype.getColorAddHtml = function () {
         var _this = this;
-        var labels = [1, 2, 3, 4, 5].map(function (number) { return "<div class=\"color\" data-color=\"".concat(number, "\"></div><span class=\"label\"> ").concat(_this.getColor(number), "</span>"); }).join('');
-        dojo.place("\n            <button id=\"knarr-help-button\">?</button>\n            <button id=\"color-help-button\" data-folded=\"true\">".concat(labels, "</button>\n        "), 'left-side');
-        document.getElementById('knarr-help-button').addEventListener('click', function () { return _this.showHelp(); });
-        var helpButton = document.getElementById('color-help-button');
-        helpButton.addEventListener('click', function () { return helpButton.dataset.folded = helpButton.dataset.folded == 'true' ? 'false' : 'true'; });
+        return [1, 2, 3, 4, 5].map(function (number) { return "\n            <div class=\"color\" data-color=\"".concat(number, "\"></div>\n            <span class=\"label\"> ").concat(_this.getColor(number), "</span>\n        "); }).join('');
     };
-    Knarr.prototype.showHelp = function () {
-        var helpDialog = new ebg.popindialog();
-        helpDialog.create('knarrHelpDialog');
-        helpDialog.setTitle(_("Card help").toUpperCase());
+    Knarr.prototype.getHelpHtml = function () {
         var html = "\n        <div id=\"help-popin\">\n            <h1>".concat(_("Assets"), "</h2>\n            <div class=\"help-section\">\n                <div class=\"icon vp\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Victory Point</strong>. The player moves their token forward 1 space on the Score Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon recruit\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Recruit</strong>: The player adds 1 Recruit token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("A recruit allows a player to draw the Viking card of their choice when Recruiting or replaces a Viking card during Exploration."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon bracelet\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship."), " ").concat(_("It is not possible to have more than 3."), " ").concat(_("They are used for Trading."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon reputation\"></div>\n                <div class=\"help-label\">").concat(_("Gain 1 <strong>Reputation Point</strong>: The player moves their token forward 1 space on the Reputation Track."), "</div>\n            </div>\n            <div class=\"help-section\">\n                <div class=\"icon take-card\"></div>\n                <div class=\"help-label\">").concat(_("Draw <strong>the first Viking card</strong> from the deck: It is placed in the player’s Crew Zone (without taking any assets)."), "</div>\n            </div>\n\n            <h1>").concat(_("Powers of the artifacts (variant option)"), "</h1>\n        ");
         for (var i = 1; i <= 7; i++) {
             html += "\n            <div class=\"help-section\">\n                <div id=\"help-artifact-".concat(i, "\"></div>\n                <div>").concat(this.artifactsManager.getTooltip(i), "</div>\n            </div> ");
         }
         html += "</div>";
-        // Show the dialog
-        helpDialog.setContent(html);
-        helpDialog.show();
+        return html;
+    };
+    Knarr.prototype.populateHelp = function () {
         for (var i = 1; i <= 7; i++) {
             this.artifactsManager.setForHelp(i, "help-artifact-".concat(i));
         }
