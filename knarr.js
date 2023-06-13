@@ -2523,14 +2523,14 @@ var Knarr = /** @class */ (function () {
         this.destinationsManager = new DestinationsManager(this);
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
-        /*new JumpToManager(this, {
+        new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
             entryClasses: 'triangle-point',
             defaultFolded: true,
-        });*/
+        });
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
@@ -3111,6 +3111,18 @@ var Knarr = /** @class */ (function () {
             });
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
+        if (isDebug) {
+            notifs.forEach(function (notif) {
+                if (!_this["notif_".concat(notif[0])]) {
+                    console.warn("notif_".concat(notif[0], " function is not declared, but listed in setupNotifications"));
+                }
+            });
+            Object.getOwnPropertyNames(Knarr.prototype).filter(function (item) { return item.startsWith('notif_'); }).map(function (item) { return item.slice(6); }).forEach(function (item) {
+                if (!notifs.some(function (notif) { return notif[0] == item; })) {
+                    console.warn("notif_".concat(item, " function is declared, but not listed in setupNotifications"));
+                }
+            });
+        }
     };
     Knarr.prototype.notif_playCard = function (args) {
         var playerId = args.playerId;

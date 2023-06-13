@@ -86,14 +86,14 @@ class Knarr implements KnarrGame {
         this.destinationsManager = new DestinationsManager(this);        
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new AnimationManager(this);
-        /*new JumpToManager(this, {
+        new JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
                 new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
             entryClasses: 'triangle-point',
             defaultFolded: true,
-        });*/
+        });
 
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);
@@ -813,6 +813,20 @@ class Knarr implements KnarrGame {
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
+
+        if (isDebug) {
+            notifs.forEach((notif) => {
+                if (!this[`notif_${notif[0]}`]) {
+                    console.warn(`notif_${notif[0]} function is not declared, but listed in setupNotifications`);
+                }
+            });
+
+            Object.getOwnPropertyNames(Knarr.prototype).filter(item => item.startsWith('notif_')).map(item => item.slice(6)).forEach(item => {
+                if (!notifs.some(notif => notif[0] == item)) {
+                    console.warn(`notif_${item} function is declared, but not listed in setupNotifications`);
+                }
+            });
+        }
     }
 
     notif_playCard(args: NotifPlayCardArgs) {

@@ -40,21 +40,6 @@ html, .mode_3d #game_play_area_background {
   padding-top: 32px;
 }
 
-#round-counter-row {
-  display: flex;
-  justify-content: center;
-
-  #round-counter-block {
-    background: #FFFFFF99;
-    font-size: 120%;
-    padding: 8px 16px;
-    margin: 0 5px;
-    border-radius: 10px;
-    text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black, 0 0 4px black;
-    color: white;
-  }
-}
-
 .icon {
   display: inline-block;
   width: 32px;

@@ -234,6 +234,7 @@ $gameGameStates = [
         "description" => "",
         "type" => "game",
         "action" => "stNextPlayer",
+        "updateGameProgression" => true,
         "transitions" => [
             "nextPlayer" => ST_SCORE_REPUTATION,
             "endScore" => ST_END_SCORE,
