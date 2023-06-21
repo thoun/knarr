@@ -2776,6 +2776,9 @@ var Knarr = /** @class */ (function () {
                     });
                     this.addActionButton("cancel_button", _("Cancel"), function () { return _this.cancel(); }, null, null, 'gray');
                     break;
+                case 'discardTableCard':
+                case 'reserveDestination':
+                    this.addActionButton("pass_button", _("Pass"), function () { return _this.pass(); }, null, null, 'gray');
                 // multiplayer state    
                 case 'discardCard':
                     this.onEnteringDiscardCard(args);
@@ -3065,6 +3068,12 @@ var Knarr = /** @class */ (function () {
         this.takeAction('discardCard', {
             id: id
         });
+    };
+    Knarr.prototype.pass = function () {
+        if (!this.checkAction('pass')) {
+            return;
+        }
+        this.takeAction('pass');
     };
     Knarr.prototype.takeAction = function (action, data) {
         data = data || {};

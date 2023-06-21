@@ -360,6 +360,10 @@ class Knarr implements KnarrGame {
                     (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
                     break;
 
+                case 'discardTableCard':
+                case 'reserveDestination':
+                    (this as any).addActionButton(`pass_button`, _("Pass"), () => this.pass(), null, null, 'gray');
+
                 // multiplayer state    
                 case 'discardCard':
                     this.onEnteringDiscardCard(args);
@@ -761,6 +765,14 @@ class Knarr implements KnarrGame {
         this.takeAction('discardCard', {
             id
         });
+    }
+  	
+    public pass() {
+        if(!(this as any).checkAction('pass')) {
+            return;
+        }
+
+        this.takeAction('pass');
     }
 
     public takeAction(action: string, data?: any) {

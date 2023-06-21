@@ -260,6 +260,7 @@ trait UtilTrait {
 
         if (boolval($this->getGameStateValue(GO_RESERVE))) {
             $this->incGameStateValue(GO_RESERVE, -1);
+            $this->setGameStateValue(PLAYED_CARD_COLOR, 0);
             $reserved = $this->getDestinationsByLocation('reserved', $playerId);
             if (count($reserved) >= 2) {
                 self::notifyAllPlayers('log', clienttranslate('${player_name} cannot reserve a destination because he already has 2'), [
