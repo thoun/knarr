@@ -105,7 +105,7 @@ $commonStats = [
     ],    
     "discoveredDestinations1" => [
         "id" => 41,
-        "name" => totranslate("Discovered trading Lands"),
+        "name" => totranslate("Discovered Trading Lands"),
         "type" => "int"
     ],    
     "discoveredDestinations2" => [
