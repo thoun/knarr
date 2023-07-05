@@ -46,6 +46,7 @@ class Knarr implements KnarrGame {
     private reputationCounters: Counter[] = [];
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
+    private crewCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
@@ -463,7 +464,8 @@ class Knarr implements KnarrGame {
                     <span id="reputation-counter-${player.id}"></span> <span class="reputation-legend"><div class="vp icon"></div> / ${_('round')}</span>
                 </div>
 
-            </div><div class="counters">
+            </div>
+            <div class="counters">
             
                 <div id="recruit-counter-wrapper-${player.id}" class="recruit-counter">
                     <div class="recruit icon"></div>
@@ -474,7 +476,12 @@ class Knarr implements KnarrGame {
                     <div class="bracelet icon"></div>
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
-                
+            
+                <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
+                    <div class="player-crew-cards"></div>
+                    <span id="crew-counter-${player.id}"></span>
+                </div>
+
             </div>
             <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
 
@@ -496,11 +503,16 @@ class Knarr implements KnarrGame {
             this.braceletCounters[playerId] = new ebg.counter();
             this.braceletCounters[playerId].create(`bracelet-counter-${playerId}`);
             this.braceletCounters[playerId].setValue(player.bracelet);
+
+            this.crewCounters[playerId] = new ebg.counter();
+            this.crewCounters[playerId].create(`crew-counter-${playerId}`);
+            this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(cards => cards.length).reduce((a, b) => a + b, 0));
         });
 
         this.setTooltipToClass('reputation-counter', _('Reputation'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
+        this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     }
 
     private createPlayerTables(gamedatas: KnarrGamedatas) {
@@ -846,6 +858,7 @@ class Knarr implements KnarrGame {
         const playerTable = this.getPlayerTable(playerId);
 
         const promise = playerTable.playCard(args.card);
+        this.crewCounters[args.playerId].incValue(1);
 
         this.updateGains(playerId, args.effectiveGains);
 
@@ -874,10 +887,10 @@ class Knarr implements KnarrGame {
         return promise;
     }
 
-    notif_discardCards(args: NotifDiscardCardsArgs) {
-        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(
-            () => this.tableCenter.setDiscardCount(args.cardDiscardCount)
-        );
+    async notif_discardCards(args: NotifDiscardCardsArgs) {
+        await this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50);
+        this.tableCenter.setDiscardCount(args.cardDiscardCount);
+        this.crewCounters[args.playerId].incValue(-args.cards.length);
     }
 
     notif_newTableDestination(args: NotifNewTableDestinationArgs) {
@@ -906,7 +919,8 @@ class Knarr implements KnarrGame {
         const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
 
-        const promise = playerTable.playCard(args.card, document.getElementById('board'));
+        const promise = playerTable.playCard(args.card, document.getElementById('board'));  
+        this.crewCounters[args.playerId].incValue(1);
 
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
 

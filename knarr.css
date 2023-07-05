@@ -916,10 +916,7 @@ body > .card {
 .player-board .counters > div {
   flex: 1;
 }
-.player-board .counters > div:last-child {
-  flex: 2;
-}
-.player-board .player-hand-card {
+.player-board .player-crew-cards {
   display: inline-block;
   width: 32px;
   height: 32px;

@@ -2491,6 +2491,7 @@ var Knarr = /** @class */ (function () {
         this.reputationCounters = [];
         this.recruitCounters = [];
         this.braceletCounters = [];
+        this.crewCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
     }
     /*
@@ -2852,7 +2853,7 @@ var Knarr = /** @class */ (function () {
                     <div class="player-hand-card"></div>
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>*/
-            var html = "<div class=\"counters\">\n            \n                <div id=\"reputation-counter-wrapper-".concat(player.id, "\" class=\"reputation-counter\">\n                    <div class=\"reputation icon\"></div>\n                    <span id=\"reputation-counter-").concat(player.id, "\"></span> <span class=\"reputation-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div><div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n                \n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
+            var html = "<div class=\"counters\">\n            \n                <div id=\"reputation-counter-wrapper-".concat(player.id, "\" class=\"reputation-counter\">\n                    <div class=\"reputation icon\"></div>\n                    <span id=\"reputation-counter-").concat(player.id, "\"></span> <span class=\"reputation-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div>\n            <div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"crew-counter-wrapper-").concat(player.id, "\" class=\"crew-counter\">\n                    <div class=\"player-crew-cards\"></div>\n                    <span id=\"crew-counter-").concat(player.id, "\"></span>\n                </div>\n\n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
             dojo.place(html, "player_board_".concat(player.id));
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
@@ -2867,10 +2868,14 @@ var Knarr = /** @class */ (function () {
             _this.braceletCounters[playerId] = new ebg.counter();
             _this.braceletCounters[playerId].create("bracelet-counter-".concat(playerId));
             _this.braceletCounters[playerId].setValue(player.bracelet);
+            _this.crewCounters[playerId] = new ebg.counter();
+            _this.crewCounters[playerId].create("crew-counter-".concat(playerId));
+            _this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(function (cards) { return cards.length; }).reduce(function (a, b) { return a + b; }, 0));
         });
         this.setTooltipToClass('reputation-counter', _('Reputation'));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
+        this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     };
     Knarr.prototype.createPlayerTables = function (gamedatas) {
         var _this = this;
@@ -3137,6 +3142,7 @@ var Knarr = /** @class */ (function () {
         var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
         var promise = playerTable.playCard(args.card);
+        this.crewCounters[args.playerId].incValue(1);
         this.updateGains(playerId, args.effectiveGains);
         return promise;
     };
@@ -3157,8 +3163,18 @@ var Knarr = /** @class */ (function () {
         return promise;
     };
     Knarr.prototype.notif_discardCards = function (args) {
-        var _this = this;
-        return this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50).then(function () { return _this.tableCenter.setDiscardCount(args.cardDiscardCount); });
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50)];
+                    case 1:
+                        _a.sent();
+                        this.tableCenter.setDiscardCount(args.cardDiscardCount);
+                        this.crewCounters[args.playerId].incValue(-args.cards.length);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Knarr.prototype.notif_newTableDestination = function (args) {
         return this.tableCenter.newTableDestination(args.destination, args.letter, args.destinationDeckCount, args.destinationDeckTop);
@@ -3180,6 +3196,7 @@ var Knarr = /** @class */ (function () {
         var playerId = args.playerId;
         var playerTable = this.getPlayerTable(playerId);
         var promise = playerTable.playCard(args.card, document.getElementById('board'));
+        this.crewCounters[args.playerId].incValue(1);
         this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
         return promise;
     };
