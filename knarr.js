@@ -2067,8 +2067,14 @@ var DestinationsManager = /** @class */ (function (_super) {
             case 2: return _("Lands of Influence");
         }
     };
+    DestinationsManager.prototype.getLetter = function (type) {
+        switch (type) {
+            case 1: return "A";
+            case 2: return "B";
+        }
+    };
     DestinationsManager.prototype.getTooltip = function (destination) {
-        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.getType(destination.type), "\n        ");
+        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.getType(destination.type), " (").concat(this.getLetter(destination.type), ")\n        ");
         return message;
     };
     return DestinationsManager;

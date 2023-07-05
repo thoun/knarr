@@ -41,13 +41,20 @@ class DestinationsManager extends CardManager<Destination> {
         }
     }
 
+    private getLetter(type: number): string {
+        switch (type) {
+            case 1: return "A";
+            case 2: return "B";
+        }
+    }
+
     private getTooltip(destination: Destination): string {
         let message = `
         <strong>${_("Exploration cost:")}</strong> ${this.getCost(destination.cost)} (recruits can be used as jokers)
         <br>
         <strong>${_("Immediate gains:")}</strong> ${this.getGains(destination.immediateGains)}
         <br>
-        <strong>${_("Type:")}</strong> ${this.getType(destination.type)}
+        <strong>${_("Type:")}</strong> ${this.getType(destination.type)} (${this.getLetter(destination.type)})
         `;
  
         return message;
