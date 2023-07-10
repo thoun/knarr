@@ -2061,7 +2061,7 @@ var DestinationsManager = /** @class */ (function (_super) {
         var _this = this;
         return Object.entries(gains).map(function (entry) { return "<strong>".concat(entry[1], "</strong> ").concat(_this.game.getTooltipGain(Number(entry[0]))); }).join(', ');
     };
-    DestinationsManager.prototype.getType = function (type) {
+    DestinationsManager.prototype.getDestinationType = function (type) {
         switch (type) {
             case 1: return _("Trading Lands");
             case 2: return _("Lands of Influence");
@@ -2074,7 +2074,7 @@ var DestinationsManager = /** @class */ (function (_super) {
         }
     };
     DestinationsManager.prototype.getTooltip = function (destination) {
-        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.getType(destination.type), " (").concat(this.getLetter(destination.type), ")\n        ");
+        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.game.getDestinationType(destination.type), " (").concat(this.getLetter(destination.type), ")\n        ");
         return message;
     };
     return DestinationsManager;
@@ -3250,6 +3250,12 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.getTooltipColor = function (color) {
         return "".concat(this.getColor(color), " (<div class=\"color\" data-color=\"").concat(color, "\"></div>)");
     };
+    Knarr.prototype.getDestinationType = function (type) {
+        switch (type) {
+            case 1: return _("Trading Lands");
+            case 2: return _("Lands of Influence");
+        }
+    };
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     Knarr.prototype.format_string_recursive = function (log, args) {
@@ -3258,6 +3264,9 @@ var Knarr = /** @class */ (function () {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
                     var entries = Object.entries(args.gains);
                     args.gains = entries.length ? entries.map(function (entry) { return "<strong>".concat(entry[1], "</strong> <div class=\"icon\" data-type=\"").concat(entry[0], "\"></div>"); }).join(' ') : "<strong>".concat(_('nothing'), "</strong>");
+                }
+                if (args.line_letter && args.line_letter[0] !== '<') {
+                    args.line_letter = "<strong>".concat(args.line_letter, "</strong> (").concat(this.getDestinationType(args.line_letter.charCodeAt(0) - 64), ")");
                 }
                 for (var property in args) {
                     if (['number', 'color', 'card_color', 'card_type', 'artifact_name'].includes(property) && args[property][0] != '<') {

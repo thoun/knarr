@@ -224,13 +224,13 @@ trait ActionTrait {
         $effectiveGains = $this->gainResources($playerId, $destination->immediateGains, 'explore');
         $type = $destination->type == 2 ? 'B' : 'A';
 
-        self::notifyAllPlayers('takeDestination', clienttranslate('${player_name} takes a destination from line ${letter} and gains ${gains}'), [
+        self::notifyAllPlayers('takeDestination', clienttranslate('${player_name} takes a destination from line ${line_letter} and gains ${gains}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'destination' => $destination,
             'effectiveGains' => $effectiveGains,
             'gains' => $effectiveGains, // for logs
-            'letter' => $type, // for logs
+            'line_letter' => $type, // for logs
         ]);
                     
         $this->incStat(1, 'discoveredDestinations');
@@ -321,11 +321,11 @@ trait ActionTrait {
         $this->destinations->moveCard($destination->id, 'reserved', $playerId);
         $type = $destination->type == 2 ? 'B' : 'A';
 
-        self::notifyAllPlayers('reserveDestination', clienttranslate('${player_name} takes a destination from line ${letter}'), [
+        self::notifyAllPlayers('reserveDestination', clienttranslate('${player_name} reserves a destination from line ${line_letter}'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'destination' => $destination,
-            'letter' => $type, // for logs
+            'line_letter' => $type, // for logs
         ]);
 
         $newDestination = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $destination->locationArg));

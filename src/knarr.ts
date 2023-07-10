@@ -982,6 +982,13 @@ class Knarr implements KnarrGame {
         return `${this.getColor(color)} (<div class="color" data-color="${color}"></div>)`;
     }
 
+    public getDestinationType(type: number): string {
+        switch (type) {
+            case 1: return _("Trading Lands");
+            case 2: return _("Lands of Influence");
+        }
+    }
+
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
     public format_string_recursive(log: string, args: any) {
@@ -990,6 +997,10 @@ class Knarr implements KnarrGame {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
                     const entries = Object.entries(args.gains);
                     args.gains = entries.length ? entries.map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ') : `<strong>${_('nothing')}</strong>`;
+                }
+
+                if (args.line_letter && args.line_letter[0] !== '<') {
+                    args.line_letter = `<strong>${args.line_letter}</strong> (${this.getDestinationType(args.line_letter.charCodeAt(0) - 64)})`;
                 }
 
                 for (const property in args) {

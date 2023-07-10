@@ -34,7 +34,7 @@ class DestinationsManager extends CardManager<Destination> {
         return Object.entries(gains).map(entry => `<strong>${entry[1]}</strong> ${this.game.getTooltipGain(Number(entry[0]))}`).join(', ');
     }
 
-    public getType(type: number): string {
+    public getDestinationType(type: number): string {
         switch (type) {
             case 1: return _("Trading Lands");
             case 2: return _("Lands of Influence");
@@ -54,7 +54,7 @@ class DestinationsManager extends CardManager<Destination> {
         <br>
         <strong>${_("Immediate gains:")}</strong> ${this.getGains(destination.immediateGains)}
         <br>
-        <strong>${_("Type:")}</strong> ${this.getType(destination.type)} (${this.getLetter(destination.type)})
+        <strong>${_("Type:")}</strong> ${this.game.getDestinationType(destination.type)} (${this.getLetter(destination.type)})
         `;
  
         return message;
