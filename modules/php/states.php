@@ -121,13 +121,6 @@ trait StateTrait {
     }
 
     function stEndScore() {
-        $playersIds = $this->getPlayersIds();
-
-        foreach($playersIds as $playerId) {
-            $player = $this->getPlayer($playerId);
-            //$scoreAux = $player->recruit + $player->bracelet;
-            //$this->DbQuery("UPDATE player SET player_score_aux = player_recruit + player_bracelet WHERE player_id = $playerId");
-        }
         $this->DbQuery("UPDATE player SET player_score_aux = player_recruit + player_bracelet");
 
         $this->gamestate->nextState('endGame');

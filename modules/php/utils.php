@@ -109,6 +109,10 @@ trait UtilTrait {
             'incScore' => $amount,
         ] + $args);
 
+        $this->checkMaxScore($playerId);
+    }
+
+    function checkMaxScore(int $playerId) {
         if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
             $this->setGameStateValue(LAST_TURN, 1);
 
@@ -324,6 +328,7 @@ trait UtilTrait {
                 case VP: 
                     $effectiveGains[VP] = $amount;
                     $this->DbQuery("UPDATE player SET `player_score` = `player_score` + ".$effectiveGains[VP]." WHERE player_id = $playerId");
+                    $this->checkMaxScore($playerId);
                     break;
                 case BRACELET: 
                     $effectiveGains[BRACELET] = min($amount, 3 - $player->bracelet);
