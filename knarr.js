@@ -1084,10 +1084,15 @@ var CardStock = /** @class */ (function () {
      * @param settings a `RemoveCardSettings` object
      */
     CardStock.prototype.removeCard = function (card, settings) {
+        var promise;
         if (this.contains(card) && this.element.contains(this.getCardElement(card))) {
-            this.manager.removeCard(card, settings);
+            promise = this.manager.removeCard(card, settings);
+        }
+        else {
+            promise = Promise.resolve(false);
         }
         this.cardRemoved(card, settings);
+        return promise;
     };
     /**
      * Notify the stock that a card is removed.
@@ -1112,8 +1117,20 @@ var CardStock = /** @class */ (function () {
      * @param settings a `RemoveCardSettings` object
      */
     CardStock.prototype.removeCards = function (cards, settings) {
-        var _this = this;
-        cards.forEach(function (card) { return _this.removeCard(card, settings); });
+        return __awaiter(this, void 0, void 0, function () {
+            var promises, results;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        promises = cards.map(function (card) { return _this.removeCard(card, settings); });
+                        return [4 /*yield*/, Promise.all(promises)];
+                    case 1:
+                        results = _a.sent();
+                        return [2 /*return*/, results.some(function (result) { return result; })];
+                }
+            });
+        });
     };
     /**
      * Remove all cards from the stock.
@@ -1154,10 +1171,10 @@ var CardStock = /** @class */ (function () {
         var selectableCardsClass = this.getSelectableCardClass();
         var unselectableCardsClass = this.getUnselectableCardClass();
         if (selectableCardsClass) {
-            element.classList.toggle(selectableCardsClass, selectable);
+            element === null || element === void 0 ? void 0 : element.classList.toggle(selectableCardsClass, selectable);
         }
         if (unselectableCardsClass) {
-            element.classList.toggle(unselectableCardsClass, !selectable);
+            element === null || element === void 0 ? void 0 : element.classList.toggle(unselectableCardsClass, !selectable);
         }
         if (!selectable && this.isSelected(card)) {
             this.unselectCard(card, true);
@@ -1192,7 +1209,7 @@ var CardStock = /** @class */ (function () {
         }
         var element = this.getCardElement(card);
         var selectableCardsClass = this.getSelectableCardClass();
-        if (!element.classList.contains(selectableCardsClass)) {
+        if (!element || !element.classList.contains(selectableCardsClass)) {
             return;
         }
         if (this.selectionMode === 'single') {
@@ -1216,7 +1233,7 @@ var CardStock = /** @class */ (function () {
         if (silent === void 0) { silent = false; }
         var element = this.getCardElement(card);
         var selectedCardsClass = this.getSelectedCardClass();
-        element.classList.remove(selectedCardsClass);
+        element === null || element === void 0 ? void 0 : element.classList.remove(selectedCardsClass);
         var index = this.selectedCards.findIndex(function (c) { return _this.manager.getId(c) == _this.manager.getId(card); });
         if (index !== -1) {
             this.selectedCards.splice(index, 1);
@@ -1363,7 +1380,7 @@ var CardStock = /** @class */ (function () {
         var selectableCardsClass = this.getSelectableCardClass();
         var unselectableCardsClass = this.getUnselectableCardClass();
         var selectedCardsClass = this.getSelectedCardClass();
-        cardElement.classList.remove(selectableCardsClass, unselectableCardsClass, selectedCardsClass);
+        cardElement === null || cardElement === void 0 ? void 0 : cardElement.classList.remove(selectableCardsClass, unselectableCardsClass, selectedCardsClass);
     };
     return CardStock;
 }());
@@ -1460,9 +1477,7 @@ var Deck = /** @class */ (function (_super) {
     Deck.prototype.setCardNumber = function (cardNumber, topCard) {
         var _this = this;
         if (topCard === void 0) { topCard = null; }
-        if (topCard) {
-            this.addCard(topCard);
-        }
+        var promise = topCard ? this.addCard(topCard) : Promise.resolve(true);
         this.cardNumber = cardNumber;
         this.element.dataset.empty = (this.cardNumber == 0).toString();
         var thickness = 0;
@@ -1476,6 +1491,7 @@ var Deck = /** @class */ (function (_super) {
         if (counterDiv) {
             counterDiv.innerHTML = "".concat(cardNumber);
         }
+        return promise;
     };
     Deck.prototype.addCard = function (card, animation, settings) {
         var _this = this;
@@ -1645,6 +1661,23 @@ var SlotStock = /** @class */ (function (_super) {
             _this.createSlot(slotId);
         });
     };
+    /**
+     * Add new slots ids. Will not change nor empty the existing ones.
+     *
+     * @param slotsIds the new slotsIds. Will be merged with the old ones.
+     */
+    SlotStock.prototype.addSlotsIds = function (newSlotsIds) {
+        var _a;
+        var _this = this;
+        if (newSlotsIds.length == 0) {
+            // no change
+            return;
+        }
+        (_a = this.slotsIds).push.apply(_a, newSlotsIds);
+        newSlotsIds.forEach(function (slotId) {
+            _this.createSlot(slotId);
+        });
+    };
     SlotStock.prototype.canAddCard = function (card, settings) {
         var _a, _b;
         if (!this.contains(card)) {
@@ -1739,9 +1772,8 @@ var VoidStock = /** @class */ (function (_super) {
             promise = Promise.resolve(false);
         }
         if ((_a = settings === null || settings === void 0 ? void 0 : settings.remove) !== null && _a !== void 0 ? _a : true) {
-            return promise.then(function (result) {
-                _this.removeCard(card);
-                return result;
+            return promise.then(function () {
+                return _this.removeCard(card);
             });
         }
         else {
@@ -1856,13 +1888,13 @@ var CardManager = /** @class */ (function () {
         var id = this.getId(card);
         var div = document.getElementById(id);
         if (!div) {
-            return false;
+            return Promise.resolve(false);
         }
         div.id = "deleted".concat(id);
         div.remove();
         // if the card is in a stock, notify the stock about removal
         (_a = this.getCardStock(card)) === null || _a === void 0 ? void 0 : _a.cardRemoved(card, settings);
-        return true;
+        return Promise.resolve(true);
     };
     /**
      * Returns the stock containing the card.
@@ -2136,6 +2168,61 @@ var ArtifactsManager = /** @class */ (function (_super) {
 }(CardManager));
 var POINT_CASE_SIZE_LEFT = 38.8;
 var POINT_CASE_SIZE_TOP = 37.6;
+function sleep(ms) {
+    return new Promise(function (r) { return setTimeout(r, ms); });
+}
+var DeckWithDiscard = /** @class */ (function (_super) {
+    __extends(DeckWithDiscard, _super);
+    function DeckWithDiscard(element, game, gamedatas) {
+        var _this = _super.call(this, game.cardsManager, element, {
+            cardNumber: gamedatas.cardDeckCount,
+            topCard: gamedatas.cardDeckTop,
+            counter: {
+                counterId: 'deck-counter',
+            },
+        }) || this;
+        _this.game = game;
+        element.insertAdjacentHTML('beforeend', "\n            <div id=\"discard-counter\" class=\"bga-cards_deck-counter round\">".concat(gamedatas.cardDiscardCount, "</div>\n        "));
+        var deckCounterDiv = document.getElementById('deck-counter');
+        var discardCounterDiv = document.getElementById('discard-counter');
+        _this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
+        _this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
+        _this.cardDiscard = new VoidStock(game.cardsManager, discardCounterDiv);
+        return _this;
+    }
+    DeckWithDiscard.prototype.discardCards = function (cards, newCount) {
+        this.setDiscardCount(newCount);
+        return this.cardDiscard.addCards(cards, undefined, undefined, 50);
+    };
+    DeckWithDiscard.prototype.setDiscardCount = function (cardDiscardCount) {
+        var discardCounterDiv = document.getElementById('discard-counter');
+        discardCounterDiv.innerHTML = '' + cardDiscardCount;
+    };
+    DeckWithDiscard.prototype.reset = function (args) {
+        return __awaiter(this, void 0, void 0, function () {
+            var shuffle;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, sleep(ANIMATION_MS * 1.5)];
+                    case 1:
+                        _a.sent(); // to let discard animation to VoidStock finish
+                        return [4 /*yield*/, this.setCardNumber(args.cardDeckCount, args.cardDeckTop)];
+                    case 2:
+                        _a.sent();
+                        this.setDiscardCount(args.cardDiscardCount);
+                        return [4 /*yield*/, this.shuffle()];
+                    case 3:
+                        shuffle = _a.sent();
+                        /*if (!shuffle) {
+                            await sleep(ANIMATION_MS * 1.5);
+                        }*/
+                        return [2 /*return*/, shuffle];
+                }
+            });
+        });
+    };
+    return DeckWithDiscard;
+}(Deck));
 var TableCenter = /** @class */ (function () {
     function TableCenter(game, gamedatas) {
         var _this = this;
@@ -2159,20 +2246,7 @@ var TableCenter = /** @class */ (function () {
             _this.destinations[letter].addCards(gamedatas.centerDestinations[letter]);
             _this.destinations[letter].onCardClick = function (card) { return _this.game.onTableDestinationClick(card); };
         });
-        var cardDeckDiv = document.getElementById("card-deck");
-        this.cardDeck = new Deck(game.cardsManager, cardDeckDiv, {
-            cardNumber: gamedatas.cardDeckCount,
-            topCard: gamedatas.cardDeckTop,
-            counter: {
-                counterId: 'deck-counter',
-            },
-        });
-        cardDeckDiv.insertAdjacentHTML('beforeend', "\n            <div id=\"discard-counter\" class=\"bga-cards_deck-counter round\">".concat(gamedatas.cardDiscardCount, "</div>\n        "));
-        var deckCounterDiv = document.getElementById('deck-counter');
-        var discardCounterDiv = document.getElementById('discard-counter');
-        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
-        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
-        this.cardDiscard = new VoidStock(game.cardsManager, discardCounterDiv);
+        this.cardDeck = new DeckWithDiscard(document.getElementById("card-deck"), game, gamedatas);
         this.cards = new SlotStock(game.cardsManager, document.getElementById("table-cards"), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: function (card) { return card.locationArg; },
@@ -2289,9 +2363,8 @@ var TableCenter = /** @class */ (function () {
     TableCenter.prototype.highlightPlayerTokens = function (playerId) {
         document.querySelectorAll('#board .marker').forEach(function (elem) { return elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId); });
     };
-    TableCenter.prototype.setDiscardCount = function (cardDiscardCount) {
-        var discardCounterDiv = document.getElementById('discard-counter');
-        discardCounterDiv.innerHTML = '' + cardDiscardCount;
+    TableCenter.prototype.discardCards = function (cards, newCount) {
+        return this.cardDeck.discardCards(cards, newCount);
     };
     return TableCenter;
 }());
@@ -3127,7 +3200,10 @@ var Knarr = /** @class */ (function () {
                 log("notif_".concat(notif[0]), notifDetails.args);
                 var promise = _this["notif_".concat(notif[0])](notifDetails.args);
                 // tell the UI notification ends, if the function returned a promise
-                promise === null || promise === void 0 ? void 0 : promise.then(function () { return _this.notifqueue.onSynchronousNotificationEnd(); });
+                promise === null || promise === void 0 ? void 0 : promise.then(function () {
+                    log("promise for end of notif_".concat(notif[0], " received"), notifDetails.args);
+                    _this.notifqueue.onSynchronousNotificationEnd();
+                });
             });
             _this.notifqueue.setSynchronous(notif[0], notif[1]);
         });
@@ -3172,10 +3248,9 @@ var Knarr = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50)];
+                    case 0: return [4 /*yield*/, this.tableCenter.discardCards(args.cards, args.cardDiscardCount)];
                     case 1:
                         _a.sent();
-                        this.tableCenter.setDiscardCount(args.cardDiscardCount);
                         this.crewCounters[args.playerId].incValue(-args.cards.length);
                         return [2 /*return*/];
                 }
@@ -3207,7 +3282,7 @@ var Knarr = /** @class */ (function () {
         return promise;
     };
     Knarr.prototype.notif_discardTableCard = function (args) {
-        return this.tableCenter.cardDiscard.addCard(args.card);
+        return this.tableCenter.discardCards([args.card], args.cardDiscardCount);
     };
     Knarr.prototype.notif_reserveDestination = function (args) {
         var playerId = args.playerId;
@@ -3215,9 +3290,7 @@ var Knarr = /** @class */ (function () {
         return playerTable.reserveDestination(args.destination);
     };
     Knarr.prototype.notif_cardDeckReset = function (args) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.setDiscardCount(args.cardDiscardCount);
-        return this.tableCenter.cardDeck.shuffle();
+        return this.tableCenter.cardDeck.reset(args);
     };
     /**
      * Show last turn banner.

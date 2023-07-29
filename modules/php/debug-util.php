@@ -22,6 +22,13 @@ trait DebugUtilTrait {
         $this->setGlobalVariable(ARTIFACTS, [ARTIFACT_GOLDEN_BRACELET]);
         
         //$this->debugLastTurn();
+
+        $playerId = 2343492;
+        for ($i = 0; $i < 5; $i++) {
+            $card = $this->getCardFromDb($this->cards->getCardOnTop('deck'));
+            $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
+        }
+        $this->debugEmpty();
     }
 
     function debugSetScore($score) {

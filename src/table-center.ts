@@ -1,10 +1,59 @@
 const POINT_CASE_SIZE_LEFT = 38.8;
 const POINT_CASE_SIZE_TOP = 37.6;
 
+function sleep(ms: number){
+    return new Promise((r) => setTimeout(r, ms));
+}
+
+class DeckWithDiscard extends Deck<Card> {
+    private cardDiscard: VoidStock<Card>;
+
+    constructor(element: HTMLElement, private game: KnarrGame, gamedatas: KnarrGamedatas) {
+        super(game.cardsManager, element, {
+            cardNumber: gamedatas.cardDeckCount,
+            topCard: gamedatas.cardDeckTop,
+            counter: {
+                counterId: 'deck-counter',
+            },
+        });
+        
+        element.insertAdjacentHTML('beforeend', `
+            <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
+        `);
+        
+        const deckCounterDiv = document.getElementById('deck-counter');
+        const discardCounterDiv = document.getElementById('discard-counter');
+        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
+        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
+        
+        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
+    }
+    
+    public discardCards(cards: Card[], newCount: number): Promise<any> {
+        this.setDiscardCount(newCount);
+        return this.cardDiscard.addCards(cards, undefined, undefined, 50);
+    }
+    
+    public setDiscardCount(cardDiscardCount: number) {
+        const discardCounterDiv = document.getElementById('discard-counter');
+        discardCounterDiv.innerHTML = ''+cardDiscardCount;
+    }
+    
+    public async reset(args: NotifCardDeckResetArgs): Promise<boolean> {
+        await sleep(ANIMATION_MS * 1.5); // to let discard animation to VoidStock finish
+        await this.setCardNumber(args.cardDeckCount, args.cardDeckTop);
+        this.setDiscardCount(args.cardDiscardCount);
+        const shuffle = await this.shuffle();
+        /*if (!shuffle) {
+            await sleep(ANIMATION_MS * 1.5);
+        }*/
+        return shuffle;
+    }
+}
+
 class TableCenter {
     public destinationsDecks: Deck<Destination>[] = [];
-    public cardDeck: Deck<Card>;
-    public cardDiscard: VoidStock<Card>;
+    public cardDeck: DeckWithDiscard;
     public destinations: SlotStock<Destination>[] = [];
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
@@ -30,22 +79,7 @@ class TableCenter {
             this.destinations[letter].onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
         })
 
-        const cardDeckDiv = document.getElementById(`card-deck`);
-        this.cardDeck = new Deck<Card>(game.cardsManager, cardDeckDiv, {
-            cardNumber: gamedatas.cardDeckCount,
-            topCard: gamedatas.cardDeckTop,
-            counter: {
-                counterId: 'deck-counter',
-            },
-        });
-        cardDeckDiv.insertAdjacentHTML('beforeend', `
-            <div id="discard-counter" class="bga-cards_deck-counter round">${gamedatas.cardDiscardCount}</div>
-        `);
-        const deckCounterDiv = document.getElementById('deck-counter');
-        const discardCounterDiv = document.getElementById('discard-counter');
-        this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
-        this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
-        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
+        this.cardDeck = new DeckWithDiscard(document.getElementById(`card-deck`), game, gamedatas);
 
         this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
@@ -190,8 +224,7 @@ class TableCenter {
         document.querySelectorAll('#board .marker').forEach((elem: HTMLElement) => elem.classList.toggle('highlight', Number(elem.dataset.playerId) === playerId));
     }
     
-    public setDiscardCount(cardDiscardCount: number) {
-        const discardCounterDiv = document.getElementById('discard-counter');
-        discardCounterDiv.innerHTML = ''+cardDiscardCount;
+    public discardCards(cards: Card[], newCount: number): Promise<any> {
+        return this.cardDeck.discardCards(cards, newCount);
     }
 }

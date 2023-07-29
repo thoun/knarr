@@ -157,6 +157,7 @@ interface NotifDiscardCardsArgs {
 // discardTableCard
 interface NotifDiscardTableCardArgs {
     card: Card;
+    cardDiscardCount: number;
 }
 
 // reserveDestination

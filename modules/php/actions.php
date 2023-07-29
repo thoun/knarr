@@ -360,6 +360,7 @@ trait ActionTrait {
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
+            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
             'color' => $this->getColorName($slotColor), // for logs
             'card_type' => $this->getGainName($card->gain), // for logs
             'card_color' => $this->getColorName($card->color), // for logs

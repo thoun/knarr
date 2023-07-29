@@ -833,7 +833,10 @@ class Knarr implements KnarrGame {
                 const promise = this[`notif_${notif[0]}`](notifDetails.args);
 
                 // tell the UI notification ends, if the function returned a promise
-                promise?.then(() => (this as any).notifqueue.onSynchronousNotificationEnd());
+                promise?.then(() => {
+                    log(`promise for end of notif_${notif[0]} received`, notifDetails.args);
+                    (this as any).notifqueue.onSynchronousNotificationEnd()
+                });
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
@@ -888,8 +891,7 @@ class Knarr implements KnarrGame {
     }
 
     async notif_discardCards(args: NotifDiscardCardsArgs) {
-        await this.tableCenter.cardDiscard.addCards(args.cards, undefined, undefined, 50);
-        this.tableCenter.setDiscardCount(args.cardDiscardCount);
+        await this.tableCenter.discardCards(args.cards, args.cardDiscardCount);
         this.crewCounters[args.playerId].incValue(-args.cards.length);
     }
 
@@ -928,7 +930,7 @@ class Knarr implements KnarrGame {
     }
 
     notif_discardTableCard(args: NotifDiscardTableCardArgs) {
-        return this.tableCenter.cardDiscard.addCard(args.card);
+        return this.tableCenter.discardCards([args.card], args.cardDiscardCount);
     }
 
     notif_reserveDestination(args: NotifReserveDestinationArgs) {
@@ -939,10 +941,7 @@ class Knarr implements KnarrGame {
     }
 
     notif_cardDeckReset(args: NotifCardDeckResetArgs) {
-        this.tableCenter.cardDeck.setCardNumber(args.cardDeckCount, args.cardDeckTop);
-        this.tableCenter.setDiscardCount(args.cardDiscardCount);
-
-        return this.tableCenter.cardDeck.shuffle();
+        return this.tableCenter.cardDeck.reset(args);
     }
     
     /** 
