@@ -449,8 +449,10 @@ class Knarr implements KnarrGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);   
 
-            document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div class="vp icon"></div>`);
+            document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div id="icon_point_${player.id}_knarr" class="vp icon"></div>`);
             document.getElementById(`icon_point_${player.id}`).remove();
+            this.setTooltip(`player_score_${player.id}`, _('Victory Point'));
+            this.setTooltip(`icon_point_${player.id}_knarr`, _('Victory Point'));
 
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
@@ -509,7 +511,9 @@ class Knarr implements KnarrGame {
             this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(cards => cards.length).reduce((a, b) => a + b, 0));
         });
 
-        this.setTooltipToClass('reputation-counter', _('Reputation'));
+        this.setTooltipToClass('reputation-counter', `
+            ${_('Reputation (Victory Point you will earn at each round start)')}<br><br>
+            ${_('Check the Reputation track on the main board for more details')}`);
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));

@@ -2925,8 +2925,10 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div class=\"vp icon\"></div>");
+            document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div id=\"icon_point_".concat(player.id, "_knarr\" class=\"vp icon\"></div>"));
             document.getElementById("icon_point_".concat(player.id)).remove();
+            _this.setTooltip("player_score_".concat(player.id), _('Victory Point'));
+            _this.setTooltip("icon_point_".concat(player.id, "_knarr"), _('Victory Point'));
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div>
@@ -2951,7 +2953,7 @@ var Knarr = /** @class */ (function () {
             _this.crewCounters[playerId].create("crew-counter-".concat(playerId));
             _this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(function (cards) { return cards.length; }).reduce(function (a, b) { return a + b; }, 0));
         });
-        this.setTooltipToClass('reputation-counter', _('Reputation'));
+        this.setTooltipToClass('reputation-counter', "\n            ".concat(_('Reputation (Victory Point you will earn at each round start)'), "<br><br>\n            ").concat(_('Check the Reputation track on the main board for more details')));
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
