@@ -104,15 +104,6 @@ trait StateTrait {
         $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 0);
         $this->setGameStateValue(GO_RESERVE, 0);
 
-        if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
-            $this->setGameStateValue(LAST_TURN, 1);
-
-            self::notifyAllPlayers('lastTurn', clienttranslate('${player_name} reached 40 Victory Points, triggering the end of the game!'), [
-                'playerId' => $playerId,
-                'player_name' => $this->getPlayerName($playerId),
-            ]);
-        }
-
         $this->activeNextPlayer();
         $playerId = $this->getActivePlayerId();
 
