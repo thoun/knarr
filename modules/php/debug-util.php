@@ -12,8 +12,8 @@ trait DebugUtilTrait {
         } 
 
         //$this->debugSetPlayerScore(2343492, 10);
-        $this->debugSetScore(39);
-        $this->debugSetReputation(8);
+        //$this->debugSetScore(39);
+        //$this->debugSetReputation(8);
 
         //$this->debugAddDestinations(2343492, 'A', 15);
         //$this->debugAddDestinations(2343492, 'B', 10);
@@ -23,12 +23,12 @@ trait DebugUtilTrait {
         
         //$this->debugLastTurn();
 
-        /*$playerId = 2343492;
+        $playerId = 2343492;
         for ($i = 0; $i < 5; $i++) {
             $card = $this->getCardFromDb($this->cards->getCardOnTop('deck'));
             $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
         }
-        $this->debugEmpty();*/
+        /*$this->debugEmpty();*/
     }
 
     function debugSetScore($score) {

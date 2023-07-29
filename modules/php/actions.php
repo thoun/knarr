@@ -213,7 +213,7 @@ trait ActionTrait {
                 'playerId' => $playerId,
                 'player_name' => $this->getPlayerName($playerId),
                 'cards' => $cardsToDiscard,
-                'number' => $recruits, // for logs
+                'number' => count($cardsToDiscard), // for logs
                 'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
             ]);
         }
