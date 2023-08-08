@@ -454,6 +454,10 @@ class Knarr implements KnarrGame {
             this.setTooltip(`player_score_${player.id}`, _('Victory Point'));
             this.setTooltip(`icon_point_${player.id}_knarr`, _('Victory Point'));
 
+            if (player.color == 'd6d6d7') {
+                document.getElementById(`player_name_${player.id}`).classList.add('name-shadow');
+            }
+
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div> 
@@ -1011,6 +1015,12 @@ class Knarr implements KnarrGame {
                         args[property] = `<strong>${_(args[property])}</strong>`;
                     }
                 }
+
+                ['you', 'actplayer', 'player_name'].forEach(field => {
+                    if (typeof args[field] === 'string' && args[field].indexOf('#d6d6d7;') !== -1 && args[field].indexOf('text-shadow') === -1) {
+                        args[field] = args[field].replace('#d6d6d7;', '#d6d6d7; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
+                    }
+                });
             }
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);

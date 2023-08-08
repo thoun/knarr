@@ -2106,7 +2106,7 @@ var DestinationsManager = /** @class */ (function (_super) {
         }
     };
     DestinationsManager.prototype.getTooltip = function (destination) {
-        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (recruits can be used as jokers)\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.game.getDestinationType(destination.type), " (").concat(this.getLetter(destination.type), ")\n        ");
+        var message = "\n        <strong>".concat(_("Exploration cost:"), "</strong> ").concat(this.getCost(destination.cost), " (").concat(_("recruits can be used as jokers"), ")\n        <br>\n        <strong>").concat(_("Immediate gains:"), "</strong> ").concat(this.getGains(destination.immediateGains), "\n        <br>\n        <strong>").concat(_("Type:"), "</strong> ").concat(this.game.getDestinationType(destination.type), " (").concat(this.getLetter(destination.type), ")\n        ");
         return message;
     };
     return DestinationsManager;
@@ -2379,7 +2379,7 @@ var PlayerTable = /** @class */ (function () {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper\">").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper ").concat(player.color == 'd6d6d7' ? 'name-shadow' : '', "\">").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
@@ -2929,6 +2929,9 @@ var Knarr = /** @class */ (function () {
             document.getElementById("icon_point_".concat(player.id)).remove();
             _this.setTooltip("player_score_".concat(player.id), _('Victory Point'));
             _this.setTooltip("icon_point_".concat(player.id, "_knarr"), _('Victory Point'));
+            if (player.color == 'd6d6d7') {
+                document.getElementById("player_name_".concat(player.id)).classList.add('name-shadow');
+            }
             /*
                 <div id="playerhand-counter-wrapper-${player.id}" class="playerhand-counter">
                     <div class="player-hand-card"></div>
@@ -3348,6 +3351,11 @@ var Knarr = /** @class */ (function () {
                         args[property] = "<strong>".concat(_(args[property]), "</strong>");
                     }
                 }
+                ['you', 'actplayer', 'player_name'].forEach(function (field) {
+                    if (typeof args[field] === 'string' && args[field].indexOf('#d6d6d7;') !== -1 && args[field].indexOf('text-shadow') === -1) {
+                        args[field] = args[field].replace('#d6d6d7;', '#d6d6d7; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
+                    }
+                });
             }
         }
         catch (e) {

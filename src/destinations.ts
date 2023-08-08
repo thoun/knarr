@@ -50,7 +50,7 @@ class DestinationsManager extends CardManager<Destination> {
 
     private getTooltip(destination: Destination): string {
         let message = `
-        <strong>${_("Exploration cost:")}</strong> ${this.getCost(destination.cost)} (recruits can be used as jokers)
+        <strong>${_("Exploration cost:")}</strong> ${this.getCost(destination.cost)} (${_("recruits can be used as jokers")})
         <br>
         <strong>${_("Immediate gains:")}</strong> ${this.getGains(destination.immediateGains)}
         <br>
