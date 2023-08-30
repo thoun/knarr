@@ -19,7 +19,7 @@ trait DebugUtilTrait {
         //$this->debugAddDestinations(2343492, 'B', 10);
 
         //$this->cards->pickCardsForLocation(13, 'deck', 'void');
-        //$this->setGlobalVariable(ARTIFACTS, [ARTIFACT_GOLDEN_BRACELET]);
+        //$this->setGlobalVariable(ARTIFACTS, [ARTIFACT_HELMET]);
         
         //$this->debugLastTurn();
 

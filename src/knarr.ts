@@ -327,7 +327,12 @@ class Knarr implements KnarrGame {
                         document.getElementById(`goTrade_button`).classList.add('disabled');
                     }
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
-                        (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
+                        if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
+                            const warning = _("Are you sure you want to skip Helmet effect ? You can carry out a Recruit action");
+                            (this as any).addActionButton(`endTurn_button`, _("End turn without recruiting"), () => (this as any).confirmationDialog(warning, () => this.endTurn()), null, null, 'red');
+                        } else {
+                            (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
+                        }
                     }
                     break;
                 case 'chooseNewCard':

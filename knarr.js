@@ -2823,7 +2823,13 @@ var Knarr = /** @class */ (function () {
                         document.getElementById("goTrade_button").classList.add('disabled');
                     }
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
-                        this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
+                        if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
+                            var warning_1 = _("Are you sure you want to skip Helmet effect ? You can carry out a Recruit action");
+                            this.addActionButton("endTurn_button", _("End turn without recruiting"), function () { return _this.confirmationDialog(warning_1, function () { return _this.endTurn(); }); }, null, null, 'red');
+                        }
+                        else {
+                            this.addActionButton("endTurn_button", _("End turn"), function () { return _this.endTurn(); });
+                        }
                     }
                     break;
                 case 'chooseNewCard':
