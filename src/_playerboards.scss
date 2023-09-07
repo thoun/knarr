@@ -8,6 +8,11 @@
     }
   }
 
+  .color-blind-indicator {
+    color: black;
+    text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
+  }
+
   .icon {
     margin-right: 5px;
   }

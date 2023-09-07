@@ -28,6 +28,13 @@ const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
 
+const COLOR_BLIND_SYMBOLS = {
+    1: '●', // circle
+    2: '▲', // triangle
+    3: '■', // square
+    4: '◆', // diamond
+};
+
 function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
@@ -416,6 +423,10 @@ class Knarr implements KnarrGame {
         return this.gamedatas.variantOption;
     }
 
+    public isColorBlindMode(): boolean {
+        return (this as any).prefs[201].value == 1;
+    }
+
     public getGameStateName(): string {
         return this.gamedatas.gamestate.name;
     }
@@ -453,6 +464,10 @@ class Knarr implements KnarrGame {
 
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);   
+
+            if (this.isColorBlindMode()) {
+                document.getElementById(`player_name_${player.id}`).querySelector('a').insertAdjacentHTML('beforeend', ` <span class="color-blind-indicator">(${COLOR_BLIND_SYMBOLS[player.playerNo]})</span>`);
+            }
 
             document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div id="icon_point_${player.id}_knarr" class="vp icon"></div>`);
             document.getElementById(`icon_point_${player.id}`).remove();

@@ -842,7 +842,6 @@ body > .card {
   width: 26px;
   height: 28px;
   transition: transform 0.5s;
-  pointer-events: none;
 }
 #table-center #board .marker .inner {
   position: absolute;
@@ -870,11 +869,14 @@ body > .card {
   background-position-x: 100%;
 }
 #table-center #board .marker.color-blind .inner::after {
+  line-height: 30px;
   font-size: 120%;
   display: flex;
   align-content: center;
   justify-content: center;
   margin-top: -4px;
+  color: black;
+  text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
 }
 #table-center #board .marker.color-blind[data-player-no="1"] .inner::after {
   content: "●";
@@ -926,6 +928,10 @@ body > .card {
 }
 .player-board.spectator-mode * {
   background: white !important;
+}
+.player-board .color-blind-indicator {
+  color: black;
+  text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
 }
 .player-board .icon {
   margin-right: 5px;

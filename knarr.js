@@ -2258,10 +2258,12 @@ var TableCenter = /** @class */ (function () {
         var html = '';
         // points
         players.forEach(function (player) {
-            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-reputation-marker\" class=\"marker ").concat(/*this.game.isColorBlindMode() ? 'color-blind' : */ '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner reputation\"></div></div>\n            ");
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(_this.game.isColorBlindMode() ? 'color-blind' : '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-reputation-marker\" class=\"marker ").concat(_this.game.isColorBlindMode() ? 'color-blind' : '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner reputation\"></div></div>\n            ");
         });
         dojo.place(html, 'board');
         players.forEach(function (player) {
+            _this.game.setTooltip("player-".concat(player.id, "-vp-marker"), player.name);
+            _this.game.setTooltip("player-".concat(player.id, "-reputation-marker"), player.name);
             _this.vp.set(Number(player.id), Number(player.score));
             _this.reputation.set(Number(player.id), Math.min(14, Number(player.reputation)));
         });
@@ -2560,6 +2562,12 @@ var BRACELET = 2;
 var RECRUIT = 3;
 var REPUTATION = 4;
 var CARD = 5;
+var COLOR_BLIND_SYMBOLS = {
+    1: '●',
+    2: '▲',
+    3: '■',
+    4: '◆', // diamond
+};
 function getVpByReputation(reputation) {
     return Object.entries(VP_BY_REPUTATION).findLast(function (entry) { return reputation >= Number(entry[0]); })[1];
 }
@@ -2900,6 +2908,9 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.getVariantOption = function () {
         return this.gamedatas.variantOption;
     };
+    Knarr.prototype.isColorBlindMode = function () {
+        return this.prefs[201].value == 1;
+    };
     Knarr.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
     };
@@ -2931,6 +2942,9 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
+            if (_this.isColorBlindMode()) {
+                document.getElementById("player_name_".concat(player.id)).querySelector('a').insertAdjacentHTML('beforeend', " <span class=\"color-blind-indicator\">(".concat(COLOR_BLIND_SYMBOLS[player.playerNo], ")</span>"));
+            }
             document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div id=\"icon_point_".concat(player.id, "_knarr\" class=\"vp icon\"></div>"));
             document.getElementById("icon_point_".concat(player.id)).remove();
             _this.setTooltip("player_score_".concat(player.id), _('Victory Point'));

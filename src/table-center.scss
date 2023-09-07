@@ -34,7 +34,7 @@
       width: 26px;
       height: 28px;
       transition: transform 0.5s; 
-      pointer-events: none;
+      //pointer-events: none;
 
       .inner {
         position: absolute;
@@ -60,11 +60,14 @@
       
       &.color-blind {
         .inner::after {
+          line-height: 30px;
           font-size: 120%;
           display: flex;
           align-content: center;
           justify-content: center;
           margin-top: -4px;
+          color: black;
+          text-shadow: 0 0 1px white, 0 0 2px white, 0 0 3px white;
         }
 
         &[data-player-no="1"] .inner::after {
