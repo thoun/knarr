@@ -840,7 +840,7 @@ body > .card {
   top: 0;
   left: 0;
   width: 26px;
-  height: 28px;
+  height: 26px;
   transition: transform 0.5s;
 }
 #table-center #board .marker .inner {
@@ -1351,6 +1351,26 @@ html, .mode_3d #game_play_area_background {
 }
 .artifact-tooltip > div:not(:last-child) {
   border-bottom: 1px solid gray;
+}
+
+.name-marker {
+  display: inline-block;
+  vertical-align: middle;
+  width: 26px;
+  height: 26px;
+  background-image: url("img/vp-pawns.png");
+}
+.name-marker[data-color="7c5654"] {
+  background-position-x: 0%;
+}
+.name-marker[data-color=d6d6d7] {
+  background-position-x: 33.3333333333%;
+}
+.name-marker[data-color=b79d86] {
+  background-position-x: 66.6666666667%;
+}
+.name-marker[data-color="1e2c36"] {
+  background-position-x: 100%;
 }
 
 #last-round {

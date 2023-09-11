@@ -140,6 +140,21 @@ html, .mode_3d #game_play_area_background {
     }
   }
 }
+  
+.name-marker {
+  display: inline-block;
+  vertical-align: middle;
+  width: 26px;
+  height: 26px;
+  background-image: url('img/vp-pawns.png');
+    
+  @each $playerColor in $playerColors {
+    $i: index($playerColors, $playerColor) - 1;
+    &[data-color="#{$playerColor}"] { 
+      background-position-x: #{$i * 100% / 3};
+    }
+  }
+}
 
 #last-round {
     margin: 5px -5px -5px;

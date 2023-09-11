@@ -18,7 +18,7 @@ class PlayerTable {
 
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
-            <div id="player-table-${this.playerId}-name" class="name-wrapper ${player.color == 'd6d6d7' ? 'name-shadow' : ''}">${player.name}</div>
+            <div id="player-table-${this.playerId}-name" class="name-wrapper ${player.color == 'd6d6d7' ? 'name-shadow' : ''}"><span class="name-marker" data-color="${player.color}"></span>&nbsp;${player.name}</div>
             <div class="cols">
             <div class="col col1">
         `;

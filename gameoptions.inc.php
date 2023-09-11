@@ -69,7 +69,7 @@ require_once("modules/php/constants.inc.php");
 ];
 
 $game_preferences = [
-    201 => [
+    /*201 => [
         'name' => totranslate('Show color-blind indications'),
         'needReload' => true,
         'values' => [
@@ -77,5 +77,5 @@ $game_preferences = [
             2 => [ 'name' => totranslate('Disabled')],
         ],
         'default' => 2
-    ],    
+    ],  */  
 ];

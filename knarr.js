@@ -2381,7 +2381,7 @@ var PlayerTable = /** @class */ (function () {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.getPlayerId();
-        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper ").concat(player.color == 'd6d6d7' ? 'name-shadow' : '', "\">").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
+        var html = "\n        <div id=\"player-table-".concat(this.playerId, "\" class=\"player-table\" style=\"--player-color: #").concat(player.color, ";\">\n            <div id=\"player-table-").concat(this.playerId, "-name\" class=\"name-wrapper ").concat(player.color == 'd6d6d7' ? 'name-shadow' : '', "\"><span class=\"name-marker\" data-color=\"").concat(player.color, "\"></span>&nbsp;").concat(player.name, "</div>\n            <div class=\"cols\">\n            <div class=\"col col1\">\n        ");
         if (this.currentPlayer) {
             html += "\n            <div class=\"block-with-text hand-wrapper\">\n                <div class=\"block-label\">".concat(_('Your hand'), "</div>\n                <div id=\"player-table-").concat(this.playerId, "-hand\" class=\"hand cards\"></div>\n            </div>");
         }
@@ -2909,7 +2909,7 @@ var Knarr = /** @class */ (function () {
         return this.gamedatas.variantOption;
     };
     Knarr.prototype.isColorBlindMode = function () {
-        return this.prefs[201].value == 1;
+        return false; // disabled return (this as any).prefs[201].value == 1;
     };
     Knarr.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
@@ -2942,9 +2942,7 @@ var Knarr = /** @class */ (function () {
         var _this = this;
         Object.values(gamedatas.players).forEach(function (player) {
             var playerId = Number(player.id);
-            if (_this.isColorBlindMode()) {
-                document.getElementById("player_name_".concat(player.id)).querySelector('a').insertAdjacentHTML('beforeend', " <span class=\"color-blind-indicator\">(".concat(COLOR_BLIND_SYMBOLS[player.playerNo], ")</span>"));
-            }
+            document.getElementById("player_name_".concat(player.id)).querySelector('a').insertAdjacentHTML('afterbegin', "<span class=\"name-marker\" data-color=\"".concat(player.color, "\"></span> "));
             document.getElementById("player_score_".concat(player.id)).insertAdjacentHTML('beforebegin', "<div id=\"icon_point_".concat(player.id, "_knarr\" class=\"vp icon\"></div>"));
             document.getElementById("icon_point_".concat(player.id)).remove();
             _this.setTooltip("player_score_".concat(player.id), _('Victory Point'));

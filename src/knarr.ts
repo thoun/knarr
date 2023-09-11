@@ -424,7 +424,7 @@ class Knarr implements KnarrGame {
     }
 
     public isColorBlindMode(): boolean {
-        return (this as any).prefs[201].value == 1;
+        return false; // disabled return (this as any).prefs[201].value == 1;
     }
 
     public getGameStateName(): string {
@@ -465,9 +465,7 @@ class Knarr implements KnarrGame {
         Object.values(gamedatas.players).forEach(player => {
             const playerId = Number(player.id);   
 
-            if (this.isColorBlindMode()) {
-                document.getElementById(`player_name_${player.id}`).querySelector('a').insertAdjacentHTML('beforeend', ` <span class="color-blind-indicator">(${COLOR_BLIND_SYMBOLS[player.playerNo]})</span>`);
-            }
+            document.getElementById(`player_name_${player.id}`).querySelector('a').insertAdjacentHTML('afterbegin', `<span class="name-marker" data-color="${player.color}"></span> `);
 
             document.getElementById(`player_score_${player.id}`).insertAdjacentHTML('beforebegin', `<div id="icon_point_${player.id}_knarr" class="vp icon"></div>`);
             document.getElementById(`icon_point_${player.id}`).remove();
