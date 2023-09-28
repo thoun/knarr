@@ -546,6 +546,7 @@ trait UtilTrait {
                 }
                 break;
         }
+        $this->checkEndTurnArtifact($playerId, $artifact);
     }
 
     function checkEndTurnArtifact(int $playerId, int $artifact) {
@@ -553,6 +554,7 @@ trait UtilTrait {
         switch ($artifact) {
             case ARTIFACT_AMULET:
                 if ($this->completedAPlayedLine($playerId)) {
+                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effect
                     $groupGains = [
                         BRACELET => 1,
                         RECRUIT => 1,
@@ -576,7 +578,7 @@ trait UtilTrait {
             case ARTIFACT_WEATHERVANE:
                 if ($this->completedAPlayedLine($playerId)) {
                     $this->setGameStateValue(EXPLORE_DONE, 0);
-                    $this->setGameStateValue(COMPLETED_LINES, 999); // make sure the bonus turn doesn't retrigger the effect
+                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effectrId)]);
 
                     self::notifyAllPlayers('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
                         'playerId' => $playerId,
