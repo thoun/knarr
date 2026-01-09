@@ -16,8 +16,9 @@
   *
   */
 
-
-require_once(APP_GAMEMODULE_PATH.'module/table/table.game.php');
+use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\Table;
+use Bga\GameFramework\VisibleSystemException;
 
 require_once('modules/php/objects/card.php');
 require_once('modules/php/objects/destination.php');
@@ -37,6 +38,13 @@ class Knarr extends Table {
     use ArgsTrait;
     use DebugUtilTrait;
 
+    public Deck $cards;
+    public Deck $destinations;
+
+    public array $VP_BY_REPUTATION;
+    public array $DESTINATIONS;
+    public array $CARDS;
+
 	function __construct() {
         // Your global variables labels:
         //  Here, you can assign labels to global variables you are using for this game.
@@ -46,7 +54,7 @@ class Knarr extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        self::initGameStateLabels([
+        $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
             RECRUIT_DONE => RECRUIT_DONE,
             EXPLORE_DONE => EXPLORE_DONE,
@@ -61,20 +69,13 @@ class Knarr extends Table {
             VARIANT_OPTION => VARIANT_OPTION,
         ]);   
 		
-        $this->cards = $this->getNew("module.common.deck");
-        $this->cards->init("card");
+        $this->cards = $this->deckFactory->createDeck("card");
         $this->cards->autoreshuffle = true;     
         $this->cards->autoreshuffle_trigger = ['obj' => $this, 'method' => 'cardDeckAutoReshuffle'];
 		
-        $this->destinations = $this->getNew("module.common.deck");
-        $this->destinations->init("destination");
+        $this->destinations = $this->deckFactory->createDeck("destination");
         $this->destinations->autoreshuffle = false;   
 	}
-	
-    protected function getGameName() {
-		// Used for translations and stuff. Please do not modify.
-        return "knarr";
-    }	
 
     /*
         setupNewGame:
@@ -87,7 +88,7 @@ class Knarr extends Table {
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
-        $gameinfos = self::getGameinfos();
+        $gameinfos = $this->getGameinfos();
         $default_colors = $gameinfos['player_colors'];
  
         // Create players
@@ -101,9 +102,9 @@ class Knarr extends Table {
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
         }
         $sql .= implode(',', $values);
-        self::DbQuery( $sql );
-        self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
-        self::reloadPlayersBasicInfos();
+        $this->DbQuery( $sql );
+        $this->reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
+        $this->reloadPlayersBasicInfos();
         
         /************ Start the game initialization *****/
         $variantOption = $this->getVariantOption();
@@ -122,10 +123,8 @@ class Knarr extends Table {
         $this->setGameStateInitialValue(GO_RESERVE, 0);
         
         // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-        $this->initStat('table', 'roundNumber', 0);
-        foreach(['table', 'player'] as $type) {
-            foreach([
+        $this->tableStats->init('roundNumber', 0);
+        $this->playerStats->init([
                 "reputationPoints", 
                 // cards
                 "playedCards", 
@@ -140,19 +139,12 @@ class Knarr extends Table {
                 "assetsCollectedByTrade", "assetsCollectedByTrade1", "assetsCollectedByTrade2", "assetsCollectedByTrade3", "assetsCollectedByTrade4", "assetsCollectedByTrade5",
                 //	miscellaneous
                 "recruitsMissed", "braceletsMissed",
-            ] as $name) {
-                $this->initStat($type, $name, 0);
-            }
-        }
+            ], 0, updateTableStat: true);
         if ($variantOption >= 2) {
-            foreach(['table', 'player'] as $type) {
-                foreach([
-                    // artifacts
-                    "activatedArtifacts",
-                ] as $name) {
-                    $this->initStat($type, $name, 0);
-                }
-            }
+            $this->playerStats->init([
+                // artifacts
+                "activatedArtifacts",
+            ], 0, updateTableStat: true);
         }
 
         // setup the initial game situation here
@@ -165,10 +157,7 @@ class Knarr extends Table {
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
 
-        // TODO TEMP
-        $this->debugSetup();
-
-        /************ End of the game initialization *****/
+        return \ST_SCORE_REPUTATION;
     }
 
     /*
@@ -180,20 +169,20 @@ class Knarr extends Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas() {
+    protected function getAllDatas(): array {
         $result = [];
     
-        $currentPlayerId = intval(self::getCurrentPlayerId());    // !! We must only return informations visible by this player !!
+        $currentPlayerId = intval($this->getCurrentPlayerId());    // !! We must only return informations visible by this player !!
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score, player_no playerNo, player_reputation reputation, player_recruit recruit, player_bracelet bracelet FROM player ";
-        $result['players'] = self::getCollectionFromDb( $sql );
+        $result['players'] = $this->getCollectionFromDb( $sql );
   
         // Gather all information about current game situation (visible by player $current_player_id).
 
         $firstPlayerId = null;
-        $isEndScore = intval($this->gamestate->state_id()) >= ST_END_SCORE;
+        $isEndScore = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
 
         $result['boatSideOption'] = $this->getBoatSideOption();
         $result['variantOption'] = $this->getVariantOption();
@@ -301,7 +290,7 @@ class Knarr extends Table {
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
@@ -326,7 +315,7 @@ class Knarr extends Table {
 
         /*if ($from_version <= 2305241900) {
             // ! important ! Use DBPREFIX_<table_name> for all tables
-            self::applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player CHANGE COLUMN `player_fame` `player_reputation` tinyint UNSIGNED NOT NULL DEFAULT 0");
+            $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player CHANGE COLUMN `player_fame` `player_reputation` tinyint UNSIGNED NOT NULL DEFAULT 0");
         }*/
     }    
 }

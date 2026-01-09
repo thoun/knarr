@@ -2336,7 +2336,7 @@ var TableCenter = /** @class */ (function () {
         var html = '';
         // points
         players.forEach(function (player) {
-            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker ").concat(_this.game.isColorBlindMode() ? 'color-blind' : '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-reputation-marker\" class=\"marker ").concat(_this.game.isColorBlindMode() ? 'color-blind' : '', "\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner reputation\"></div></div>\n            ");
+            return html += "\n            <div id=\"player-".concat(player.id, "-vp-marker\" class=\"marker\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner vp\"></div></div>\n            <div id=\"player-").concat(player.id, "-reputation-marker\" class=\"marker\" data-player-id=\"").concat(player.id, "\" data-player-no=\"").concat(player.playerNo, "\" data-color=\"").concat(player.color, "\"><div class=\"inner reputation\"></div></div>\n            ");
         });
         dojo.place(html, 'board');
         players.forEach(function (player) {
@@ -2640,12 +2640,6 @@ var BRACELET = 2;
 var RECRUIT = 3;
 var REPUTATION = 4;
 var CARD = 5;
-var COLOR_BLIND_SYMBOLS = {
-    1: '●', // circle
-    2: '▲', // triangle
-    3: '■', // square
-    4: '◆', // diamond
-};
 function getVpByReputation(reputation) {
     return Object.entries(VP_BY_REPUTATION).findLast(function (entry) { return reputation >= Number(entry[0]); })[1];
 }
@@ -2674,14 +2668,15 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.setup = function (gamedatas) {
         var _this = this;
         if (!gamedatas.variantOption) {
-            this.dontPreloadImage('artefacts.jpg');
+            this.bga.images.dontPreloadImage('artefacts.jpg');
         }
         if (gamedatas.boatSideOption == 2) {
-            this.dontPreloadImage('boats-normal.png');
+            this.bga.images.dontPreloadImage('boats-normal.png');
         }
         else {
-            this.dontPreloadImage('boats-advanced.png');
+            this.bga.images.dontPreloadImage('boats-advanced.png');
         }
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', "\n            <div id=\"table\">\n                <div id=\"tables-and-center\">\n                    <div id=\"table-center-wrapper\">\n                        <div id=\"table-center\">\n                            ".concat(['B', 'A'].map(function (letter) { return "<div id=\"table-destinations-".concat(letter, "-deck\" class=\"table-destinations-deck\"></div> <div id=\"table-destinations-").concat(letter, "\"></div>"); }).join(''), "\n                            <div></div> <div id=\"board\"></div>\n                            <div id=\"card-deck\"></div> <div id=\"table-cards\"></div>\n                        </div>\n                    </div>\n                    <div id=\"tables\"></div>\n                </div>\n            </div>\n        "));
         log("Starting game setup");
         this.gamedatas = gamedatas;
         log('gamedatas', gamedatas);
@@ -2740,7 +2735,6 @@ var Knarr = /** @class */ (function () {
             ]
         });
         this.setupNotifications();
-        this.setupPreferences();
         log("Ending game setup");
     };
     ///////////////////////////////////////////////////
@@ -2936,7 +2930,7 @@ var Knarr = /** @class */ (function () {
                 case 'trade':
                     var tradeArgs_1 = args;
                     [1, 2, 3].forEach(function (number) {
-                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', number), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets); });
+                        _this.addActionButton("trade".concat(number, "_button"), _("Trade ${number} bracelet(s)").replace('${number}', "".concat(number)), function () { return _this.trade(number, tradeArgs_1.gainsByBracelets); });
                         var button = document.getElementById("trade".concat(number, "_button"));
                         if (tradeArgs_1.bracelets < number) {
                             button.classList.add('disabled');
@@ -2986,28 +2980,8 @@ var Knarr = /** @class */ (function () {
     Knarr.prototype.getVariantOption = function () {
         return this.gamedatas.variantOption;
     };
-    Knarr.prototype.isColorBlindMode = function () {
-        return false; // disabled return (this as any).prefs[201].value == 1;
-    };
     Knarr.prototype.getGameStateName = function () {
         return this.gamedatas.gamestate.name;
-    };
-    Knarr.prototype.setupPreferences = function () {
-        var _this = this;
-        // Extract the ID and value from the UI control
-        var onchange = function (e) {
-            var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-            if (!match) {
-                return;
-            }
-            var prefId = +match[1];
-            var prefValue = +e.target.value;
-            _this.prefs[prefId].value = prefValue;
-        };
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        // Call onPreferenceChange() now
-        dojo.forEach(dojo.query("#ingame_menu_content .preference_control"), function (el) { return onchange({ target: el }); });
     };
     Knarr.prototype.getOrderedPlayers = function (gamedatas) {
         var _this = this;
@@ -3212,10 +3186,10 @@ var Knarr = /** @class */ (function () {
         var warning = null;
         if (gainsByBracelets != null) {
             if (gainsByBracelets[number] == 0) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("There is nothing to gain yet with this number of bracelet(s)");
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', "".concat(number)) + ' ' + _("There is nothing to gain yet with this number of bracelet(s)");
             }
             else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' ' + _("You would gain the same with one less bracelet");
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', "".concat(number)) + ' ' + _("You would gain the same with one less bracelet");
             }
         }
         if (warning != null) {
@@ -3262,8 +3236,7 @@ var Knarr = /** @class */ (function () {
     };
     Knarr.prototype.takeAction = function (action, data) {
         data = data || {};
-        data.lock = true;
-        this.ajaxcall("/knarr/knarr/".concat(action, ".html"), data, this, function () { });
+        this.bga.actions.performAction(action, data, { checkAction: false });
     };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications

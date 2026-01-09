@@ -1,0 +1,341 @@
+{
+    "table": {
+        "reputationPoints": {
+            "id": 20,
+            "name": "Points gained with reputation",
+            "type": "int"
+        },
+        "playedCards": {
+            "id": 21,
+            "name": "Played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards": {
+            "id": 22,
+            "name": "Assets gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards1": {
+            "id": 23,
+            "name": "Victory points gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards2": {
+            "id": 24,
+            "name": "Bracelets gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards3": {
+            "id": 25,
+            "name": "Recruits gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards4": {
+            "id": 26,
+            "name": "Reputation gained by played cards",
+            "type": "int"
+        },
+        "recruitsUsedToChooseCard": {
+            "id": 30,
+            "name": "Recruits used to choose card",
+            "type": "int"
+        },
+        "discardedCards": {
+            "id": 39,
+            "name": "Discarded cards to reform deck",
+            "type": "int"
+        },
+        "discoveredDestinations": {
+            "id": 40,
+            "name": "Discovered destinations",
+            "type": "int"
+        },
+        "discoveredDestinations1": {
+            "id": 41,
+            "name": "Discovered Trading Lands",
+            "type": "int"
+        },
+        "discoveredDestinations2": {
+            "id": 42,
+            "name": "Discovered Lands of influence",
+            "type": "int"
+        },
+        "assetsCollectedByDestination": {
+            "id": 43,
+            "name": "Assets gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination1": {
+            "id": 44,
+            "name": "Victory points gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination2": {
+            "id": 45,
+            "name": "Bracelets gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination3": {
+            "id": 46,
+            "name": "Recruits gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination4": {
+            "id": 47,
+            "name": "Reputation gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination5": {
+            "id": 48,
+            "name": "Cards gained by destinations",
+            "type": "int"
+        },
+        "recruitsUsedToPayDestination": {
+            "id": 50,
+            "name": "Recruits used to take a destination",
+            "type": "int"
+        },
+        "tradeActions": {
+            "id": 60,
+            "name": "Trade actions",
+            "type": "int"
+        },
+        "tradeActions1": {
+            "id": 61,
+            "name": "Trade actions with 1 bracelet",
+            "type": "int"
+        },
+        "tradeActions2": {
+            "id": 62,
+            "name": "Trade actions with 2 bracelets",
+            "type": "int"
+        },
+        "tradeActions3": {
+            "id": 63,
+            "name": "Trade actions with 3 bracelets",
+            "type": "int"
+        },
+        "braceletsUsed": {
+            "id": 64,
+            "name": "Bracelets used for trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade": {
+            "id": 65,
+            "name": "Assets gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade1": {
+            "id": 66,
+            "name": "Victory points gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade2": {
+            "id": 67,
+            "name": "Bracelets gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade3": {
+            "id": 68,
+            "name": "Recruits gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade4": {
+            "id": 69,
+            "name": "Reputation gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade5": {
+            "id": 70,
+            "name": "Cards gained by trade",
+            "type": "int"
+        },
+        "activatedArtifacts": {
+            "id": 80,
+            "name": "Activated artifacts",
+            "type": "int"
+        },
+        "recruitsMissed": {
+            "id": 90,
+            "name": "Recruits missed (already at 3)",
+            "type": "int"
+        },
+        "braceletsMissed": {
+            "id": 91,
+            "name": "Bracelets missed (already at 3)",
+            "type": "int"
+        },
+        "roundNumber": {
+            "id": 10,
+            "name": "Number of rounds",
+            "type": "int"
+        }
+    },
+    "player": {
+        "reputationPoints": {
+            "id": 20,
+            "name": "Points gained with reputation",
+            "type": "int"
+        },
+        "playedCards": {
+            "id": 21,
+            "name": "Played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards": {
+            "id": 22,
+            "name": "Assets gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards1": {
+            "id": 23,
+            "name": "Victory points gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards2": {
+            "id": 24,
+            "name": "Bracelets gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards3": {
+            "id": 25,
+            "name": "Recruits gained by played cards",
+            "type": "int"
+        },
+        "assetsCollectedByPlayedCards4": {
+            "id": 26,
+            "name": "Reputation gained by played cards",
+            "type": "int"
+        },
+        "recruitsUsedToChooseCard": {
+            "id": 30,
+            "name": "Recruits used to choose card",
+            "type": "int"
+        },
+        "discardedCards": {
+            "id": 39,
+            "name": "Discarded cards to reform deck",
+            "type": "int"
+        },
+        "discoveredDestinations": {
+            "id": 40,
+            "name": "Discovered destinations",
+            "type": "int"
+        },
+        "discoveredDestinations1": {
+            "id": 41,
+            "name": "Discovered Trading Lands",
+            "type": "int"
+        },
+        "discoveredDestinations2": {
+            "id": 42,
+            "name": "Discovered Lands of influence",
+            "type": "int"
+        },
+        "assetsCollectedByDestination": {
+            "id": 43,
+            "name": "Assets gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination1": {
+            "id": 44,
+            "name": "Victory points gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination2": {
+            "id": 45,
+            "name": "Bracelets gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination3": {
+            "id": 46,
+            "name": "Recruits gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination4": {
+            "id": 47,
+            "name": "Reputation gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination5": {
+            "id": 48,
+            "name": "Cards gained by destinations",
+            "type": "int"
+        },
+        "recruitsUsedToPayDestination": {
+            "id": 50,
+            "name": "Recruits used to take a destination",
+            "type": "int"
+        },
+        "tradeActions": {
+            "id": 60,
+            "name": "Trade actions",
+            "type": "int"
+        },
+        "tradeActions1": {
+            "id": 61,
+            "name": "Trade actions with 1 bracelet",
+            "type": "int"
+        },
+        "tradeActions2": {
+            "id": 62,
+            "name": "Trade actions with 2 bracelets",
+            "type": "int"
+        },
+        "tradeActions3": {
+            "id": 63,
+            "name": "Trade actions with 3 bracelets",
+            "type": "int"
+        },
+        "braceletsUsed": {
+            "id": 64,
+            "name": "Bracelets used for trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade": {
+            "id": 65,
+            "name": "Assets gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade1": {
+            "id": 66,
+            "name": "Victory points gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade2": {
+            "id": 67,
+            "name": "Bracelets gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade3": {
+            "id": 68,
+            "name": "Recruits gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade4": {
+            "id": 69,
+            "name": "Reputation gained by trade",
+            "type": "int"
+        },
+        "assetsCollectedByTrade5": {
+            "id": 70,
+            "name": "Cards gained by trade",
+            "type": "int"
+        },
+        "activatedArtifacts": {
+            "id": 80,
+            "name": "Activated artifacts",
+            "type": "int"
+        },
+        "recruitsMissed": {
+            "id": 90,
+            "name": "Recruits missed (already at 3)",
+            "type": "int"
+        },
+        "braceletsMissed": {
+            "id": 91,
+            "name": "Bracelets missed (already at 3)",
+            "type": "int"
+        }
+    }
+}

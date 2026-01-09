@@ -8,8 +8,7 @@
       "outFile": "knarr.js",
     },
     "files": [
-        "src/framework.d.ts",
-        "src/counter.d.ts",
+        "bga-framework.d.ts",
         "src/knarr.d.ts",
         "node_modules/bga-zoom/src/zoom-manager.ts",
         "node_modules/bga-help/src/help-manager.ts",

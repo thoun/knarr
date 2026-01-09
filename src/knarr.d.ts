@@ -75,7 +75,6 @@ interface KnarrGame extends Game {
     getDestinationType(type: number): string;
     getBoatSide(): number;
     getVariantOption(): number;
-    isColorBlindMode(): boolean;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
 

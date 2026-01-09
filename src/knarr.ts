@@ -1,10 +1,3 @@
-declare const define;
-declare const ebg;
-declare const $;
-declare const dojo: Dojo;
-declare const _;
-declare const g_gamethemeurl;
-
 const ANIMATION_MS = 500;
 const ACTION_TIMER_DURATION = 5;
 
@@ -28,13 +21,6 @@ const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
 
-const COLOR_BLIND_SYMBOLS = {
-    1: '●', // circle
-    2: '▲', // triangle
-    3: '■', // square
-    4: '◆', // diamond
-};
-
 function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
@@ -57,6 +43,8 @@ class Knarr implements KnarrGame {
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
+    public bga: Bga;
+
     constructor() {
     }
     
@@ -75,13 +63,28 @@ class Knarr implements KnarrGame {
 
     public setup(gamedatas: KnarrGamedatas) {
         if (!gamedatas.variantOption) {
-            (this as any).dontPreloadImage('artefacts.jpg');
+            this.bga.images.dontPreloadImage('artefacts.jpg');
         }
         if (gamedatas.boatSideOption == 2) {
-            (this as any).dontPreloadImage('boats-normal.png');
+            this.bga.images.dontPreloadImage('boats-normal.png');
         } else {
-            (this as any).dontPreloadImage('boats-advanced.png');
+            this.bga.images.dontPreloadImage('boats-advanced.png');
         }
+
+        this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
+            <div id="table">
+                <div id="tables-and-center">
+                    <div id="table-center-wrapper">
+                        <div id="table-center">
+                            ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
+                            <div></div> <div id="board"></div>
+                            <div id="card-deck"></div> <div id="table-cards"></div>
+                        </div>
+                    </div>
+                    <div id="tables"></div>
+                </div>
+            </div>
+        `);
 
         log( "Starting game setup" );
         
@@ -149,7 +152,6 @@ class Knarr implements KnarrGame {
             ]
         });
         this.setupNotifications();
-        this.setupPreferences();
 
         log( "Ending game setup" );
     }
@@ -361,7 +363,7 @@ class Knarr implements KnarrGame {
                 case 'trade':
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
-                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', number), () => this.trade(number, tradeArgs.gainsByBracelets));
+                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', `${number}`), () => this.trade(number, tradeArgs.gainsByBracelets));
                         const button = document.getElementById(`trade${number}_button`);
                         if (tradeArgs.bracelets < number) {
                             button.classList.add('disabled');
@@ -423,34 +425,8 @@ class Knarr implements KnarrGame {
         return this.gamedatas.variantOption;
     }
 
-    public isColorBlindMode(): boolean {
-        return false; // disabled return (this as any).prefs[201].value == 1;
-    }
-
     public getGameStateName(): string {
         return this.gamedatas.gamestate.name;
-    }
-
-    private setupPreferences() {
-        // Extract the ID and value from the UI control
-        const onchange = (e) => {
-          var match = e.target.id.match(/^preference_[cf]ontrol_(\d+)$/);
-          if (!match) {
-            return;
-          }
-          var prefId = +match[1];
-          var prefValue = +e.target.value;
-          (this as any).prefs[prefId].value = prefValue;
-        }
-        
-        // Call onPreferenceChange() when any value changes
-        dojo.query(".preference_control").connect("onchange", onchange);
-        
-        // Call onPreferenceChange() now
-        dojo.forEach(
-          dojo.query("#ingame_menu_content .preference_control"),
-          el => onchange({ target: el })
-        );
     }
 
     private getOrderedPlayers(gamedatas: KnarrGamedatas) {
@@ -753,9 +729,9 @@ class Knarr implements KnarrGame {
         let warning = null;
         if (gainsByBracelets != null) {
             if (gainsByBracelets[number] == 0) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("There is nothing to gain yet with this number of bracelet(s)");
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', `${number}`) + ' '+ _("There is nothing to gain yet with this number of bracelet(s)");
             } else if (number > 1 && gainsByBracelets[number] == gainsByBracelets[number - 1]) {
-                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', number) + ' '+ _("You would gain the same with one less bracelet");
+                warning = _("Are you sure you want to trade ${bracelets} bracelet(s) ?").replace('${bracelets}', `${number}`) + ' '+ _("You would gain the same with one less bracelet");
             }
         }
 
@@ -815,8 +791,7 @@ class Knarr implements KnarrGame {
 
     public takeAction(action: string, data?: any) {
         data = data || {};
-        data.lock = true;
-        (this as any).ajaxcall(`/knarr/knarr/${action}.html`, data, this, () => {});
+        this.bga.actions.performAction(action, data, { checkAction: false });
     }
 
     ///////////////////////////////////////////////////

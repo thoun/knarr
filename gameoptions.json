@@ -1,0 +1,39 @@
+{
+    "100": {
+        "name": "Boat side",
+        "values": {
+            "1": {
+                "name": "Normal"
+            },
+            "2": {
+                "name": "Advanced",
+                "tmdisplay": "Advanced boat side",
+                "nobeginner": true
+            },
+            "3": {
+                "name": "Random",
+                "nobeginner": true
+            }
+        },
+        "default": 1
+    },
+    "110": {
+        "name": "Artifact variant",
+        "values": {
+            "1": {
+                "name": "Disabled"
+            },
+            "2": {
+                "name": "Enabled (with Mead Cup for 2 players)",
+                "tmdisplay": "Artifact variant (with Mead Cup for 2 players)",
+                "nobeginner": true
+            },
+            "3": {
+                "name": "Enabled",
+                "tmdisplay": "Artifact variant",
+                "nobeginner": true
+            }
+        },
+        "default": 1
+    }
+}
