@@ -95,6 +95,7 @@ namespace Bga\GameFramework\States {
 
     abstract class GameState
     {        
+        public \Bga\GameFramework\Bga $bga;
         public \Bga\GameFramework\Db\Globals $globals;
         public \Bga\GameFramework\Notify $notify;
         public \Bga\GameFramework\Legacy $legacy;
@@ -295,6 +296,26 @@ namespace Bga\GameFramework {
         }
     }
 
+    /**
+     * Object to regroup all framework subobjects.
+     */
+    abstract class Bga {
+        public Db\Globals $globals;
+        public Notify $notify;
+        public Legacy $legacy;
+        public Tournament $tournament;
+        public TableOptions $tableOptions;
+        public UserPreferences $userPreferences;
+        public TableStats $tableStats;
+        public PlayerStats $playerStats;
+        public Components\DeckFactory $deckFactory;
+        public Components\Counters\CounterFactory $counterFactory;
+        public Debug $debug;
+        
+        public Components\Counters\PlayerCounter $playerScore;
+        public Components\Counters\PlayerCounter $playerScoreAux;
+    }
+
 
     abstract class Notify {
         /**
@@ -408,6 +429,85 @@ namespace Bga\GameFramework {
         public function deleteTeam(): void {
         }
     }
+
+    abstract class Tournament
+    {
+        /**
+         * Returns true if this table is a tournament encounter.
+         */
+        public function isTournament(): bool
+        {
+            return false;
+        }
+
+        /**
+         * Retrieve tournament seeds for deterministic randomness.
+         *
+         * Returns an empty array when the table is not part of a tournament.
+         *
+         * Note: `parent_tournament` refer to the main tournament of Groups Stage tournaments (tournaments of either of the two stages, will reference the same "parent")
+         *
+         * @return array{
+         *   tournament_seed?: int,
+         *   step_seed?: int,
+         *   parent_tournament_seed?: int
+         * }
+         */
+        public function getSeedInfo(): array
+        {
+            return [];
+        }
+
+        /**
+         * Store player game data associated with the given key for a tournament (of which the table must be a part of).
+         *
+         * The cumulative size of the data you can store for a given player for a tournament is 64 KiB.
+         *
+         * Note: As with every game framework API that interacts with the BGA mainsite, please use it thoughtfully.
+         *
+         * @param int $playerId
+         * @param string $key
+         * @param mixed $data
+         */
+        public function storePlayerGameData(int $playerId, string $key, mixed $data): void
+        {
+            //
+        }
+
+        /**
+         * Get player game data associated with the given key for a tournament.
+         *
+         * You can use '%' in the key to retrieve multiple values at once matching a pattern.
+         *
+         * If '%' is used the return value will be an array of key-value pairs (or [], if no match is found).
+         * Otherwise, a single value is returned (or null, if no match is found).
+         *
+         * Returned values are decoded from JSON.
+         *
+         * @param int $playerId
+         * @param string $key
+         *
+         * @return null|string|array<string,string>
+         */
+        public function retrievePlayerGameData(int $playerId, string $key): null|string|array
+        {
+            return null;
+        }
+
+        /**
+         * Remove player game data associated with the given key for a tournament.
+         *
+         * In any case, all data related to a tournament is removed when the tournament is finished.
+         *
+         * @param int $playerId
+         * @param string $key
+         */
+        public function removePlayerGameData(int $playerId, string $key): void
+        {
+            //
+        }
+    }
+
 
 
     abstract class TableOptions {
@@ -632,6 +732,8 @@ namespace Bga\GameFramework {
         /**
          * This return the private state or null if not initialized or not in private state.
          * 
+         * @deprecated use getCurrentState($playerId)
+         * 
          * @param int $playerId the current player id
          * @return array the current private state for the player as an array
          */
@@ -732,7 +834,7 @@ namespace Bga\GameFramework {
          * 
          * @param int|class-string<Bga\GameFramework\States\GameState> $next_state the state id, or class name if using Class states
          */
-        final public function jumpToState(int $next_state): void
+        final public function jumpToState(int|string $next_state): void
         {
             //
         }
@@ -1051,6 +1153,11 @@ namespace Bga\GameFramework {
     abstract class Table
     {
         /**
+         * The object regrouping all framework subobjects.
+         */
+        readonly public \Bga\GameFramework\Bga $bga;
+
+        /**
          * Access the underlying game state machine object.
          */
         readonly public \Bga\GameFramework\GamestateMachine $gamestate;
@@ -1291,6 +1398,8 @@ namespace Bga\GameFramework {
         /**
          * Get the "active_player", whatever what is the current state type.
          *
+         * **As this function returns the value as a string, it's better to use magical $currentPlayerId, in act functions or getAllDatas, to get the value as an int.**
+         *
          * Note: it does NOT mean that this player is active right now, because state type could be "game" or
          * "multiplayer".
          *
@@ -1298,7 +1407,7 @@ namespace Bga\GameFramework {
          * 
          * @return string the active player id typed as string
          */
-        final public function getActivePlayerId(): string|int
+        final public function getActivePlayerId(): string/*|int*/
         {
             return '0'; 
         }
@@ -1346,13 +1455,15 @@ namespace Bga\GameFramework {
          * Get the "current_player". The current player is the one from which the action originated (the one who sent
          * the request). In general, you shouldn't use this method, unless you are in "multiplayer" state.
          *
-         * **NOTE: This is not necessarily the active player!**
+         * **As this function returns the value as a string, it's better to use magical $currentPlayerId, in act functions or getAllDatas, to get the value as an int.**
+         *
+         * NOTE: This is not necessarily the active player!
          *
          * @see https://en.doc.boardgamearena.com/Main_game_logic:_yourgamename.game.php#File-Structure
          * 
          * @return string the current player id, typed as string
          */
-        final public function getCurrentPlayerId(bool $bReturnNullIfNotLogged = false): string|int
+        final public function getCurrentPlayerId(bool $bReturnNullIfNotLogged = false): string/*|int*/
         {
             return '0';
         }
@@ -1953,7 +2064,7 @@ namespace Bga\GameFramework {
          * 
          * @deprecated use clienttranslate instead.
          */
-        protected function _(string $text): string
+        final public function _(string $text): string
         {            
             return '';
         }
@@ -1995,15 +2106,10 @@ namespace Bga\GameFramework {
          *
          * @return array
          */
-        abstract protected function getAllDatas(): array;
+        //abstract protected function getAllDatas(): array;
 
         /**
-         * Get the "current_player" color.
-         *
-         * Note: avoid using this method in a "multiplayer" state because it does not mean anything.
-         * 
-         * @return string the current player color
-         * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
+         * @deprecated use getPlayerColorById($currentPlayerId) with $currentPlayerId magic param. The player color is probably only useful in the front side anyway.
          */
         final public function getCurrentPlayerColor(): string
         {
@@ -2011,12 +2117,7 @@ namespace Bga\GameFramework {
         }
 
         /**
-         * Get the "current_player" name.
-         *
-         * Note: avoid using this method in a "multiplayer" state because it does not mean anything.
-         *
-         * @return string the current player name.
-         * @throws \BgaSystemException if the current player is not at the table (i.e. spectator).
+         * @deprecated use getPlayerNameById($currentPlayerId) with $currentPlayerId magic param
          */
         final public function getCurrentPlayerName($bReturnEmptyIfNotLogged = false): string
         {
@@ -2117,7 +2218,7 @@ namespace Bga\GameFramework {
          * Apply an SQL upgrade of the tables.
          * Use DBPREFIX_<table_name> for all tables in the $sql parameter.
          */
-        function applyDbUpgradeToAllDB(string $sql): void {
+        final public function applyDbUpgradeToAllDB(string $sql): void {
         }
 
         /**
@@ -2137,7 +2238,7 @@ namespace Bga\GameFramework {
          * 
          * @return string "studio" or "prod"
          */
-        static function getBgaEnvironment(): string {
+        final public static function getBgaEnvironment(): string {
             return '';
         }
     }

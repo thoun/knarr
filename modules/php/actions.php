@@ -1,5 +1,7 @@
 <?php
 
+use Bga\GameFramework\Actions\Types\IntArrayParam;
+
 if (!function_exists('str_starts_with')) {
     function str_starts_with($haystack, $needle) {
         return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
@@ -17,15 +19,11 @@ trait ActionTrait {
         (note: each method below must match an input method in nicodemus.action.php)
     */
 
-    public function goTrade() {
-        self::checkAction('goTrade');
-
+    public function actGoTrade() {
         $this->gamestate->nextState('trade');
     }
 
-    public function playCard(int $id) {
-        self::checkAction('playCard');
-
+    public function actPlayCard(int $id) {
         if (boolval($this->getGameStateValue(RECRUIT_DONE))) {
             throw new BgaUserException("Invalid action");
         }
@@ -84,9 +82,7 @@ trait ActionTrait {
         $this->gamestate->nextState('chooseNewCard');
     }
 
-    public function chooseNewCard(int $id) {
-        self::checkAction('chooseNewCard');
-
+    public function actChooseNewCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
         $args = $this->argChooseNewCard();
@@ -149,9 +145,7 @@ trait ActionTrait {
         $this->redirectAfterAction($playerId, true);
     }
 
-    public function takeDestination(int $id) {
-        self::checkAction('takeDestination');
-
+    public function actTakeDestination(int $id) {
         if (boolval($this->getGameStateValue(EXPLORE_DONE))) {
             throw new BgaUserException("Invalid action");
         }
@@ -168,9 +162,7 @@ trait ActionTrait {
         $this->gamestate->nextState('payDestination');
     }
 
-    public function payDestination(array $ids, int $recruits) {
-        self::checkAction('payDestination');
-
+    public function actPayDestination(#[IntArrayParam] array $ids, int $recruits) {
         $playerId = intval($this->getActivePlayerId());
         
         if ($recruits > 0 && $this->getPlayer($playerId)->recruit < $recruits) {
@@ -307,9 +299,7 @@ trait ActionTrait {
         $this->redirectAfterAction($playerId, true);
     }
 
-    public function reserveDestination(int $id) {
-        self::checkAction('reserveDestination');
-
+    public function actReserveDestination(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
         $destination = $this->getDestinationFromDb($this->destinations->getCard($id));
@@ -342,9 +332,7 @@ trait ActionTrait {
         $this->gamestate->nextState('next');
     }
 
-    public function discardTableCard(int $id) {
-        self::checkAction('discardTableCard');
-
+    public function actDiscardTableCard(int $id) {
         $playerId = intval($this->getActivePlayerId());
 
         $card = $this->getCardFromDb($this->cards->getCard($id));
@@ -379,17 +367,13 @@ trait ActionTrait {
         $this->redirectAfterAction($playerId, true);
     }
 
-    public function pass() {
-        self::checkAction('pass');
-
+    public function actPass() {
         $playerId = intval($this->getActivePlayerId());
 
         $this->redirectAfterAction($playerId, true);
     }
 
-    public function trade(int $number) {
-        self::checkAction('trade');
-
+    public function actTrade(int $number) {
         $playerId = intval($this->getActivePlayerId());
 
         if ($this->getPlayer($playerId)->bracelet < $number) {
@@ -440,15 +424,11 @@ trait ActionTrait {
         $this->redirectAfterAction($playerId, false);
     }
 
-    public function cancel() {
-        self::checkAction('cancel');
-
+    public function actCancel() {
         $this->gamestate->nextState('cancel');
     }
 
-    public function endTurn() {
-        self::checkAction('endTurn');
-
+    public function actEndTurn() {
         $playerId = intval($this->getCurrentPlayerId());
 
         $endTurn = $this->checkEndTurnArtifacts($playerId);
@@ -456,9 +436,7 @@ trait ActionTrait {
         $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
     }
 
-    public function discardCard(int $id) {
-        self::checkAction('discardCard');
-
+    public function actDiscardCard(int $id) {
         $playerId = intval($this->getCurrentPlayerId());
 
         $card = $this->getCardFromDb($this->cards->getCard($id));

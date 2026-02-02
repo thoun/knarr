@@ -99,7 +99,7 @@ trait UtilTrait {
 
     function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
         if ($amount != 0) {
-            $this->DbQuery("UPDATE player SET `player_score` = `player_score` + $amount WHERE player_id = $playerId");
+            $this->bga->playerScore->inc($playerId, $amount, null);
         }
             
         $this->notifyAllPlayers('score', $message, [
@@ -327,7 +327,7 @@ trait UtilTrait {
             switch ($type) {
                 case VP: 
                     $effectiveGains[VP] = $amount;
-                    $this->DbQuery("UPDATE player SET `player_score` = `player_score` + ".$effectiveGains[VP]." WHERE player_id = $playerId");
+                    $this->bga->playerScore->inc($playerId, $effectiveGains[VP], null);
                     $this->checkMaxScore($playerId);
                     break;
                 case BRACELET: 

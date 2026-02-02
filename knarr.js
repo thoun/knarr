@@ -3008,7 +3008,7 @@ var Knarr = /** @class */ (function () {
                     <span id="playerhand-counter-${player.id}"></span>
                 </div>*/
             var html = "<div class=\"counters\">\n            \n                <div id=\"reputation-counter-wrapper-".concat(player.id, "\" class=\"reputation-counter\">\n                    <div class=\"reputation icon\"></div>\n                    <span id=\"reputation-counter-").concat(player.id, "\"></span> <span class=\"reputation-legend\"><div class=\"vp icon\"></div> / ").concat(_('round'), "</span>\n                </div>\n\n            </div>\n            <div class=\"counters\">\n            \n                <div id=\"recruit-counter-wrapper-").concat(player.id, "\" class=\"recruit-counter\">\n                    <div class=\"recruit icon\"></div>\n                    <span id=\"recruit-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"bracelet-counter-wrapper-").concat(player.id, "\" class=\"bracelet-counter\">\n                    <div class=\"bracelet icon\"></div>\n                    <span id=\"bracelet-counter-").concat(player.id, "\"></span>\n                </div>\n            \n                <div id=\"crew-counter-wrapper-").concat(player.id, "\" class=\"crew-counter\">\n                    <div class=\"player-crew-cards\"></div>\n                    <span id=\"crew-counter-").concat(player.id, "\"></span>\n                </div>\n\n            </div>\n            <div>").concat(playerId == gamedatas.firstPlayerId ? "<div id=\"first-player\">".concat(_('First player'), "</div>") : '', "</div>");
-            dojo.place(html, "player_board_".concat(player.id));
+            _this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', html);
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
             handCounter.setValue(player.handCount);
@@ -3050,7 +3050,7 @@ var Knarr = /** @class */ (function () {
             if (amount != 0) {
                 switch (type) {
                     case VP:
-                        _this.setScore(playerId, _this.scoreCtrl[playerId].getValue() + amount);
+                        _this.setScore(playerId, _this.bga.playerPanels.getScoreCounter(playerId).getValue() + amount);
                         break;
                     case BRACELET:
                         _this.setBracelets(playerId, _this.braceletCounters[playerId].getValue() + amount);
@@ -3066,8 +3066,7 @@ var Knarr = /** @class */ (function () {
         });
     };
     Knarr.prototype.setScore = function (playerId, score) {
-        var _a;
-        (_a = this.scoreCtrl[playerId]) === null || _a === void 0 ? void 0 : _a.toValue(score);
+        this.bga.playerPanels.getScoreCounter(playerId).toValue(score);
         this.tableCenter.setScore(playerId, score);
     };
     Knarr.prototype.setReputation = function (playerId, count) {
@@ -3130,59 +3129,38 @@ var Knarr = /** @class */ (function () {
         }
     };
     Knarr.prototype.goTrade = function () {
-        if (!this.checkAction('goTrade')) {
-            return;
-        }
-        this.takeAction('goTrade');
+        this.bga.actions.performAction('actGoTrade');
     };
     Knarr.prototype.playCard = function (id) {
-        if (!this.checkAction('playCard')) {
-            return;
-        }
-        this.takeAction('playCard', {
+        this.bga.actions.performAction('actPlayCard', {
             id: id
         });
     };
     Knarr.prototype.takeDestination = function (id) {
-        if (!this.checkAction('takeDestination')) {
-            return;
-        }
-        this.takeAction('takeDestination', {
+        this.bga.actions.performAction('actTakeDestination', {
             id: id
         });
     };
     Knarr.prototype.reserveDestination = function (id) {
-        if (!this.checkAction('reserveDestination')) {
-            return;
-        }
-        this.takeAction('reserveDestination', {
+        this.bga.actions.performAction('actReserveDestination', {
             id: id
         });
     };
     Knarr.prototype.chooseNewCard = function (id) {
-        if (!this.checkAction('chooseNewCard')) {
-            return;
-        }
-        this.takeAction('chooseNewCard', {
+        this.bga.actions.performAction('actChooseNewCard', {
             id: id
         });
     };
     Knarr.prototype.payDestination = function () {
-        if (!this.checkAction('payDestination')) {
-            return;
-        }
         var ids = this.getCurrentPlayerTable().getSelectedCards().map(function (card) { return card.id; });
         var recruits = Number(document.getElementById("payDestination_button").dataset.recruits);
-        this.takeAction('payDestination', {
-            ids: ids.join(','),
+        this.bga.actions.performAction('actPayDestination', {
+            ids: ids,
             recruits: recruits
         });
     };
     Knarr.prototype.trade = function (number, gainsByBracelets) {
         var _this = this;
-        if (!this.checkAction('trade')) {
-            return;
-        }
         var warning = null;
         if (gainsByBracelets != null) {
             if (gainsByBracelets[number] == 0) {
@@ -3196,47 +3174,28 @@ var Knarr = /** @class */ (function () {
             this.confirmationDialog(warning, function () { return _this.trade(number, null); });
             return;
         }
-        this.takeAction('trade', {
+        this.bga.actions.performAction('actTrade', {
             number: number
         });
     };
     Knarr.prototype.cancel = function () {
-        if (!this.checkAction('cancel')) {
-            return;
-        }
-        this.takeAction('cancel');
+        this.bga.actions.performAction('actCancel');
     };
     Knarr.prototype.endTurn = function () {
-        if (!this.checkAction('endTurn')) {
-            return;
-        }
-        this.takeAction('endTurn');
+        this.bga.actions.performAction('actEndTurn');
     };
     Knarr.prototype.discardTableCard = function (id) {
-        if (!this.checkAction('discardTableCard')) {
-            return;
-        }
-        this.takeAction('discardTableCard', {
+        this.bga.actions.performAction('actDiscardTableCard', {
             id: id
         });
     };
     Knarr.prototype.discardCard = function (id) {
-        if (!this.checkAction('discardCard')) {
-            return;
-        }
-        this.takeAction('discardCard', {
+        this.bga.actions.performAction('actDiscardCard', {
             id: id
         });
     };
     Knarr.prototype.pass = function () {
-        if (!this.checkAction('pass')) {
-            return;
-        }
-        this.takeAction('pass');
-    };
-    Knarr.prototype.takeAction = function (action, data) {
-        data = data || {};
-        this.bga.actions.performAction(action, data, { checkAction: false });
+        this.bga.actions.performAction('actPass');
     };
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications

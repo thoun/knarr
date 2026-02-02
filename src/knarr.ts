@@ -485,7 +485,7 @@ class Knarr implements KnarrGame {
             </div>
             <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
 
-            dojo.place(html, `player_board_${player.id}`);
+            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', html);
 
             /*const handCounter = new ebg.counter();
             handCounter.create(`playerhand-counter-${playerId}`);
@@ -538,7 +538,7 @@ class Knarr implements KnarrGame {
             if (amount != 0) {
                 switch (type) {
                     case VP:
-                        this.setScore(playerId, (this as any).scoreCtrl[playerId].getValue() + amount);
+                        this.setScore(playerId, this.bga.playerPanels.getScoreCounter(playerId).getValue() + amount);
                         break;
                     case BRACELET:
                         this.setBracelets(playerId, this.braceletCounters[playerId].getValue() + amount);
@@ -555,7 +555,7 @@ class Knarr implements KnarrGame {
     }
 
     private setScore(playerId: number, score: number) {
-        (this as any).scoreCtrl[playerId]?.toValue(score);
+        this.bga.playerPanels.getScoreCounter(playerId).toValue(score);
         this.tableCenter.setScore(playerId, score);
     }
 
@@ -660,72 +660,44 @@ class Knarr implements KnarrGame {
     }
   	
     public goTrade() {
-        if(!(this as any).checkAction('goTrade')) {
-            return;
-        }
-
-        this.takeAction('goTrade');
+        this.bga.actions.performAction('actGoTrade');
     }
   	
     public playCard(id: number) {
-        if(!(this as any).checkAction('playCard')) {
-            return;
-        }
-
-        this.takeAction('playCard', {
+        this.bga.actions.performAction('actPlayCard', {
             id
         });
     }
   	
     public takeDestination(id: number) {
-        if(!(this as any).checkAction('takeDestination')) {
-            return;
-        }
-
-        this.takeAction('takeDestination', {
+        this.bga.actions.performAction('actTakeDestination', {
             id
         });
     }
   	
     public reserveDestination(id: number) {
-        if(!(this as any).checkAction('reserveDestination')) {
-            return;
-        }
-
-        this.takeAction('reserveDestination', {
+        this.bga.actions.performAction('actReserveDestination', {
             id
         });
     }
   	
     public chooseNewCard(id: number) {
-        if(!(this as any).checkAction('chooseNewCard')) {
-            return;
-        }
-
-        this.takeAction('chooseNewCard', {
+        this.bga.actions.performAction('actChooseNewCard', {
             id
         });
     }
   	
     public payDestination() {
-        if(!(this as any).checkAction('payDestination')) {
-            return;
-        }
-
         const ids = this.getCurrentPlayerTable().getSelectedCards().map(card => card.id);
         const recruits = Number(document.getElementById(`payDestination_button`).dataset.recruits);
 
-        this.takeAction('payDestination', {
-            ids: ids.join(','),
+        this.bga.actions.performAction('actPayDestination', {
+            ids,
             recruits
         });
     }
   	
     public trade(number: number, gainsByBracelets: { [bracelets: number]: number } | null) {
-        if(!(this as any).checkAction('trade')) {
-            return;
-        }
-
         let warning = null;
         if (gainsByBracelets != null) {
             if (gainsByBracelets[number] == 0) {
@@ -740,58 +712,33 @@ class Knarr implements KnarrGame {
             return;
         }
 
-        this.takeAction('trade', {
+        this.bga.actions.performAction('actTrade', {
             number
         });
     }
   	
     public cancel() {
-        if(!(this as any).checkAction('cancel')) {
-            return;
-        }
-
-        this.takeAction('cancel');
+        this.bga.actions.performAction('actCancel');
     }
   	
     public endTurn() {
-        if(!(this as any).checkAction('endTurn')) {
-            return;
-        }
-
-        this.takeAction('endTurn');
+        this.bga.actions.performAction('actEndTurn');
     }
   	
     public discardTableCard(id: number) {
-        if(!(this as any).checkAction('discardTableCard')) {
-            return;
-        }
-
-        this.takeAction('discardTableCard', {
+        this.bga.actions.performAction('actDiscardTableCard', {
             id
         });
     }
   	
     public discardCard(id: number) {
-        if(!(this as any).checkAction('discardCard')) {
-            return;
-        }
-
-        this.takeAction('discardCard', {
+        this.bga.actions.performAction('actDiscardCard', {
             id
         });
     }
   	
     public pass() {
-        if(!(this as any).checkAction('pass')) {
-            return;
-        }
-
-        this.takeAction('pass');
-    }
-
-    public takeAction(action: string, data?: any) {
-        data = data || {};
-        this.bga.actions.performAction(action, data, { checkAction: false });
+        this.bga.actions.performAction('actPass');
     }
 
     ///////////////////////////////////////////////////

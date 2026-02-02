@@ -64,10 +64,10 @@ $playerActionsGameStates = [
         "args" => "argPlayAction",
         //"action" => "stPlayAction",
         "possibleactions" => [ 
-            "playCard",
-            "takeDestination",
-            "goTrade",
-            "endTurn",
+            "actPlayCard",
+            "actTakeDestination",
+            "actGoTrade",
+            "actEndTurn",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -85,8 +85,8 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argChooseNewCard",
         "possibleactions" => [ 
-            "chooseNewCard",
-            "cancel",
+            "actChooseNewCard",
+            "actCancel",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -105,8 +105,8 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argPayDestination",
         "possibleactions" => [ 
-            "payDestination",
-            "cancel",
+            "actPayDestination",
+            "actCancel",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -124,8 +124,8 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} can reserve a destination'),
         "type" => "activeplayer",
         "possibleactions" => [ 
-            "reserveDestination",
-            "pass",
+            "actReserveDestination",
+            "actPass",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -139,8 +139,8 @@ $playerActionsGameStates = [
         "descriptionmyturn" => clienttranslate('${you} can discard a card from the table'),
         "type" => "activeplayer",
         "possibleactions" => [ 
-            "discardTableCard",
-            "pass",
+            "actDiscardTableCard",
+            "actPass",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -155,8 +155,8 @@ $playerActionsGameStates = [
         "type" => "activeplayer",
         "args" => "argTrade",
         "possibleactions" => [ 
-            "trade",
-            "cancel",
+            "actTrade",
+            "actCancel",
         ],
         "transitions" => [
             "next" => ST_PLAYER_PLAY_ACTION,
@@ -173,7 +173,7 @@ $playerActionsGameStates = [
         "type" => "multipleactiveplayer",
         "action" => "stDiscardCard",
         "possibleactions" => [ 
-            "discardCard",
+            "actDiscardCard",
         ],
         "transitions" => [
             "next" => ST_AFTER_DISCARD_CARD,

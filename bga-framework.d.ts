@@ -152,7 +152,7 @@ declare class StatusBar {
     disabled?: boolean;
     tooltip?: string;
     confirm?: string | (() => string | undefined | null); 
-    autoclick?: boolean;
+    autoclick?: boolean | { abortSignal?: AbortSignal };
   }): HTMLButtonElement;
 
   /**
@@ -220,6 +220,11 @@ declare class UserPreferences {
    * Method to programmatically change a game-specific user preference.
    */
   set(prefId: number, value: number): void;
+
+  /**
+   * Hide or show a game-specific user preference.
+   */
+  toggleVisibility(prefId: number, visible?: boolean): void;
 }
 
 declare class Players {
@@ -297,6 +302,15 @@ declare class Players {
    * @returns {number[]} the active player ids
    */
   getActivePlayerIds(): number[];
+
+  /**
+   * Get the avatar url of a player.
+   * 
+   * @param {number} playerId the player id to get the avatar from (or 0 to get the default avatar)
+   * @param {32 | 50 | 92 | 184} size the size of the avatar, can be 32, 50, 92 or 184 (default)
+   * @returns the avatar url
+   */
+  getPlayerAvatarUrl(playerId: number, size?: number): string;
 }
 
 declare class Actions {
@@ -403,6 +417,14 @@ declare class PlayerPanels {
    * @returns the div element for game specific content on player panels
    */
   getElement(playerId: number): HTMLDivElement;
+
+  /**
+   * Return the score counter of a player.
+   *
+   * @param {number} playerId the player id
+   * @returns the score counter
+   */
+  getScoreCounter(playerId: number): Counter;
 
   /**
    * Add a player panel for an automata.
@@ -582,6 +604,8 @@ declare class GameGui<G = Gamedatas> {
 
   /**
    * The player panel score counters.
+   * 
+   * @deprecated use this.bga.playerPanels.getScoreCounter
    */
   scoreCtrl: {[player_id: number]: Counter};
 

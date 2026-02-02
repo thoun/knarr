@@ -32,11 +32,11 @@ require_once('modules/php/args.php');
 require_once('modules/php/debug-util.php');
 
 class Knarr extends Table {
-    use UtilTrait;
-    use ActionTrait;
-    use StateTrait;
-    use ArgsTrait;
-    use DebugUtilTrait;
+    use \UtilTrait;
+    use \ActionTrait;
+    use \StateTrait;
+    use \ArgsTrait;
+    use \DebugUtilTrait;
 
     public Deck $cards;
     public Deck $destinations;
@@ -169,10 +169,8 @@ class Knarr extends Table {
         _ when the game starts
         _ when a player refreshes the game page (F5)
     */
-    protected function getAllDatas(): array {
+    protected function getAllDatas(int $currentPlayerId): array {
         $result = [];
-    
-        $currentPlayerId = intval($this->getCurrentPlayerId());    // !! We must only return informations visible by this player !!
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
@@ -217,7 +215,7 @@ class Knarr extends Table {
             }
         }
 
-        $result['cardDeckTop'] = Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
+        $result['cardDeckTop'] = \Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
         $result['cardDeckCount'] = intval($this->cards->countCardInLocation('deck'));
         $result['cardDiscardCount'] = intval($this->cards->countCardInLocation('discard'));
         $result['centerCards'] = $this->getCardsByLocation('slot');
@@ -226,7 +224,7 @@ class Knarr extends Table {
         $result['centerDestinations'] = [];
 
         foreach (['A', 'B'] as $letter) {
-            $result['centerDestinationsDeckTop'][$letter] = Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$letter)));
+            $result['centerDestinationsDeckTop'][$letter] = \Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$letter)));
             $result['centerDestinationsDeckCount'][$letter] = intval($this->destinations->countCardInLocation('deck'.$letter));
             $result['centerDestinations'][$letter] = $this->getDestinationsByLocation('slot'.$letter);
         }
