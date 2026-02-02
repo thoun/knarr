@@ -1,4 +1,5 @@
 <?php
+namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
 

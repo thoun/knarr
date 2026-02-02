@@ -1,4 +1,9 @@
 <?php
+namespace Bga\Games\Knarr;
+
+use Card;
+use Destination;
+use KnarrPlayer;
 
 trait UtilTrait {
 

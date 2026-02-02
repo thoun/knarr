@@ -61,7 +61,7 @@ interface KnarrGamedatas {
     reservePossible: boolean;
 }
 
-interface KnarrGame extends Game {
+interface KnarrGame {
     cardsManager: CardsManager;
     destinationsManager: DestinationsManager;
     artifactsManager: ArtifactsManager;

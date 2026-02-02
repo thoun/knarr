@@ -1,4 +1,5 @@
 <?php
+namespace Bga\Games\Knarr;
 
 trait StateTrait {
 

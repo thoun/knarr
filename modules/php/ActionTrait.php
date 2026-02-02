@@ -1,12 +1,10 @@
 <?php
+namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Actions\Types\IntArrayParam;
-
-if (!function_exists('str_starts_with')) {
-    function str_starts_with($haystack, $needle) {
-        return (string)$needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
-    }
-}
+use Bga\GameFramework\UserException;
+use Card;
+use Destination;
 
 trait ActionTrait {
 
@@ -25,7 +23,7 @@ trait ActionTrait {
 
     public function actPlayCard(int $id) {
         if (boolval($this->getGameStateValue(RECRUIT_DONE))) {
-            throw new BgaUserException("Invalid action");
+            throw new UserException("Invalid action");
         }
 
         $playerId = intval($this->getActivePlayerId());
@@ -35,7 +33,7 @@ trait ActionTrait {
         $card = $this->array_find($hand, fn($c) => $c->id == $id);
 
         if ($card == null || $card->location != 'hand' || $card->locationArg != $playerId) {
-            throw new BgaUserException("You can't play this card");
+            throw new UserException("You can't play this card");
         }
 
         $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
@@ -89,13 +87,13 @@ trait ActionTrait {
         $card = $this->array_find($args['centerCards'], fn($card) => $card->id == $id);
 
         if ($card == null || $card->location != 'slot') {
-            throw new BgaUserException("You can't play this card");
+            throw new UserException("You can't play this card");
         }
         $slotColor = $card->locationArg;
 
         if ($slotColor != $args['freeColor'] && !$args['allFree']) {
             if ($args['recruits'] < 1) {
-                throw new BgaUserException("Not enough recruits");
+                throw new UserException("Not enough recruits");
             } else {
                 $this->incPlayerRecruit($playerId, -1, clienttranslate('${player_name} pays a recruit to choose the new card'), []);
         
@@ -147,14 +145,14 @@ trait ActionTrait {
 
     public function actTakeDestination(int $id) {
         if (boolval($this->getGameStateValue(EXPLORE_DONE))) {
-            throw new BgaUserException("Invalid action");
+            throw new UserException("Invalid action");
         }
 
         $args = $this->argPlayAction();
         $destination = $this->array_find($args['possibleDestinations'], fn($c) => $c->id == $id);
 
         if ($destination == null) {
-            throw new BgaUserException("You can't take this destination");
+            throw new UserException("You can't take this destination");
         }
 
         $this->setGameStateValue(SELECTED_DESTINATION, $id);
@@ -166,7 +164,7 @@ trait ActionTrait {
         $playerId = intval($this->getActivePlayerId());
         
         if ($recruits > 0 && $this->getPlayer($playerId)->recruit < $recruits) {
-            throw new BgaUserException("Not enough recruits");
+            throw new UserException("Not enough recruits");
         }
 
         $destination = $this->getDestinationFromDb($this->destinations->getCard($this->getGameStateValue(SELECTED_DESTINATION)));
@@ -187,7 +185,7 @@ trait ActionTrait {
 
         $valid = $this->canTakeDestination($destination, $selectedPlayedCardsColors, $recruits, true);
         if (!$valid) {
-            throw new BgaUserException("Invalid payment for this destination");
+            throw new UserException("Invalid payment for this destination");
         }
 
         if ($recruits > 0) {
@@ -305,7 +303,7 @@ trait ActionTrait {
         $destination = $this->getDestinationFromDb($this->destinations->getCard($id));
 
         if ($destination == null || !in_array($destination->location, ['slotA', 'slotB'])) {
-            throw new BgaUserException("You can't reserve this destination");
+            throw new UserException("You can't reserve this destination");
         }
 
         $this->destinations->moveCard($destination->id, 'reserved', $playerId);
@@ -338,7 +336,7 @@ trait ActionTrait {
         $card = $this->getCardFromDb($this->cards->getCard($id));
 
         if ($card == null || $card->location != 'slot') {
-            throw new BgaUserException("You can't discard this card");
+            throw new UserException("You can't discard this card");
         }
         $slotColor = $card->locationArg;
         
@@ -377,7 +375,7 @@ trait ActionTrait {
         $playerId = intval($this->getActivePlayerId());
 
         if ($this->getPlayer($playerId)->bracelet < $number) {
-            throw new BgaUserException("Not enough bracelets");
+            throw new UserException("Not enough bracelets");
         }
 
         $this->incPlayerBracelet($playerId, -$number, clienttranslate('${player_name} chooses to pay ${number} bracelet(s) to trade'), [
@@ -442,7 +440,7 @@ trait ActionTrait {
         $card = $this->getCardFromDb($this->cards->getCard($id));
 
         if ($card == null || !str_starts_with($card->location, "played$playerId")) {
-            throw new BgaUserException("You must choose a card in front of you");
+            throw new UserException("You must choose a card in front of you");
         }
 
         $this->cards->moveCard($card->id, 'discard');
