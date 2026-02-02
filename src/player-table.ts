@@ -1,6 +1,3 @@
-const isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;;
-const log = isDebug ? console.log.bind(window.console) : function () { };
-
 class PlayerTable {
     public playerId: number;
     public voidStock: VoidStock<Card>;
@@ -14,7 +11,7 @@ class PlayerTable {
 
     constructor(private game: KnarrGame, player: KnarrPlayer, reservePossible: boolean) {
         this.playerId = Number(player.id);
-        this.currentPlayer = this.playerId == this.game.getPlayerId();
+        this.currentPlayer = this.playerId == this.game.bga.players.getCurrentPlayerId();
 
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
@@ -68,7 +65,7 @@ class PlayerTable {
         </div>
         `;
 
-        dojo.place(html, document.getElementById('tables'));
+        document.getElementById('tables').insertAdjacentHTML('beforeend', html);
 
         if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);

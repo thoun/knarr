@@ -86,11 +86,11 @@ class Knarr implements KnarrGame {
             </div>
         `);
 
-        log( "Starting game setup" );
+        console.log( "Starting game setup" );
         
         this.gamedatas = gamedatas;
 
-        log('gamedatas', gamedatas);
+        console.log('gamedatas', gamedatas);
 
 
         this.cardsManager = new CardsManager(this);
@@ -153,7 +153,7 @@ class Knarr implements KnarrGame {
         });
         this.setupNotifications();
 
-        log( "Ending game setup" );
+        console.log( "Ending game setup" );
     }
 
     ///////////////////////////////////////////////////
@@ -163,7 +163,7 @@ class Knarr implements KnarrGame {
     //                  You can use this method to perform some user interface changes at this moment.
     //
     public onEnteringState(stateName: string, args: any) {
-        log('Entering state: ' + stateName, args.args);
+        console.log('Entering state: ' + stateName, args.args);
 
         switch (stateName) {
             case 'playAction':
@@ -183,24 +183,19 @@ class Knarr implements KnarrGame {
                 break;
         }
     }
-    
-    private setGamestateDescription(property: string = '') {
-        const originalState = this.gamedatas.gamestates[this.gamedatas.gamestate.id];
-        this.gamedatas.gamestate.description = `${originalState['description' + property]}`; 
-        this.gamedatas.gamestate.descriptionmyturn = `${originalState['descriptionmyturn' + property]}`;
-        (this as any).updatePageTitle();
-    }
 
     private onEnteringPlayAction(args: EnteringPlayActionArgs) {
+        const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
+
         if (!args.canExplore && !args.canRecruit) {
-            this.setGamestateDescription('TradeOnly');
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can trade') :  _('${actplayer} can trade'));
         } else if (!args.canExplore) {
-            this.setGamestateDescription('RecruitOnly');
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can recruit (play a card)') : _('${actplayer} can recruit (play a card)'));
         } else if (!args.canRecruit) {
-            this.setGamestateDescription('ExploreOnly');
+            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can explore (take a destination)') : _('${actplayer} can explore (take a destination)'));
         }
 
-        if ((this as any).isCurrentPlayerActive()) {
+        if (isCurrentPlayerActive) {
             if (args.canExplore) {
                 this.tableCenter.setDestinationsSelectable(true, args.possibleDestinations);
                 this.getCurrentPlayerTable()?.setDestinationsSelectable(true, args.possibleDestinations);
@@ -212,19 +207,19 @@ class Knarr implements KnarrGame {
     }
 
     private onEnteringChooseNewCard(args: EnteringChooseNewCardArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setCardsSelectable(true, args.allFree ? null : args.freeColor, args.recruits);
         }
     }
 
     private onEnteringDiscardTableCard() {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setCardsSelectable(true, null, 0);
         }
     }
 
     private onEnteringDiscardCard(args: EnteringPayDestinationArgs) {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setCardsSelectable(true, [0]);
         }
     }
@@ -233,19 +228,19 @@ class Knarr implements KnarrGame {
         const selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
         selectedCardDiv.classList.add('selected-pay-destination');
 
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.getCurrentPlayerTable()?.setCardsSelectable(true, args.selectedDestination.cost);
         }
     }
 
     private onEnteringReserveDestination() {
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             this.tableCenter.setDestinationsSelectable(true, this.tableCenter.getVisibleDestinations());
         }
     }
 
     public onLeavingState(stateName: string) {
-        log( 'Leaving state: '+stateName );
+        console.log( 'Leaving state: '+stateName );
 
         switch (stateName) {
             case 'playAction':
@@ -327,20 +322,22 @@ class Knarr implements KnarrGame {
     //
     public onUpdateActionButtons(stateName: string, args: any) {
         
-        if ((this as any).isCurrentPlayerActive()) {
+        if (this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
                 case 'playAction':
                     const playActionArgs = args as EnteringPlayActionArgs;
-                    (this as any).addActionButton(`goTrade_button`, _("Trade"), () => this.goTrade());
-                    if (!playActionArgs.canTrade) {
-                        document.getElementById(`goTrade_button`).classList.add('disabled');
-                    }
+                    this.bga.statusBar.addActionButton(_("Trade"), () => this.goTrade(), { disabled: !playActionArgs.canTrade });
+                    
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
                             const warning = _("Are you sure you want to skip Helmet effect ? You can carry out a Recruit action");
-                            (this as any).addActionButton(`endTurn_button`, _("End turn without recruiting"), () => (this as any).confirmationDialog(warning, () => this.endTurn()), null, null, 'red');
+                            this.bga.statusBar.addActionButton(
+                                _("End turn without recruiting"), 
+                                () => this.bga.gameui.confirmationDialog(warning, () => this.endTurn()), 
+                                { color: 'alert' },
+                            );
                         } else {
-                            (this as any).addActionButton(`endTurn_button`, _("End turn"), () => this.endTurn());
+                            this.bga.statusBar.addActionButton(_("End turn"), () => this.endTurn());
                         }
                     }
                     break;
@@ -348,36 +345,38 @@ class Knarr implements KnarrGame {
                     const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
                     [1, 2, 3, 4, 5].forEach(color => {
                         const free = chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor;
-                        (this as any).addActionButton(`chooseNewCard${color}_button`, _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${free ? _('free') : `1 <div class="recruit icon"></div>`})`, () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id), null, null, free ? undefined : 'gray');
-                        if (!free && chooseNewCardArgs.recruits < 1) {
-                            document.getElementById(`chooseNewCard${color}_button`).classList.add('disabled');
-                        }
+                        this.bga.statusBar.addActionButton(
+                            _("Take ${color}").replace('${color}', `<div class="color" data-color="${color}"></div>`) + ` (${free ? _('free') : `1 <div class="recruit icon"></div>`})`, 
+                            () => this.chooseNewCard(chooseNewCardArgs.centerCards.find(card => card.locationArg == color).id), 
+                            { color: free ? undefined : 'secondary', disabled: (!free && chooseNewCardArgs.recruits < 1) }
+                        );
                     });
                     break;
                 case 'payDestination':
-                    (this as any).addActionButton(`payDestination_button`, '', () => this.payDestination());
+                    this.bga.statusBar.addActionButton('', () => this.payDestination(), { id: `payDestination_button` });
                     this.setPayDestinationLabelAndState(args);
 
-                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
+                    this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancel(), { color: 'secondary' });
                     break;
                 case 'trade':
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
-                        (this as any).addActionButton(`trade${number}_button`, _("Trade ${number} bracelet(s)").replace('${number}', `${number}`), () => this.trade(number, tradeArgs.gainsByBracelets));
-                        const button = document.getElementById(`trade${number}_button`);
-                        if (tradeArgs.bracelets < number) {
-                            button.classList.add('disabled');
-                        } else {
+                        const button = this.bga.statusBar.addActionButton(
+                            _("Trade ${number} bracelet(s)").replace('${number}', `${number}`), 
+                            () => this.trade(number, tradeArgs.gainsByBracelets),
+                            { disabled: tradeArgs.bracelets < number },
+                        );
+                        if (tradeArgs.bracelets >= number) {
                             button.addEventListener('mouseenter', () => this.getCurrentPlayerTable().showColumns(number));
                             button.addEventListener('mouseleave', () => this.getCurrentPlayerTable().showColumns(0));
                         }
                     });
-                    (this as any).addActionButton(`cancel_button`, _("Cancel"), () => this.cancel(), null, null, 'gray');
+                    this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancel(), { color: 'secondary' });
                     break;
 
                 case 'discardTableCard':
                 case 'reserveDestination':
-                    (this as any).addActionButton(`pass_button`, _("Pass"), () => this.pass(), null, null, 'gray');
+                    this.bga.statusBar.addActionButton(_("Pass"), () => this.pass(), { color: 'secondary' });
 
                 // multiplayer state    
                 case 'discardCard':
@@ -395,14 +394,10 @@ class Knarr implements KnarrGame {
     ///////////////////////////////////////////////////
 
     public setTooltip(id: string, html: string) {
-        (this as any).addTooltipHtml(id, html, this.TOOLTIP_DELAY);
+        this.bga.gameui.addTooltipHtml(id, html, this.TOOLTIP_DELAY);
     }
     public setTooltipToClass(className: string, html: string) {
-        (this as any).addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
-    }
-
-    public getPlayerId(): number {
-        return Number((this as any).player_id);
+        this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
 
     public getPlayer(playerId: number): KnarrPlayer {
@@ -414,7 +409,7 @@ class Knarr implements KnarrGame {
     }
 
     public getCurrentPlayerTable(): PlayerTable | null {
-        return this.playersTables.find(playerTable => playerTable.playerId === this.getPlayerId());
+        return this.playersTables.find(playerTable => playerTable.playerId === this.bga.players.getCurrentPlayerId());
     }
 
     public getBoatSide(): number {
@@ -431,7 +426,7 @@ class Knarr implements KnarrGame {
 
     private getOrderedPlayers(gamedatas: KnarrGamedatas) {
         const players = Object.values(gamedatas.players).sort((a, b) => a.playerNo - b.playerNo);
-        const playerIndex = players.findIndex(player => Number(player.id) === Number((this as any).player_id));
+        const playerIndex = players.findIndex(player => Number(player.id) == this.bga.players.getCurrentPlayerId());
         const orderedPlayers = playerIndex > 0 ? [...players.slice(playerIndex), ...players.slice(0, playerIndex)] : players;
         return orderedPlayers;
     }
@@ -692,7 +687,7 @@ class Knarr implements KnarrGame {
         const recruits = Number(document.getElementById(`payDestination_button`).dataset.recruits);
 
         this.bga.actions.performAction('actPayDestination', {
-            ids,
+            ids: ids.join(','),
             recruits
         });
     }
@@ -708,7 +703,7 @@ class Knarr implements KnarrGame {
         }
 
         if (warning != null) {
-            (this as any).confirmationDialog(warning, () => this.trade(number, null));
+            this.bga.gameui.confirmationDialog(warning, () => this.trade(number, null));
             return;
         }
 
@@ -754,7 +749,7 @@ class Knarr implements KnarrGame {
 
     */
     setupNotifications() {
-        //log( 'notifications subscriptions setup' );
+        //console.log( 'notifications subscriptions setup' );
 
         const notifs = [
             ['playCard', undefined],
@@ -776,20 +771,20 @@ class Knarr implements KnarrGame {
     
         notifs.forEach((notif) => {
             dojo.subscribe(notif[0], this, (notifDetails: Notif<any>) => {
-                log(`notif_${notif[0]}`, notifDetails.args);
+                console.log(`notif_${notif[0]}`, notifDetails.args);
 
                 const promise = this[`notif_${notif[0]}`](notifDetails.args);
 
                 // tell the UI notification ends, if the function returned a promise
                 promise?.then(() => {
-                    log(`promise for end of notif_${notif[0]} received`, notifDetails.args);
+                    console.log(`promise for end of notif_${notif[0]} received`, notifDetails.args);
                     (this as any).notifqueue.onSynchronousNotificationEnd()
                 });
             });
             (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
 
-        if (isDebug) {
+        /*if (isDebug) {
             notifs.forEach((notif) => {
                 if (!this[`notif_${notif[0]}`]) {
                     console.warn(`notif_${notif[0]} function is not declared, but listed in setupNotifications`);
@@ -801,7 +796,7 @@ class Knarr implements KnarrGame {
                     console.warn(`notif_${item} function is declared, but not listed in setupNotifications`);
                 }
             });
-        }
+        }*/
     }
 
     notif_playCard(args: NotifPlayCardArgs) {
@@ -818,7 +813,7 @@ class Knarr implements KnarrGame {
 
     notif_takeCard(args: NotifNewCardArgs) {
         const playerId = args.playerId;
-        const currentPlayer = this.getPlayerId() == playerId;
+        const currentPlayer = this.bga.players.getCurrentPlayerId() == playerId;
         const playerTable = this.getPlayerTable(playerId);
         
         return (currentPlayer ? playerTable.hand : playerTable.voidStock).addCard(args.card);
@@ -938,7 +933,7 @@ class Knarr implements KnarrGame {
 
     /* This enable to inject translatable styled things to logs or action bar */
     /* @Override */
-    public format_string_recursive(log: string, args: any) {
+    public bgaFormatText(log: string, args: any) {
         try {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
@@ -965,6 +960,6 @@ class Knarr implements KnarrGame {
         } catch (e) {
             console.error(log,args,"Exception thrown", e.stack);
         }
-        return (this as any).inherited(arguments);
+        return { log, args };
     }
 }

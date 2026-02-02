@@ -61,12 +61,13 @@ interface KnarrGamedatas {
     reservePossible: boolean;
 }
 
-interface KnarrGame {
+interface KnarrGame extends Game {
+    bga: Bga;
+
     cardsManager: CardsManager;
     destinationsManager: DestinationsManager;
     artifactsManager: ArtifactsManager;
 
-    getPlayerId(): number;
     getPlayer(playerId: number): KnarrPlayer;
     //getGain(type: number): string;
     //getColor(color: number): string;

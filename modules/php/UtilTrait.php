@@ -387,7 +387,7 @@ trait UtilTrait {
             } else if ($color == DIFFERENT) {
                 $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
             } else {
-                $available = $playedCardsColors[$color]; 
+                $available = ($playedCardsColors[$color] ?? 0); 
             }
 
             if ($available < $required) {

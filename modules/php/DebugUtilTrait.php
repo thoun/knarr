@@ -3,6 +3,12 @@ namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
 
+function debug(...$debugData) {
+    if (Game::getBgaEnvironment() != 'studio') { 
+        return;
+    }die('debug data : <pre>'.substr(json_encode($debugData, JSON_PRETTY_PRINT), 1, -1).'</pre>');
+}
+
 trait DebugUtilTrait {
     public Bga $bga;
 
