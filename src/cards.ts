@@ -1,4 +1,7 @@
-class CardsManager extends CardManager<Card> {
+import { Card, KnarrGame } from "./knarr.d";
+import { BgaCards } from "./libs";
+
+export class CardsManager extends BgaCards.CardManager<Card> {
     constructor (public game: KnarrGame) {
         super(game, {
             getId: (card) => `card-${card.id}`,

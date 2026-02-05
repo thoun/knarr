@@ -1,4 +1,7 @@
-class ArtifactsManager extends CardManager<number> {
+import { KnarrGame } from "./knarr.d";
+import { BgaCards } from "./libs";
+
+export class ArtifactsManager extends BgaCards.CardManager<number> {
     constructor (public game: KnarrGame) {
         super(game, {
             getId: (card) => `artifact-${card}`,

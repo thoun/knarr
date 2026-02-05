@@ -1,5 +1,12 @@
-const ANIMATION_MS = 500;
-const ACTION_TIMER_DURATION = 5;
+import { ArtifactsManager } from './artifacts';
+import { CardsManager } from './cards';
+import { DestinationsManager } from './destinations';
+import { Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr.d';
+import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
+import { PlayerTable } from './player-table';
+import { TableCenter } from './table-center';
+
+export const ANIMATION_MS = 500;
 
 const LOCAL_STORAGE_ZOOM_KEY = 'Knarr-zoom';
 const LOCAL_STORAGE_JUMP_TO_FOLDED_KEY = 'Knarr-jump-to-folded';
@@ -12,8 +19,8 @@ const VP_BY_REPUTATION = {
     14: 5,
 };
 
-const EQUAL = -1;
-const DIFFERENT = 0;
+export const EQUAL = -1;
+export const DIFFERENT = 0;
 
 const VP = 1;
 const BRACELET = 2;
@@ -25,13 +32,14 @@ function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
 
-class Knarr implements KnarrGame {
+export class Game implements KnarrGame {
     public cardsManager: CardsManager;
     public destinationsManager: DestinationsManager;
     public artifactsManager: ArtifactsManager;
 
-    private zoomManager: ZoomManager;
-    private animationManager: AnimationManager;
+    private zoomManager: InstanceType<typeof BgaZoom.Manager>;
+    // @ts-ignore
+    public animationManager: BgaAnimations.AnimationManager;
     private gamedatas: KnarrGamedatas;
     private tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
@@ -45,7 +53,8 @@ class Knarr implements KnarrGame {
 
     public bga: Bga;
 
-    constructor() {
+    constructor(bga: Bga) {
+        this.bga = bga;
     }
     
     /*
@@ -96,11 +105,11 @@ class Knarr implements KnarrGame {
         this.cardsManager = new CardsManager(this);
         this.destinationsManager = new DestinationsManager(this);        
         this.artifactsManager = new ArtifactsManager(this);
-        this.animationManager = new AnimationManager(this);
-        new JumpToManager(this, {
+        this.animationManager = new BgaAnimations.AnimationManager(this);
+        new BgaJumpTo.JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
-                new JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
+                new BgaJumpTo.JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
             ],
             entryClasses: 'triangle-point',
             defaultFolded: true,
@@ -110,9 +119,8 @@ class Knarr implements KnarrGame {
         this.createPlayerPanels(gamedatas);
         this.createPlayerTables(gamedatas);
         
-        this.zoomManager = new ZoomManager({
+        this.zoomManager = new BgaZoom.Manager({
             element: document.getElementById('table'),
-            smooth: false,
             zoomControls: {
                 color: 'black',
             },
@@ -134,15 +142,15 @@ class Knarr implements KnarrGame {
             this.notif_lastTurn(false);
         }
 
-        new HelpManager(this, { 
+        new BgaHelp.HelpManager(this, { 
             buttons: [
-                new BgaHelpPopinButton({
+                new BgaHelp.BgaHelpPopinButton({
                     title: _("Card help").toUpperCase(),
                     html: this.getHelpHtml(),
                     onPopinCreated: () => this.populateHelp(),
                     buttonBackground: '#5890a9',
                 }),
-                new BgaHelpExpandableButton({
+                new BgaHelp.BgaHelpExpandableButton({
                     unfoldedHtml: this.getColorAddHtml(),
                     foldedContentExtraClasses: 'color-help-folded-content',
                     unfoldedContentExtraClasses: 'color-help-unfolded-content',
@@ -225,6 +233,7 @@ class Knarr implements KnarrGame {
     }
 
     private onEnteringPayDestination(args: EnteringPayDestinationArgs) {
+        // @ts-ignore
         const selectedCardDiv = this.destinationsManager.getCardElement(args.selectedDestination);
         selectedCardDiv.classList.add('selected-pay-destination');
 
@@ -778,10 +787,10 @@ class Knarr implements KnarrGame {
                 // tell the UI notification ends, if the function returned a promise
                 promise?.then(() => {
                     console.log(`promise for end of notif_${notif[0]} received`, notifDetails.args);
-                    (this as any).notifqueue.onSynchronousNotificationEnd()
+                    (this.bga.gameui as any).notifqueue.onSynchronousNotificationEnd()
                 });
             });
-            (this as any).notifqueue.setSynchronous(notif[0], notif[1]);
+            (this.bga.gameui as any).notifqueue.setSynchronous(notif[0], notif[1]);
         });
 
         /*if (isDebug) {

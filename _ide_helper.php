@@ -1413,11 +1413,7 @@ namespace Bga\GameFramework {
         }
 
         /**
-         * Get the "active_player" name
-         *
-         * Note: avoid using this method in a "multiplayer" state because it does not mean anything.
-         * 
-         * @return string the active player name
+         * @deprecated use getPlayerNameById($activePlayerId) with $activePlayerId magic param
          */
         final public function getActivePlayerName(): string
         {
@@ -1523,7 +1519,7 @@ namespace Bga\GameFramework {
         /**
          * Returns the value of a user preference for a player. It will return the value currently selected in the
          * select combo box, in the top-right menu.
-         * @deprecated use $this->userPreferences->get(int $playerId, int $prefId)
+         * @deprecated use $this->bga->userPreferences->get(int $playerId, int $prefId)
          */
         final public function getGameUserPreference(int $playerId, int $prefId): ?int
         {
@@ -1685,7 +1681,7 @@ namespace Bga\GameFramework {
          *
          * @return int the number of players at the table
          */
-        public function getPlayerCount(): int
+        final public function getPlayerCount(): int
         {
             return 0;
         }
@@ -1717,7 +1713,7 @@ namespace Bga\GameFramework {
         /**
          * Return the value of statistic specified by $name. Useful when creating derivative statistics such as average.
          *
-         * @deprecated use tableStats->get / playerStats->get
+         * @deprecated use $this->bga->tableStats->get / $this->bga->playerStats->get
          * 
          * @param string $name the name of your statistic, as it has been defined in your stats.json file.
          * @param ?int $player_id the player to get the stat. If null, it will return the table stat.
@@ -1759,7 +1755,7 @@ namespace Bga\GameFramework {
          * Increment (or decrement) specified statistic value by `$inc` value. Same behavior as `Table::setStat()`
          * function.
          *
-         * @deprecated use tableStats->inc / playerStats->inc
+         * @deprecated use $this->bga->tableStats->inc / $this->bga->playerStats->inc
          * 
          * @param mixed $delta the value of the add to the current stat value.
          * @param string $name the name of your statistic, as it has been defined in your stats.json file.
@@ -1780,7 +1776,7 @@ namespace Bga\GameFramework {
          * statistics. As a consequence - if do not want statistic to be applied, do not init it, or call set or inc
          * on it.
          *
-         * @deprecated use tableStats->init / playerStats->init
+         * @deprecated use $this->bga->tableStats->init / $this->bga->playerStats->init
          *
          * @param string $table_or_player must be set to "table" if this is a table statistic, or "player" if this is a player statistic.
          * @param string $name the name of your statistic, as it has been defined in your stats.json file.
@@ -1794,7 +1790,7 @@ namespace Bga\GameFramework {
 
         /**
          * Returns true if game is turn based, false if it is realtime
-         * @deprecated use $this->tableOptions->isTurnBased()
+         * @deprecated use $this->bga->tableOptions->isTurnBased()
          */
         final public function isAsync(): bool
         {
@@ -1803,7 +1799,7 @@ namespace Bga\GameFramework {
 
         /**
          * Returns true if game is realtime, false if it is async.
-         * @deprecated use $this->tableOptions->isRealTime()
+         * @deprecated use $this->bga->tableOptions->isRealTime()
          */
         final public function isRealtime(): bool
         {
@@ -1863,7 +1859,7 @@ namespace Bga\GameFramework {
         /**
          * Send a notification to all players of the game and spectators (public).
          * 
-         * @deprecated use $this->notify->all
+         * @deprecated use $this->bga->notify->all
          */
         final public function notifyAllPlayers(string $notificationType, string $notificationLog, array $notificationArgs): void
         {
@@ -1873,7 +1869,7 @@ namespace Bga\GameFramework {
         /**
          * Send a notification to a single player of the game.
          * 
-         * @deprecated use $this->notify->player
+         * @deprecated use $this->bga->notify->player
          */
         final public function notifyPlayer(int $playerId, string $notificationType, string $notificationLog, array $notificationArgs): void
         {
@@ -1905,7 +1901,7 @@ namespace Bga\GameFramework {
         /**
          * Remove some legacy data with the given key.
          * 
-         * @deprecated use $this->legacy->delete(string $key, int $playerId). ⚠️ parameter order has changed.
+         * @deprecated use $this->bga->legacy->delete(string $key, int $playerId). ⚠️ parameter order has changed.
          */
         final public function removeLegacyData(int $playerId, string $key): void
         {
@@ -1916,7 +1912,7 @@ namespace Bga\GameFramework {
          * Same as `Table::removeLegacyData()`, except that it deletes the data for the whole team within the current
          * table and does not use a key.
          * 
-         * @deprecated use $this->legacy->delete
+         * @deprecated use $this->bga->legacy->delete
          */
         final public function removeLegacyTeamData(): void
         {
@@ -1926,7 +1922,7 @@ namespace Bga\GameFramework {
         /**
          * Get data associated with $key for the current game.
          * 
-         * @deprecated use $this->legacy->get(string $key, int $playerId, mixed $defaultValue = null). ⚠️ parameter order has changed, and it will now return the real data instead of the JSON-encoded one.
+         * @deprecated use $this->bga->legacy->get(string $key, int $playerId, mixed $defaultValue = null). ⚠️ parameter order has changed, and it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyData($playerId, $key): array
         {
@@ -1937,7 +1933,7 @@ namespace Bga\GameFramework {
          * Same as `Table::storeLegacyData()`, except that it stores some data for the whole team within the current
          * table and does not use a key.
          * 
-         * @deprecated use $this->legacy->getTeam(mixed $defaultValue = null). ⚠️ it will now return the real data instead of the JSON-encoded one.
+         * @deprecated use $this->bga->legacy->getTeam(mixed $defaultValue = null). ⚠️ it will now return the real data instead of the JSON-encoded one.
          */
         final public function retrieveLegacyTeamData(): array
         {
@@ -1972,7 +1968,7 @@ namespace Bga\GameFramework {
         /**
          * Set a statistic `$name` to `$value`.
          *
-         * @deprecated use tableStats->set / playerStats->set
+         * @deprecated use $this->bga->tableStats->set / $this->bga->playerStats->set
          * 
          * @param mixed $value the value of the statistic.
          * @param string $name the name of your statistic, as it has been defined in your stats.json file.
@@ -2208,7 +2204,7 @@ namespace Bga\GameFramework {
          * 
          * @param string $objectName must be 'module.common.deck'
          * 
-         * @deprecated use $this->deckFactory->createDeck($tableName)
+         * @deprecated use $this->bga->deckFactory->createDeck($tableName)
          */
         protected function getNew(string $objectName): \Bga\GameFramework\Components\Deck {
             return $this->deckFactory->createDeck('');
@@ -3141,11 +3137,7 @@ namespace {
     }
 
     /**
-     * Base class to notify a system exception. The message will be hidden from the user, but show in the logs. Use this
-     * if the message contains technical information.
-     *
-     * You shouldn't use this type of exception except if you think the information shown could be critical. Indeed: a
-     * generic error message will be shown to the user, so it's going to be difficult for you to see what happened.
+     * @deprecated Use \Bga\GameFramework\SystemException instead
      */
     class BgaSystemException extends feException
     {
@@ -3159,10 +3151,7 @@ namespace {
     }
 
     /**
-     * You must throw this exception when you detect something that is not supposed to happened in your code.
-     *
-     * The error message is shown to the user as an "Unexpected error", in order that he can report it in the forum.
-     * The error message is logged in BGA error logs. If it happens regularly, we will report it to you.
+     * @deprecated Use \Bga\GameFramework\VisibleSystemException instead
      */
     class BgaVisibleSystemException extends BgaSystemException
     {
@@ -3176,12 +3165,7 @@ namespace {
     }
 
     /**
-     * Base class to notify a user error.
-     *
-     * You must throw this exception when a player wants to do something that they are not allowed to do. The error
-     * message will be shown to the player as a "red message". 
-     * The error message should be translated (with clientranslate() and args).
-     * Throwing such an exception is NOT considered a bug, so it is not traced in BGA error logs.
+     * @deprecated Use \Bga\GameFramework\UserException instead
      */
     class BgaUserException extends BgaVisibleSystemException
     {

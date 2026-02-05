@@ -2,7 +2,12 @@
  * Your game interfaces
  */
 
-interface Card {
+import { ArtifactsManager } from "./artifacts";
+import { CardsManager } from "./cards";
+import { DestinationsManager } from "./destinations";
+import { PlayerTable } from "./player-table";
+
+export interface Card {
     id: number;
     location: string;
     locationArg: number;
@@ -10,7 +15,7 @@ interface Card {
     gain: number;
 }
 
-interface Destination {
+export interface Destination {
     id: number;
     location: string;
     locationArg: number;
@@ -21,7 +26,7 @@ interface Destination {
     gains: (number | null)[];
 }
 
-interface KnarrPlayer extends Player {
+export interface KnarrPlayer extends Player {
     playerNo: number;
     reputation: number;
     recruit: number;
@@ -33,7 +38,7 @@ interface KnarrPlayer extends Player {
     reservedDestinations?: Destination[];
 }
 
-interface KnarrGamedatas {
+export interface KnarrGamedatas {
     current_player_id: string;
     decision: {decision_type: string};
     game_result_neutralized: string;
@@ -61,7 +66,7 @@ interface KnarrGamedatas {
     reservePossible: boolean;
 }
 
-interface KnarrGame extends Game {
+export interface KnarrGame {
     bga: Bga;
 
     cardsManager: CardsManager;
@@ -87,32 +92,32 @@ interface KnarrGame extends Game {
     onPlayedCardClick(card: Card): void;
 }
 
-interface EnteringPlayActionArgs {
+export interface EnteringPlayActionArgs {
     canRecruit: boolean;
     canExplore: boolean;
     canTrade: boolean;
     possibleDestinations: Destination[];
 }
 
-interface EnteringChooseNewCardArgs {
+export interface EnteringChooseNewCardArgs {
     centerCards: Card[];
     freeColor: number;
     recruits: number;
     allFree: boolean;
 }
 
-interface EnteringPayDestinationArgs {
+export interface EnteringPayDestinationArgs {
     selectedDestination: Destination;
     recruits: number;
 }
 
-interface EnteringTradeArgs {
+export interface EnteringTradeArgs {
     bracelets: number;
     gainsByBracelets: { [bracelets: number]: number };
 }
 
 // playCard
-interface NotifPlayCardArgs {
+export interface NotifPlayCardArgs {
     playerId: number;
     card: Card;
     newHandCard: Card;
@@ -120,7 +125,7 @@ interface NotifPlayCardArgs {
 }
 
 // card
-interface NotifNewCardArgs {
+export interface NotifNewCardArgs {
     playerId: number;
     card: Card;
     cardDeckTop?: Card;
@@ -128,14 +133,14 @@ interface NotifNewCardArgs {
 }
 
 // takeDestination
-interface NotifTakeDestinationArgs {
+export interface NotifTakeDestinationArgs {
     playerId: number;
     destination: Destination;
     effectiveGains: { [type: number]: number };
 }
 
 // newTableDestination
-interface NotifNewTableDestinationArgs {
+export interface NotifNewTableDestinationArgs {
     destination: Destination;
     letter: string;    
     destinationDeckTop?: Destination;
@@ -143,39 +148,39 @@ interface NotifNewTableDestinationArgs {
 }
 
 // trade
-interface NotifTradeArgs {
+export interface NotifTradeArgs {
     playerId: number;
     effectiveGains: { [type: number]: number };
 }
 
 // discardCards
-interface NotifDiscardCardsArgs {
+export interface NotifDiscardCardsArgs {
     playerId: number;
     cards: Card[];
     cardDiscardCount: number;
 }
 
 // discardTableCard
-interface NotifDiscardTableCardArgs {
+export interface NotifDiscardTableCardArgs {
     card: Card;
     cardDiscardCount: number;
 }
 
 // reserveDestination
-interface NotifReserveDestinationArgs {
+export interface NotifReserveDestinationArgs {
     playerId: number;
     destination: Destination;
 }
 
 // score
-interface NotifScoreArgs {
+export interface NotifScoreArgs {
     playerId: number;
     newScore: number;
     incScore: number;
 }
 
 // cardDeckReset
-interface NotifCardDeckResetArgs {  
+export interface NotifCardDeckResetArgs {  
     cardDeckTop?: Card;
     cardDeckCount: number;
     cardDiscardCount: number;

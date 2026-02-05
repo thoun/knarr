@@ -1,4 +1,8 @@
-class DestinationsManager extends CardManager<Destination> {
+import { DIFFERENT, EQUAL } from "./knarr";
+import { Destination, KnarrGame } from "./knarr.d";
+import { BgaCards } from "./libs";
+
+export class DestinationsManager extends BgaCards.CardManager<Destination> {
     constructor (public game: KnarrGame) {
         super(game, {
             getId: (card) => `destination-${card.id}`,

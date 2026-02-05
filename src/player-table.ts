@@ -1,10 +1,19 @@
-class PlayerTable {
+import { Card, Destination, KnarrGame, KnarrPlayer } from "./knarr.d";
+import { EQUAL, DIFFERENT } from "./knarr";
+import { BgaCards } from "./libs";
+
+export class PlayerTable {
     public playerId: number;
-    public voidStock: VoidStock<Card>;
-    public hand?: LineStock<Card>;
-    public played: LineStock<Card>[] = [];
-    public destinations: LineStock<Destination>;
-    public reservedDestinations?: LineStock<Destination>;
+    // @ts-ignore
+    public voidStock: BgaCards.VoidStock<Card>;
+    // @ts-ignore
+    public hand?: BgaCards.LineStock<Card>;
+    // @ts-ignore
+    public played: BgaCards.LineStock<Card>[] = [];
+    // @ts-ignore
+    public destinations: BgaCards.LineStock<Destination>;
+    // @ts-ignore
+    public reservedDestinations?: BgaCards.LineStock<Destination>;
     public limitSelection: number | null = null;
 
     private currentPlayer: boolean;
@@ -69,7 +78,7 @@ class PlayerTable {
 
         if (this.currentPlayer) {
             const handDiv = document.getElementById(`player-table-${this.playerId}-hand`);
-            this.hand = new LineStock<Card>(this.game.cardsManager, handDiv, {
+            this.hand = new BgaCards.LineStock/*<Card>*/(this.game.cardsManager, handDiv, {
                 sort: (a: Card, b: Card) => a.color == b.color ? a.gain - b.gain : a.color - b.color,
             });
             this.hand.onCardClick = (card: Card) => this.game.onHandCardClick(card);
@@ -77,11 +86,11 @@ class PlayerTable {
             this.hand.addCards(player.hand);
 
         }
-        this.voidStock = new VoidStock<Card>(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
+        this.voidStock = new BgaCards.VoidStock/*<Card>*/(this.game.cardsManager, document.getElementById(`player-table-${this.playerId}-name`));
                 
         for (let i = 1; i <= 5; i++) {
             const playedDiv = document.getElementById(`player-table-${this.playerId}-played-${i}`);
-            this.played[i] = new LineStock<Card>(this.game.cardsManager, playedDiv, {
+            this.played[i] = new BgaCards.LineStock/*<Card>*/(this.game.cardsManager, playedDiv, {
                 direction: 'column',
                 center: false,
             });
@@ -96,7 +105,7 @@ class PlayerTable {
         }
         
         const destinationsDiv = document.getElementById(`player-table-${this.playerId}-destinations`);
-        this.destinations = new LineStock<Destination>(this.game.destinationsManager, destinationsDiv, {
+        this.destinations = new BgaCards.LineStock/*<Destination>*/(this.game.destinationsManager, destinationsDiv, {
             center: false,
         });
         destinationsDiv.style.setProperty('--card-overlap', '94px');
@@ -104,7 +113,7 @@ class PlayerTable {
         this.destinations.addCards(player.destinations);
 
         if (reservePossible) {
-            this.reservedDestinations = new LineStock<Destination>(this.game.destinationsManager, document.getElementById(`player-table-${this.playerId}-reserved-destinations`), {
+            this.reservedDestinations = new BgaCards.LineStock/*<Destination>*/(this.game.destinationsManager, document.getElementById(`player-table-${this.playerId}-reserved-destinations`), {
                 center: false,
             });            
             this.reservedDestinations.addCards(player.reservedDestinations);

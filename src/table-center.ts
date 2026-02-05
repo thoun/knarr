@@ -1,3 +1,7 @@
+import { ANIMATION_MS } from "./knarr";
+import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination } from "./knarr.d";
+import { BgaCards } from "./libs";
+
 const POINT_CASE_SIZE_LEFT = 38.8;
 const POINT_CASE_SIZE_TOP = 37.6;
 
@@ -5,8 +9,10 @@ function sleep(ms: number){
     return new Promise((r) => setTimeout(r, ms));
 }
 
-class DeckWithDiscard extends Deck<Card> {
-    private cardDiscard: VoidStock<Card>;
+    // @ts-ignore
+class DeckWithDiscard extends BgaCards.Deck<Card> {
+    // @ts-ignore
+    private cardDiscard: BgaCards.VoidStock<Card>;
 
     constructor(element: HTMLElement, private game: KnarrGame, gamedatas: KnarrGamedatas) {
         super(game.cardsManager, element, {
@@ -26,7 +32,7 @@ class DeckWithDiscard extends Deck<Card> {
         this.game.setTooltip(deckCounterDiv.id, _('Deck size'));
         this.game.setTooltip(discardCounterDiv.id, _('Discard size'));
         
-        this.cardDiscard = new VoidStock<Card>(game.cardsManager, discardCounterDiv);
+        this.cardDiscard = new BgaCards.VoidStock/*<Card>*/(game.cardsManager, discardCounterDiv);
     }
     
     public discardCards(cards: Card[], newCount: number): Promise<any> {
@@ -51,19 +57,23 @@ class DeckWithDiscard extends Deck<Card> {
     }
 }
 
-class TableCenter {
+export class TableCenter {
+    // @ts-ignore
     public destinationsDecks: Deck<Destination>[] = [];
     public cardDeck: DeckWithDiscard;
+    // @ts-ignore
     public destinations: SlotStock<Destination>[] = [];
+    // @ts-ignore
     public cards: SlotStock<Card>;
     private vp = new Map<number, number>();
     private reputation = new Map<number, number>(); 
 
-    private artifacts: LineStock<number>;
+    // @ts-ignore
+    private artifacts: BgaCards.LineStock<number>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
         ['A', 'B'].forEach(letter => {
-            this.destinationsDecks[letter] = new Deck<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}-deck`), {
+            this.destinationsDecks[letter] = new BgaCards.Deck/*<Destination>*/(game.destinationsManager, document.getElementById(`table-destinations-${letter}-deck`), {
                 cardNumber: gamedatas.centerDestinationsDeckCount[letter],
                 topCard: gamedatas.centerDestinationsDeckTop[letter],
                 counter: {
@@ -71,7 +81,7 @@ class TableCenter {
                 },
             });
 
-            this.destinations[letter] = new SlotStock<Destination>(game.destinationsManager, document.getElementById(`table-destinations-${letter}`), {
+            this.destinations[letter] = new BgaCards.SlotStock/*<Destination>*/(game.destinationsManager, document.getElementById(`table-destinations-${letter}`), {
                 slotsIds: [1, 2, 3],
                 mapCardToSlot: card => card.locationArg,
             });
@@ -81,7 +91,7 @@ class TableCenter {
 
         this.cardDeck = new DeckWithDiscard(document.getElementById(`card-deck`), game, gamedatas);
 
-        this.cards = new SlotStock<Card>(game.cardsManager, document.getElementById(`table-cards`), {
+        this.cards = new BgaCards.SlotStock/*<Card>*/(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: card => card.locationArg,
             gap: '12px',
@@ -112,7 +122,7 @@ class TableCenter {
         if (gamedatas.variantOption >= 2) {
             document.getElementById('table-center').insertAdjacentHTML('afterbegin', `<div></div><div id="artifacts"></div>`);
         
-            this.artifacts = new LineStock<number>(this.game.artifactsManager, document.getElementById(`artifacts`));
+            this.artifacts = new BgaCards.LineStock/*<number>*/(this.game.artifactsManager, document.getElementById(`artifacts`));
             this.artifacts.addCards(gamedatas.artifacts);
         }
     }
