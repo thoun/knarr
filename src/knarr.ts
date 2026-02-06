@@ -174,19 +174,19 @@ export class Game implements KnarrGame {
         console.log('Entering state: ' + stateName, args.args);
 
         switch (stateName) {
-            case 'playAction':
+            case 'PlayAction':
                 this.onEnteringPlayAction(args.args);
                 break;
-            case 'chooseNewCard':
+            case 'ChooseNewCard':
                 this.onEnteringChooseNewCard(args.args);
                 break;
-            case 'payDestination':
+            case 'PayDestination':
                 this.onEnteringPayDestination(args.args);
                 break;
-            case 'discardTableCard':
+            case 'DiscardTableCard':
                 this.onEnteringDiscardTableCard();
                 break;
-            case 'reserveDestination':
+            case 'ReserveDestination':
                 this.onEnteringReserveDestination();
                 break;
         }
@@ -252,22 +252,22 @@ export class Game implements KnarrGame {
         console.log( 'Leaving state: '+stateName );
 
         switch (stateName) {
-            case 'playAction':
+            case 'PlayAction':
                 this.onLeavingPlayAction();
                 break;
-            case 'chooseNewCard':
+            case 'ChooseNewCard':
                 this.onLeavingChooseNewCard();
                 break;
-            case 'payDestination':
+            case 'PayDestination':
                 this.onLeavingPayDestination();
                 break;
-            case 'discardTableCard':
+            case 'DiscardTableCard':
                 this.onLeavingDiscardTableCard();
                 break;
-            case 'discardCard':
+            case 'DiscardCard':
                 this.onLeavingDiscardCard();
                 break;
-            case 'reserveDestination':
+            case 'ReserveDestination':
                 this.onLeavingReserveDestination();
                 break;
         }
@@ -333,7 +333,7 @@ export class Game implements KnarrGame {
         
         if (this.bga.players.isCurrentPlayerActive()) {
             switch (stateName) {
-                case 'playAction':
+                case 'PlayAction':
                     const playActionArgs = args as EnteringPlayActionArgs;
                     this.bga.statusBar.addActionButton(_("Trade"), () => this.goTrade(), { disabled: !playActionArgs.canTrade });
                     
@@ -350,7 +350,7 @@ export class Game implements KnarrGame {
                         }
                     }
                     break;
-                case 'chooseNewCard':
+                case 'ChooseNewCard':
                     const chooseNewCardArgs = args as EnteringChooseNewCardArgs;
                     [1, 2, 3, 4, 5].forEach(color => {
                         const free = chooseNewCardArgs.allFree || color == chooseNewCardArgs.freeColor;
@@ -361,13 +361,13 @@ export class Game implements KnarrGame {
                         );
                     });
                     break;
-                case 'payDestination':
+                case 'PayDestination':
                     this.bga.statusBar.addActionButton('', () => this.payDestination(), { id: `payDestination_button` });
                     this.setPayDestinationLabelAndState(args);
 
                     this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancel(), { color: 'secondary' });
                     break;
-                case 'trade':
+                case 'Trade':
                     const tradeArgs = args as EnteringTradeArgs;
                     [1, 2, 3].forEach(number => {
                         const button = this.bga.statusBar.addActionButton(
@@ -383,12 +383,12 @@ export class Game implements KnarrGame {
                     this.bga.statusBar.addActionButton(_("Cancel"), () => this.cancel(), { color: 'secondary' });
                     break;
 
-                case 'discardTableCard':
-                case 'reserveDestination':
+                case 'DiscardTableCard':
+                case 'ReserveDestination':
                     this.bga.statusBar.addActionButton(_("Pass"), () => this.pass(), { color: 'secondary' });
 
                 // multiplayer state    
-                case 'discardCard':
+                case 'DiscardCard':
                     this.onEnteringDiscardCard(args);
                     break;
                     
@@ -636,7 +636,7 @@ export class Game implements KnarrGame {
     }
     
     public onTableDestinationClick(destination: Destination): void {
-        if (this.gamedatas.gamestate.name == 'reserveDestination') {
+        if (this.gamedatas.gamestate.name == 'ReserveDestination') {
             this.reserveDestination(destination.id);
         } else {
             this.takeDestination(destination.id);
@@ -648,7 +648,7 @@ export class Game implements KnarrGame {
     }
 
     public onTableCardClick(card: Card): void {
-        if (this.gamedatas.gamestate.name == 'discardTableCard') {
+        if (this.gamedatas.gamestate.name == 'DiscardTableCard') {
             this.discardTableCard(card.id);
         } else {
             this.chooseNewCard(card.id);
@@ -656,7 +656,7 @@ export class Game implements KnarrGame {
     }
 
     public onPlayedCardClick(card: Card): void {
-        if (this.gamedatas.gamestate.name == 'discardCard') {
+        if (this.gamedatas.gamestate.name == 'DiscardCard') {
             this.discardCard(card.id);
         } else {
             this.setPayDestinationLabelAndState();

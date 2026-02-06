@@ -21,9 +21,11 @@ namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\Table;
-use Bga\GameFramework\VisibleSystemException;
+use Card;
 use CardType;
+use Destination;
 use DestinationType;
+use KnarrPlayer;
 
 require_once('objects/card.php');
 require_once('objects/destination.php');
@@ -32,10 +34,6 @@ require_once('objects/undo.php');
 require_once('constants.inc.php');
 
 class Game extends Table {
-    use UtilTrait;
-    use ActionTrait;
-    use StateTrait;
-    use ArgsTrait;
     use DebugUtilTrait;
 
     public Deck $cards;
@@ -66,7 +64,6 @@ class Game extends Table {
             COMPLETED_LINES => COMPLETED_LINES,
 
             BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
-            VARIANT_OPTION => VARIANT_OPTION,
         ]);   
 		
         $this->cards = $this->deckFactory->createDeck("card");
@@ -324,45 +321,746 @@ class Game extends Table {
         return $maxScore * 100 / 40;
     }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////// Zombie
-////////////
+    function array_find(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if($fn($value)) {
+                return $value;
+            }
+        }
+        return null;
+    }
 
-    /*
-        zombieTurn:
-        
-        This method is called each time it is the turn of a player who has quit the game (= "zombie" player).
-        You can do whatever you want in order to make sure the turn of this player ends appropriately
-        (ex: pass).
-        
-        Important: your zombie code will be called when the player leaves the game. This action is triggered
-        from the main site and propagated to the gameserver from a server, not from a browser.
-        As a consequence, there is no current player associated to this action. In your zombieTurn function,
-        you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
-    */
+    function array_findIndex(array $array, callable $fn) {
+        $index = 0;
+        foreach ($array as $value) {
+            if($fn($value)) {
+                return $index;
+            }
+            $index++;
+        }
+        return null;
+    }
 
-    function zombieTurn( $state, $active_player )
-    {
-    	$statename = $state['name'];
-    	
-        if ($state['type'] === "activeplayer") {
-            switch ($statename) {
-                default:
-                    $this->gamestate->jumpToState(ST_NEXT_PLAYER);
-                    break;
+    function array_find_key(array $array, callable $fn) {
+        foreach ($array as $key => $value) {
+            if($fn($value)) {
+                return $key;
+            }
+        }
+        return null;
+    }
+
+    function array_some(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if($fn($value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    function array_every(array $array, callable $fn) {
+        foreach ($array as $value) {
+            if(!$fn($value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function setGlobalVariable(string $name, /*object|array*/ $obj) {
+        /*if ($obj == null) {
+            throw new \Error('Global Variable null');
+        }*/
+        $jsonObj = json_encode($obj);
+        $this->DbQuery("INSERT INTO `global_variables`(`name`, `value`)  VALUES ('$name', '$jsonObj') ON DUPLICATE KEY UPDATE `value` = '$jsonObj'");
+    }
+
+    function getGlobalVariable(string $name, $asArray = null) {
+        $json_obj = $this->getUniqueValueFromDB("SELECT `value` FROM `global_variables` where `name` = '$name'");
+        if ($json_obj) {
+            $object = json_decode($json_obj, $asArray);
+            return $object;
+        } else {
+            return null;
+        }
+    }
+
+    function deleteGlobalVariable(string $name) {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` = '$name'");
+    }
+
+    function deleteGlobalVariables(array $names) {
+        $this->DbQuery("DELETE FROM `global_variables` where `name` in (".implode(',', array_map(fn($name) => "'$name'", $names)).")");
+    }
+
+    function getPlayersIds() {
+        return array_keys($this->loadPlayersBasicInfos());
+    }
+
+    function getRoundCardCount() {
+        return count($this->getPlayersIds()) + 2;
+    }
+
+    function getPlayerName(int $playerId) {
+        return self::getUniqueValueFromDB("SELECT player_name FROM player WHERE player_id = $playerId");
+    }
+
+    function getPlayer(int $id) {
+        $sql = "SELECT * FROM player WHERE player_id = $id";
+        $dbResults = $this->getCollectionFromDb($sql);
+        return array_map(fn($dbResult) => new KnarrPlayer($dbResult), array_values($dbResults))[0];
+    }
+
+    function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->bga->playerScore->inc($playerId, $amount, null);
+        }
+            
+        $this->bga->notify->all('score', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->score,
+            'incScore' => $amount,
+        ] + $args);
+
+        $this->checkMaxScore($playerId);
+    }
+
+    function checkMaxScore(int $playerId) {
+        if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
+            $this->setGameStateValue(LAST_TURN, 1);
+
+            $this->bga->notify->all('lastTurn', clienttranslate('${player_name} reached 40 Victory Points, triggering the end of the game!'), [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ]);
+        }
+    }
+
+    function incPlayerRecruit(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + $amount WHERE player_id = $playerId");
+        }
+
+        $this->bga->notify->all('recruit', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->recruit,
+            'incScore' => $amount,
+        ] + $args);
+    }
+
+    function incPlayerBracelet(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + $amount WHERE player_id = $playerId");
+        }
+
+        $this->bga->notify->all('bracelet', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'newScore' => $this->getPlayer($playerId)->bracelet,
+            'incScore' => $amount,
+        ] + $args);
+    }
+
+    function getCardFromDb(/*array|null*/ $dbCard) {
+        if ($dbCard == null) {
+            return null;
+        }
+        return new Card($dbCard);
+    }
+
+    function getCardsFromDb(array $dbCards) {
+        return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
+    }
+
+    function getCardById(int $id) {
+        $sql = "SELECT * FROM `card` WHERE `card_id` = $id";
+        $dbResults = $this->getCollectionFromDb($sql);
+        $cards = array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
+        return count($cards) > 0 ? $cards[0] : null;
+    }
+
+    function getCardsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
+        $sql = "SELECT * FROM `card` WHERE `card_location` = '$location'";
+        if ($location_arg !== null) {
+            $sql .= " AND `card_location_arg` = $location_arg";
+        }
+        if ($type !== null) {
+            $sql .= " AND `card_type` = $type";
+        }
+        if ($number !== null) {
+            $sql .= " AND `card_type_arg` = $number";
+        }
+        $sql .= " ORDER BY `card_location_arg`";
+        $dbResults = $this->getCollectionFromDb($sql);
+        return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
+    }
+
+    function setupCards(array $playersIds) {
+        $playerCount = count($playersIds);
+        foreach ($this->CARDS as $cardType) {
+            $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => $cardType->number[$playerCount] ];
+        }
+        $this->cards->createCards($cards, 'deck');
+        $this->cards->shuffle('deck');
+
+        foreach ([1,2,3,4,5] as $slot) {
+            $this->cards->pickCardForLocation('deck', 'slot', $slot);
+        }
+
+        foreach ($playersIds as $playerId) {
+            $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
+            while ($playedCards[0]->color == $playedCards[1]->color) {
+                $this->cards->moveAllCardsInLocation('played'.$playerId, 'deck');
+                $this->cards->shuffle('deck');
+                $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
+            }
+            foreach ($playedCards as $playedCard) {
+                $this->cards->moveCard($playedCard->id, 'played'.$playerId.'-'.$playedCard->color);
             }
 
+            $this->cards->pickCardsForLocation(3, 'deck', 'hand', $playerId);
+        }
+    }
+
+    function getDestinationFromDb(/*array|null*/ $dbCard) {
+        if ($dbCard == null) {
+            return null;
+        }
+        return new Destination($dbCard, $this->DESTINATIONS);
+    }
+
+    function getDestinationsFromDb(array $dbCards) {
+        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbCards));
+    }
+
+    function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
+        $sql = "SELECT * FROM `destination` WHERE `card_location` = '$location'";
+        if ($location_arg !== null) {
+            $sql .= " AND `card_location_arg` = $location_arg";
+        }
+        if ($type !== null) {
+            $sql .= " AND `card_type` = $type";
+        }
+        if ($number !== null) {
+            $sql .= " AND `card_type_arg` = $number";
+        }
+        $sql .= " ORDER BY `card_location_arg`";
+        $dbResults = $this->getCollectionFromDb($sql);
+        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbResults));
+    }
+
+    function setupDestinations() {
+        $cards[] = ['A' => [], 'B' => []];
+        foreach ($this->DESTINATIONS as $number => $destinationType) {
+            $cards[$number > 20 ? 'B' : 'A'][] = [ 'type' => $number > 20 ? 2 : 1, 'type_arg' => $number, 'nbr' => 1 ];
+        }
+        foreach (['A', 'B'] as $type) {
+            $this->destinations->createCards($cards[$type], 'deck'.$type);
+            $this->destinations->shuffle('deck'.$type);
+        }
+
+        foreach ([1,2,3] as $slot) {
+            foreach (['A', 'B'] as $type) {
+                $this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $slot);
+            }
+        }
+    }
+
+    function getBoatSideOption(): int {
+        return $this->bga->tableOptions->get(BOAT_SIDE_OPTION);
+    }
+
+    function getVariantOption(): int {
+        return $this->bga->tableOptions->get(VARIANT_OPTION);
+    }
+
+    function getBoatGain() {
+        return $this->getBoatSideOption() == 2 ? [VP, null, BRACELET] : [null, RECRUIT, null];
+    } 
+    
+    function argPlayAction(int $activePlayerId): array {
+        $player = $this->getPlayer($activePlayerId);
+
+        $bracelets = $player->bracelet;
+        $recruits = $player->recruit;
+
+        $playedCardsColors = $this->getPlayedCardsColor($activePlayerId);
+
+        $recruitDone = boolval($this->getGameStateValue((string)RECRUIT_DONE));
+        $exploreDone = boolval($this->getGameStateValue((string)EXPLORE_DONE));
+        $tradeDone = boolval($this->getGameStateValue((string)TRADE_DONE));
+
+        $possibleDestinations = [];
+        if (!$exploreDone) {
+            $possibleDestinations = array_merge(
+                $this->getDestinationsByLocation('slotA'),
+                $this->getDestinationsByLocation('slotB'),
+                $this->getDestinationsByLocation('reserved', $activePlayerId),
+            );
+
+            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
+        }
+
+        return [
+            'possibleDestinations' => $possibleDestinations,
+            'canRecruit' => !$recruitDone,
+            'canExplore' => !$exploreDone,
+            'canTrade' => !$tradeDone && $bracelets > 0,
+        ];
+    }
+    
+    function redirectAfterAction(int $playerId, bool $checkArtifacts) {
+        if ($checkArtifacts && $this->getVariantOption() >= 2) {
+            $this->checkArtifacts($playerId);
+        }
+
+        if (boolval($this->getGameStateValue(GO_RESERVE))) {
+            $this->incGameStateValue(GO_RESERVE, -1);
+            $this->setGameStateValue(PLAYED_CARD_COLOR, 0);
+            $reserved = $this->getDestinationsByLocation('reserved', $playerId);
+            if (count($reserved) >= 2) {
+                $this->bga->notify->all('log', clienttranslate('${player_name} cannot reserve a destination because he already has 2'), [
+                    'playerId' => $playerId,
+                    'player_name' => $this->getPlayerName($playerId),
+                ]);
+            } else {
+                $this->gamestate->nextState('reserve');
+                return;
+            }
+        }
+        if (boolval($this->getGameStateValue(GO_DISCARD_TABLE_CARD))) {
+            $this->incGameStateValue(GO_DISCARD_TABLE_CARD, -1);
+            $this->gamestate->nextState('discardTableCard');
             return;
         }
 
-        if ($state['type'] === "multipleactiveplayer") {
-            // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive( $active_player, 'next');
-            
-            return;
+        $args = $this->argPlayAction($playerId);
+
+        $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'];
+
+        if ($canPlay) {
+            $this->gamestate->nextState('next');
+        } else {
+            $endTurn = $this->checkEndTurnArtifacts($playerId);
+
+            $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
+        }
+    }
+    
+    function groupGains(array $gains) {
+        $groupGains = [];
+
+        foreach ($gains as $gain) {
+            if (array_key_exists($gain, $groupGains)) {
+                $groupGains[$gain] += 1;
+            } else {
+                $groupGains[$gain] = 1;
+            }
         }
 
-        throw new VisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
+        return $groupGains;
+    }
+    
+    function gainResources(int $playerId, array $groupGains, string $phase) {
+        $player = $this->getPlayer($playerId);
+
+        $effectiveGains = [];
+
+        foreach ($groupGains as $type => $amount) {
+            switch ($type) {
+                case VP: 
+                    $effectiveGains[VP] = $amount;
+                    $this->bga->playerScore->inc($playerId, $effectiveGains[VP], null);
+                    $this->checkMaxScore($playerId);
+                    break;
+                case BRACELET: 
+                    $effectiveGains[BRACELET] = min($amount, 3 - $player->bracelet);
+                    $this->DbQuery("UPDATE player SET `player_bracelet` = `player_bracelet` + ".$effectiveGains[BRACELET]." WHERE player_id = $playerId");
+
+                    if ($effectiveGains[BRACELET] < $amount) {
+                        $this->bga->playerStats->inc('braceletsMissed', $amount - $effectiveGains[BRACELET], $playerId, updateTableStat: true);
+                    }
+                    break;
+                case RECRUIT:
+                    $effectiveGains[RECRUIT] = min($amount, 3 - $player->recruit);
+                    $this->DbQuery("UPDATE player SET `player_recruit` = `player_recruit` + ".$effectiveGains[RECRUIT]." WHERE player_id = $playerId");
+
+                    if ($effectiveGains[RECRUIT] < $amount) {
+                        $this->bga->playerStats->inc('recruitsMissed', $amount - $effectiveGains[RECRUIT], $playerId, updateTableStat: true);
+                    }
+                    break;
+                case REPUTATION:
+                    $effectiveGains[REPUTATION] = min($amount, 14 - $player->reputation);
+                    $this->DbQuery("UPDATE player SET `player_reputation` = `player_reputation` + ".$effectiveGains[REPUTATION]." WHERE player_id = $playerId");
+                    break;
+                case CARD: 
+                    $available = $this->getAvailableDeckCards();
+                    $effectiveGains[CARD] = min($amount, $available);
+                    for ($i = 0; $i < $effectiveGains[CARD]; $i++) {
+                        $this->powerTakeCard($playerId);
+                    }
+                    if ($effectiveGains[CARD] < $amount) {
+                        $this->setGlobalVariable(REMAINING_CARDS_TO_TAKE, [
+                            'playerId' => $playerId,
+                            'phase' => $phase,
+                            'remaining' => $amount - $effectiveGains[CARD],
+                        ]);
+                    }
+                    break;
+            }
+        }
+
+        return $effectiveGains;
+    }
+
+    function argChooseNewCard(int $playerId) {
+        $player = $this->getPlayer($playerId);
+
+        $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+        $centerCards = $this->getCardsByLocation('slot');
+
+        $allFree = false;
+        if ($this->getVariantOption() >= 2) {
+            $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+            if (in_array(ARTIFACT_CAULDRON, $artifacts)) {
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    $allFree = $playedCardsColors[$playedCardColor] == 2;
+
+                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                }
+            }
+        }
+
+        return [
+            'centerCards' => $centerCards,
+            'freeColor' => $freeColor,
+            'recruits' => $player->recruit,
+            'allFree' => $allFree,
+        ];
+    }
+
+    function canTakeDestination(Destination $destination, array $playedCardsColors, int $recruits, bool $strict) {
+        $missingCards = 0;
+
+        foreach ($destination->cost as $color => $required) {
+            $available = 0;
+            if ($color == EQUAL) {
+                $available = max($playedCardsColors);
+            } else if ($color == DIFFERENT) {
+                $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
+            } else {
+                $available = ($playedCardsColors[$color] ?? 0); 
+            }
+
+            if ($available < $required) {
+                $missingCards += ($required - $available);
+            }
+        }
+
+        return $strict ? $recruits == $missingCards : $recruits >= $missingCards;
+    }
+
+    function getGainName(int $gain) {
+        switch ($gain) {
+            case VP: return clienttranslate("Victory Point");
+            case BRACELET: return clienttranslate("Bracelet");
+            case RECRUIT: return clienttranslate("Recruit");
+            case REPUTATION: return clienttranslate("Reputation");
+            case CARD: return clienttranslate("Card");
+        }
+    }
+
+    function getColorName(int $color) {
+        switch ($color) {
+            case BLUE: return clienttranslate("Blue");
+            case YELLOW: return clienttranslate("Yellow");
+            case GREEN: return clienttranslate("Green");
+            case RED: return clienttranslate("Red");
+            case PURPLE: return clienttranslate("Purple");
+        }
+    }
+
+    function getArtifactName(int $artifact) {
+        switch ($artifact) {
+            case ARTIFACT_MEAD_CUP: return clienttranslate("Mead Cup");
+            case ARTIFACT_SILVER_COIN: return clienttranslate("Silver coin");
+            case ARTIFACT_CAULDRON: return clienttranslate("Cauldron");
+            case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
+            case ARTIFACT_HELMET: return clienttranslate("Helmet");
+            case ARTIFACT_AMULET: return clienttranslate("Amulet");
+            case ARTIFACT_WEATHERVANE: return clienttranslate("Weathervane");
+        }
+    }
+
+    function powerTakeCard(int $playerId) {
+        $card = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
+        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
+
+        $this->bga->notify->all('takeDeckCard', clienttranslate('${player_name} takes a ${card_color} ${card_type} card from the deck'), [
+            'playerId' => $playerId,
+            'player_name' => $this->getPlayerName($playerId),
+            'card' => $card,
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'card_type' => $this->getGainName($card->gain), // for logs
+            'card_color' => $this->getColorName($card->color), // for logs
+        ]);
+
+    }
+
+    function getPlayedCardsByColor(int $playerId) {
+        $playedCardsByColor = [];
+        foreach ([1,2,3,4,5] as $color) {
+            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+        }
+        return $playedCardsByColor;
+    }
+
+    function getPlayedCardsColor(int $playerId, /*array | null*/ $playedCardsByColor = null) {
+        if ($playedCardsByColor === null) {
+            $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
+        }
+        foreach ([1,2,3,4,5] as $color) {
+            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+        }
+        return array_map(fn($cards) => count($cards), $playedCardsByColor);
+    }
+
+    function setupArtifacts(int $option, int $playerCount) {
+        $availableArtifacts = [1, 2, 3, 4, 5, 6, 7];
+        $artifacts = [];
+
+        if ($option == 2 && $playerCount == 2) {
+            $artifacts[] = array_shift($availableArtifacts);
+        }
+
+        $index = bga_rand(1, count($availableArtifacts)) - 1;
+        $artifacts[] = $availableArtifacts[$index];
+        array_splice($availableArtifacts, $index, 1);
+
+        $this->setGlobalVariable(ARTIFACTS, $artifacts);
+    }
+
+    function checkArtifacts(int $playerId) {
+        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+
+        foreach ($artifacts as $artifact) {
+            $this->checkArtifact($playerId, $artifact);
+        }
+    }
+
+    function checkEndTurnArtifacts(int $playerId) {
+        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+
+        $endTurn = true;
+
+        foreach ($artifacts as $artifact) {
+            $result = $this->checkEndTurnArtifact($playerId, $artifact);
+            if (!$result) {
+                $endTurn = false;
+            }
+        }
+
+        return $endTurn;
+    }
+
+    function getCompletedLines(int $playerId) {
+        $playedCardsColors = $this->getPlayedCardsColor($playerId);
+        return min($playedCardsColors);
+    }
+
+    function completedAPlayedLine(int $playerId) {
+        $completedLines = intval($this->getGameStateValue(COMPLETED_LINES));
+        return $this->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
+    }
+
+    function checkArtifact(int $playerId, int $artifact) {
+        switch ($artifact) {
+            case ARTIFACT_SILVER_COIN:
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    if ($playedCardsColors[$playedCardColor] > 3) {
+                        $groupGains = [
+                            VP => 1,
+                        ];
+                        $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:silver-coins');
+    
+                        $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
+                            'playerId' => $playerId,
+                            'player_name' => $this->getPlayerName($playerId),
+                            'effectiveGains' => $effectiveGains,
+                            'gains' => $effectiveGains, // for logs
+                            'artifact_name' => $this->getArtifactName($artifact), // for logs
+                            'i18n' => ['artifact_name'],
+                        ]);
+
+                        $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                    }
+                }
+                break;
+            case ARTIFACT_GOLDEN_BRACELET:
+                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+                if ($playedCardColor > 0) {
+                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    if ($playedCardsColors[$playedCardColor] == 3) {
+                        $this->setGameStateValue(GO_RESERVE, 1);
+
+                        $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                    }
+                }
+                break;
+        }
+        $this->checkEndTurnArtifact($playerId, $artifact);
+    }
+
+    function checkEndTurnArtifact(int $playerId, int $artifact) {
+        $endTurn = true;
+        switch ($artifact) {
+            case ARTIFACT_AMULET:
+                if ($this->completedAPlayedLine($playerId)) {
+                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effect
+                    $groupGains = [
+                        BRACELET => 1,
+                        RECRUIT => 1,
+                        REPUTATION => 1,
+                    ];
+                    $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:amulet');
+
+                    $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerName($playerId),
+                        'effectiveGains' => $effectiveGains,
+                        'gains' => $effectiveGains, // for logs
+                        'artifact_name' => $this->getArtifactName($artifact), // for logs
+                        'i18n' => ['artifact_name'],
+                    ]);
+
+                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                }
+                break;
+            case ARTIFACT_WEATHERVANE:
+                if ($this->completedAPlayedLine($playerId)) {
+                    $this->setGameStateValue(EXPLORE_DONE, 0);
+                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effectrId)]);
+
+                    $this->bga->notify->all('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
+                        'playerId' => $playerId,
+                        'player_name' => $this->getPlayerName($playerId),
+                        'artifact_name' => $this->getArtifactName($artifact), // for logs
+                        'i18n' => ['artifact_name'],
+                    ]);
+
+                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                    
+                    $endTurn = false;
+                }
+                break;
+        }
+        return $endTurn;
+    }
+
+    function getAvailableDeckCards() {
+        return intval($this->cards->countCardInLocation('deck')) + intval($this->cards->countCardInLocation('discard'));
+    }
+
+    function getTradeGains(int $playerId, int $bracelets) {
+        $destinations = $this->getDestinationsByLocation('played'.$playerId);
+
+        $gains = [];
+
+        $rows = array_merge(
+            [$this->getBoatGain()],
+            array_map(fn($destination) => $destination->gains, $destinations),
+        );
+        foreach ($rows as $row) {
+            for ($i = 0; $i < $bracelets; $i++) {
+                if ($row[$i] !== null) {
+                    $gains[] = $row[$i];
+                }
+            }
+        }
+
+        return $gains;
+    }
+
+    public function cardDeckAutoReshuffle() {
+        $this->bga->notify->all('cardDeckReset', clienttranslate('The card deck has been reshuffled'), [            
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
+        ]);
+    }
+
+    public function endOfRecruit(int $playerId, int $slotColor) {
+        $newTableCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'slot', $slotColor));
+        $newTableCard->location = 'slot';
+        $newTableCard->locationArg = $slotColor;
+
+        $this->bga->notify->all('newTableCard', '', [
+            'card' => $newTableCard,
+            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
+            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')) + 1, // to count the new card
+        ]);
+
+        $this->setGameStateValue(RECRUIT_DONE, 1);
+        $this->setGameStateValue(EXPLORE_DONE, 1);
+
+        $this->redirectAfterAction($playerId, true);
+    }    
+
+    public function endExplore(int $playerId, bool $fromReserve, object $destination, int $destinationIndex) {
+        if (!$fromReserve) {
+            $type = $destination->type == 2 ? 'B' : 'A';
+            $newDestination = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $destination->locationArg));
+            $newDestination->location = 'slot'.$type;
+            $newDestination->locationArg = $destination->locationArg;
+
+            $this->bga->notify->all('newTableDestination', '', [
+                'destination' => $newDestination,
+                'letter' => $type,
+                'destinationDeckTop' => Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$type))),
+                'destinationDeckCount' => intval($this->destinations->countCardInLocation('deck'.$type)),
+            ]);
+        }
+
+        $this->setGameStateValue(RECRUIT_DONE, 1);
+        $this->setGameStateValue(EXPLORE_DONE, 1);
+
+        if ($this->getVariantOption() >= 2) {
+            $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
+            if (in_array(ARTIFACT_HELMET, $artifacts) && $destinationIndex > 0 && $destination->type == 2) {
+                $previousDestination = $this->getDestinationsByLocation('played'.$playerId)[$destinationIndex - 1];
+                if ($previousDestination->type == 1) {
+                    $this->setGameStateValue(RECRUIT_DONE, 0);
+                    $this->bga->notify->all('log', clienttranslate('${player_name} can do the recruit action thanks to ${artifact_name} effect'), [
+                        'player_name' => $this->getPlayerName($playerId),
+                        'artifact_name' => $this->getArtifactName(ARTIFACT_HELMET), // for logs
+                        'i18n' => ['artifact_name'],
+                    ]);
+
+                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+                }
+            }
+
+            if (in_array(ARTIFACT_MEAD_CUP, $artifacts)) {
+                $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
+
+                $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
+            }
+        }
+
+        $this->redirectAfterAction($playerId, true);
+    }    
+
+    public function endTrade(int $playerId) {
+        $this->setGameStateValue(TRADE_DONE, 1);
+        $this->redirectAfterAction($playerId, false);
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

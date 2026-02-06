@@ -2,6 +2,7 @@
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
+use Bga\GameFramework\Components\Deck;
 
 function debug(...$debugData) {
     if (Game::getBgaEnvironment() != 'studio') { 
@@ -10,6 +11,9 @@ function debug(...$debugData) {
 }
 
 trait DebugUtilTrait {
+    public Deck $cards;
+    public Deck $destinations;
+
     public Bga $bga;
 
 //////////////////////////////////////////////////////////////////////////////
