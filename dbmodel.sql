@@ -48,4 +48,3 @@ CREATE TABLE IF NOT EXISTS `global_variables` (
   `value` json,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-

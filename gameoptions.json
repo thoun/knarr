@@ -1,4 +1,20 @@
 {
+    "101": {
+        "name": "Skáli Expansion",
+        "values": {
+            "0": {
+                "name": "Disabled"
+            },
+            "1": {
+                "name": "Enabled",
+                "tmdisplay": "Skáli Expansion",
+                "nobeginner": true,
+                "alpha": true
+            }
+        },
+        "level": "major",
+        "default": 0
+    },
     "100": {
         "name": "Boat side",
         "values": {

@@ -9,8 +9,9 @@ class KnarrPlayer {
     public int $reputation;
     public int $recruit;
     public int $bracelet;
+    public int $coin;
 
-    public function __construct($dbPlayer) {
+    public function __construct($dbPlayer, int $coin) {
         $this->id = intval($dbPlayer['player_id']);
         $this->name = $dbPlayer['player_name'];
         $this->color = $dbPlayer['player_color'];
@@ -19,6 +20,7 @@ class KnarrPlayer {
         $this->reputation = intval($dbPlayer['player_reputation']);
         $this->recruit = intval($dbPlayer['player_recruit']);
         $this->bracelet = intval($dbPlayer['player_bracelet']);
+        $this->coin = $coin;
     }
 }
 ?>

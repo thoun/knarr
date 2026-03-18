@@ -103,6 +103,6 @@ $gameinfos = [
     'min' => 818,
   ],
 
-  'enable_3d' => false,
-
+// Trigger an exception when PHP detect warnings.
+'exception_on_warning' => true,
 ];

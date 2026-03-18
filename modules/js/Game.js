@@ -181,13 +181,14 @@ class PlayerTable {
         }
         html += `
             <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
-            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}">`;
+            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}" data-coins="${player.coin}">`;
         for (let i = 1; i <= 3; i++) {
             if (this.currentPlayer) {
                 html += `<div id="player-table-${this.playerId}-column${i}" class="column" data-number="${i}"></div>`;
             }
             html += `
             <div class="icon bracelet" data-number="${i}"></div>
+            <div class="icon coin" data-number="${i}"></div>
             <div class="icon recruit" data-number="${i}"></div>
             `;
         }
@@ -563,6 +564,7 @@ const BRACELET = 2;
 const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
+const COIN = 6;
 function getVpByReputation(reputation) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
@@ -573,6 +575,7 @@ class Game {
         this.reputationCounters = [];
         this.recruitCounters = [];
         this.braceletCounters = [];
+        this.coinCounters = [];
         this.crewCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.bga = bga;
@@ -933,6 +936,11 @@ class Game {
                     <div class="bracelet icon"></div>
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
+                ${gamedatas.skaliExpansion ? `
+                <div id="coin-counter-wrapper-${player.id}" class="coin-counter">
+                    <div class="coin icon"></div>
+                    <span id="coin-counter-${player.id}"></span>
+                </div>` : ''}
             
                 <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
                     <div class="player-crew-cards"></div>
@@ -955,6 +963,14 @@ class Game {
             this.braceletCounters[playerId] = new ebg.counter();
             this.braceletCounters[playerId].create(`bracelet-counter-${playerId}`);
             this.braceletCounters[playerId].setValue(player.bracelet);
+            if (gamedatas.skaliExpansion) {
+                this.coinCounters[playerId] = new ebg.counter();
+                this.coinCounters[playerId].create(`coin-counter-${playerId}`, {
+                    playerCounter: 'coin',
+                    playerId,
+                    value: player.coin,
+                });
+            }
             this.crewCounters[playerId] = new ebg.counter();
             this.crewCounters[playerId].create(`crew-counter-${playerId}`);
             this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(cards => cards.length).reduce((a, b) => a + b, 0));
@@ -964,6 +980,9 @@ class Game {
             ${_('Check the Reputation track on the main board for more details')}`);
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
+        if (gamedatas.skaliExpansion) {
+            this.setTooltipToClass('coin-counter', _('Coins'));
+        }
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     }
     createPlayerTables(gamedatas) {
@@ -992,6 +1011,9 @@ class Game {
                     case REPUTATION:
                         this.setReputation(playerId, this.tableCenter.getReputation(playerId) + amount);
                         break;
+                    case COIN:
+                        this.setCoins(playerId, this.coinCounters[playerId].getValue() + amount);
+                        break;
                 }
             }
         });
@@ -1011,6 +1033,9 @@ class Game {
     setBracelets(playerId, count) {
         this.braceletCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
+    }
+    setCoins(playerId, count) {
+        this.getPlayerTable(playerId).updateCounter('coins', count);
     }
     highlightPlayerTokens(playerId) {
         this.tableCenter.highlightPlayerTokens(playerId);
@@ -1036,6 +1061,10 @@ class Game {
             <div class="help-section">
                 <div class="icon bracelet"></div>
                 <div class="help-label">${_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("They are used for Trading.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon coin"></div>
+                <div class="help-label">${_("Gain 1 <strong>Coin</strong>: The player adds 1 Coin token to their ship.")} ${_("It is not possible to have more than 3.")}</div>
             </div>
             <div class="help-section">
                 <div class="icon reputation"></div>
@@ -1254,6 +1283,12 @@ class Game {
     notif_recruit(args) {
         this.setRecruits(args.playerId, +args.newScore);
     }
+    async notif_setPlayerCounter(args) {
+        const { name, value, playerId } = args;
+        if (name === 'coin') {
+            this.setCoins(playerId, value);
+        }
+    }
     notif_trade(args) {
         const playerId = args.playerId;
         this.updateGains(playerId, args.effectiveGains);
@@ -1292,6 +1327,7 @@ class Game {
             case 3: return _("Recruit");
             case 4: return _("Reputation");
             case 5: return _("Card");
+            case 6: return _("Coin");
         }
     }
     getTooltipGain(type) {

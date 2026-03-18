@@ -25,6 +25,7 @@ define('BRACELET', 2);
 define('RECRUIT', 3);
 define('REPUTATION', 4);
 define('CARD', 5);
+define('COIN', 6);
 
 /*
  * Artifacts

@@ -1051,6 +1051,30 @@ body > .card {
   top: 108px;
   right: 60px;
 }
+.player-table .boat[data-coins="0"] .icon.coin[data-number="1"] {
+  top: 108px;
+  left: 149px;
+}
+.player-table .boat[data-coins="0"] .icon.coin[data-number="2"] {
+  top: 108px;
+  left: 154px;
+}
+.player-table .boat[data-coins="0"] .icon.coin[data-number="3"] {
+  top: 108px;
+  left: 159px;
+}
+.player-table .boat[data-coins="1"] .icon.coin[data-number="2"] {
+  top: 108px;
+  left: 154px;
+}
+.player-table .boat[data-coins="1"] .icon.coin[data-number="3"] {
+  top: 108px;
+  left: 159px;
+}
+.player-table .boat[data-coins="2"] .icon.coin[data-number="3"] {
+  top: 108px;
+  left: 159px;
+}
 .player-table .boat .icon {
   position: absolute;
   box-shadow: 0 0 2px 1px black;
@@ -1062,6 +1086,9 @@ body > .card {
 .player-table .boat .icon[data-number="3"].recruit {
   left: 20px;
 }
+.player-table .boat .icon[data-number="3"].coin {
+  left: 138px;
+}
 .player-table .boat .icon[data-number="3"].bracelet {
   right: 20px;
 }
@@ -1071,6 +1098,9 @@ body > .card {
 .player-table .boat .icon[data-number="2"].recruit {
   left: 11px;
 }
+.player-table .boat .icon[data-number="2"].coin {
+  left: 138px;
+}
 .player-table .boat .icon[data-number="2"].bracelet {
   right: 11px;
 }
@@ -1079,6 +1109,9 @@ body > .card {
 }
 .player-table .boat .icon[data-number="1"].recruit {
   left: 2px;
+}
+.player-table .boat .icon[data-number="1"].coin {
+  left: 138px;
 }
 .player-table .boat .icon[data-number="1"].bracelet {
   right: 2px;
@@ -1253,6 +1286,11 @@ html, .mode_3d #game_play_area_background {
 }
 .icon.take-card, .icon[data-type="5"] {
   background-position-x: 100%;
+}
+.icon.coin, .icon[data-type="6"] {
+  background-image: radial-gradient(circle at 35% 35%, #fff8cb 0%, #f7d25a 35%, #d39a26 68%, #8f5b10 100%);
+  background-size: cover;
+  box-shadow: inset 0 0 0 2px #ffeeb1, inset 0 0 0 5px #d9a938;
 }
 
 .color {

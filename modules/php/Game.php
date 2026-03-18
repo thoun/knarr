@@ -20,6 +20,8 @@
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
+use Bga\GameFramework\Components\Counters\PlayerCounter;
+use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
 use Card;
 use CardType;
@@ -38,6 +40,7 @@ class Game extends Table {
 
     public Deck $cards;
     public Deck $destinations;
+    public PlayerCounter $playerCoin;
 
     public array $VP_BY_REPUTATION;
     public array $DESTINATIONS;
@@ -51,6 +54,7 @@ class Game extends Table {
         //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
+        $this->playerCoin = $this->bga->counterFactory->createPlayerCounter('coin', 0, 3);
         
         $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
@@ -164,21 +168,24 @@ class Game extends Table {
  
         // Create players
         // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
-        $sql = "INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ";
+        $sql = "INSERT INTO player (player_id, player_color, player_name) VALUES ";
         $values = [];
 
         foreach( $players as $player_id => $player ) {
             $color = array_shift( $default_colors );
 
-            $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
+            $values[] = "('".$player_id."','$color','".addslashes( $player['player_name'] )."')";
         }
         $sql .= implode(',', $values);
         $this->DbQuery( $sql );
         $this->reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         $this->reloadPlayersBasicInfos();
+        $playerIds = array_keys($players);
         
         /************ Start the game initialization *****/
         $variantOption = $this->getVariantOption();
+        $skaliExpansion = $this->isSkaliExpansion();
+        $this->playerCoin->initDb($playerIds, $skaliExpansion ? 1 : 0);
 
         if ($this->getBoatSideOption() == 3) {
             $this->setGameStateValue(BOAT_SIDE_OPTION, bga_rand(1, 2));
@@ -199,7 +206,7 @@ class Game extends Table {
                 "reputationPoints", 
                 // cards
                 "playedCards", 
-                "assetsCollectedByPlayedCards", "assetsCollectedByPlayedCards1", "assetsCollectedByPlayedCards2", "assetsCollectedByPlayedCards3", "assetsCollectedByPlayedCards4", 
+                "assetsCollectedByPlayedCards", "assetsCollectedByPlayedCards1", "assetsCollectedByPlayedCards2", "assetsCollectedByPlayedCards3", "assetsCollectedByPlayedCards4",
                 "recruitsUsedToChooseCard", "discardedCards",
                 // destinations
                 "discoveredDestinations", "discoveredDestinations1", "discoveredDestinations2",
@@ -217,9 +224,12 @@ class Game extends Table {
                 "activatedArtifacts",
             ], 0, updateTableStat: true);
         }
+        if ($skaliExpansion) {
+            $this->playerStats->init(["assetsCollectedByPlayedCards6", "assetsCollectedByDestination6", "assetsCollectedByTrade6", "coinsMissed",], 0, updateTableStat: true);
+        }
 
         // setup the initial game situation here
-        $this->setupCards(array_keys($players));
+        $this->setupCards($playerIds);
         $this->setupDestinations();
         if ($variantOption >= 2) {
             $this->setupArtifacts($variantOption, count($players));
@@ -247,12 +257,14 @@ class Game extends Table {
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score, player_no playerNo, player_reputation reputation, player_recruit recruit, player_bracelet bracelet FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
+        $this->playerCoin->fillResult($result, 'coin');
   
         // Gather all information about current game situation (visible by player $current_player_id).
 
         $firstPlayerId = null;
         $isEndScore = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
 
+        $result['skaliExpansion'] = $this->isSkaliExpansion();
         $result['boatSideOption'] = $this->getBoatSideOption();
         $result['variantOption'] = $this->getVariantOption();
         $result['reservePossible'] = false;
@@ -270,6 +282,7 @@ class Game extends Table {
             $player['reputation'] = intval($player['reputation']);
             $player['recruit'] = intval($player['recruit']);
             $player['bracelet'] = intval($player['bracelet']);
+            $player['coin'] = intval($player['coin']);
             $player['playedCards'] = [];
             foreach ([1,2,3,4,5] as $color) {
                 $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
@@ -409,7 +422,11 @@ class Game extends Table {
     function getPlayer(int $id) {
         $sql = "SELECT * FROM player WHERE player_id = $id";
         $dbResults = $this->getCollectionFromDb($sql);
-        return array_map(fn($dbResult) => new KnarrPlayer($dbResult), array_values($dbResults))[0];
+        return array_map(fn($dbResult) => new KnarrPlayer($dbResult, $this->playerCoin->get($id)), array_values($dbResults))[0];
+    }
+
+    function isSkaliExpansion(): bool {
+        return $this->bga->tableOptions->get(101) === 1;
     }
 
     function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
@@ -462,6 +479,16 @@ class Game extends Table {
             'newScore' => $this->getPlayer($playerId)->bracelet,
             'incScore' => $amount,
         ] + $args);
+    }
+
+    function incPlayerCoin(int $playerId, int $amount, $message = '', $args = []) {
+        if ($amount != 0) {
+            $notificationMessage = $message !== '' ? new NotificationMessage($message, [
+                'playerId' => $playerId,
+                'player_name' => $this->getPlayerName($playerId),
+            ] + $args) : null;
+            $this->playerCoin->inc($playerId, $amount, $notificationMessage);
+        }
     }
 
     function getCardFromDb(/*array|null*/ $dbCard) {
@@ -692,6 +719,16 @@ class Game extends Table {
                         $this->bga->playerStats->inc('recruitsMissed', $amount - $effectiveGains[RECRUIT], $playerId, updateTableStat: true);
                     }
                     break;
+                case COIN:
+                    $effectiveGains[COIN] = min($amount, 3 - $player->coin);
+                    if ($effectiveGains[COIN] > 0) {
+                        $this->playerCoin->inc($playerId, $effectiveGains[COIN], null);
+                    }
+
+                    if ($effectiveGains[COIN] < $amount) {
+                        $this->bga->playerStats->inc('coinsMissed', $amount - $effectiveGains[COIN], $playerId, updateTableStat: true);
+                    }
+                    break;
                 case REPUTATION:
                     $effectiveGains[REPUTATION] = min($amount, 14 - $player->reputation);
                     $this->DbQuery("UPDATE player SET `player_reputation` = `player_reputation` + ".$effectiveGains[REPUTATION]." WHERE player_id = $playerId");
@@ -772,6 +809,7 @@ class Game extends Table {
             case RECRUIT: return clienttranslate("Recruit");
             case REPUTATION: return clienttranslate("Reputation");
             case CARD: return clienttranslate("Card");
+            case COIN: return clienttranslate("Coin");
         }
     }
 

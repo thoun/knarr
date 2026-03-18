@@ -1,7 +1,7 @@
 import { ArtifactsManager } from './artifacts';
 import { CardsManager } from './cards';
 import { DestinationsManager } from './destinations';
-import { Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr.d';
+import { Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
 import { TableCenter } from './table-center';
@@ -27,6 +27,7 @@ const BRACELET = 2;
 const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
+const COIN = 6;
 
 function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
@@ -47,6 +48,7 @@ export class Game implements KnarrGame {
     private reputationCounters: Counter[] = [];
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
+    private coinCounters: Counter[] = [];
     private crewCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
@@ -480,6 +482,11 @@ export class Game implements KnarrGame {
                     <div class="bracelet icon"></div>
                     <span id="bracelet-counter-${player.id}"></span>
                 </div>
+                ${gamedatas.skaliExpansion ? `
+                <div id="coin-counter-wrapper-${player.id}" class="coin-counter">
+                    <div class="coin icon"></div>
+                    <span id="coin-counter-${player.id}"></span>
+                </div>` : ''}
             
                 <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
                     <div class="player-crew-cards"></div>
@@ -508,6 +515,15 @@ export class Game implements KnarrGame {
             this.braceletCounters[playerId].create(`bracelet-counter-${playerId}`);
             this.braceletCounters[playerId].setValue(player.bracelet);
 
+            if (gamedatas.skaliExpansion) {
+                this.coinCounters[playerId] = new ebg.counter();
+                this.coinCounters[playerId].create(`coin-counter-${playerId}`, {
+                    playerCounter: 'coin',
+                    playerId,
+                    value: player.coin,
+                });
+            }
+
             this.crewCounters[playerId] = new ebg.counter();
             this.crewCounters[playerId].create(`crew-counter-${playerId}`);
             this.crewCounters[playerId].setValue(Object.values(player.playedCards).map(cards => cards.length).reduce((a, b) => a + b, 0));
@@ -518,6 +534,9 @@ export class Game implements KnarrGame {
             ${_('Check the Reputation track on the main board for more details')}`);
         this.setTooltipToClass('recruit-counter', _('Recruits'));
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
+        if (gamedatas.skaliExpansion) {
+            this.setTooltipToClass('coin-counter', _('Coins'));
+        }
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     }
 
@@ -553,6 +572,9 @@ export class Game implements KnarrGame {
                     case REPUTATION:
                         this.setReputation(playerId, this.tableCenter.getReputation(playerId) + amount);
                         break;
+                    case COIN:
+                        this.setCoins(playerId, this.coinCounters[playerId].getValue() + amount);
+                        break;
                 }
             }
         });
@@ -576,6 +598,10 @@ export class Game implements KnarrGame {
     private setBracelets(playerId: number, count: number) {
         this.braceletCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
+    }
+
+    private setCoins(playerId: number, count: number) {
+        this.getPlayerTable(playerId).updateCounter('coins', count);
     }
 
     public highlightPlayerTokens(playerId: number | null): void {
@@ -604,6 +630,10 @@ export class Game implements KnarrGame {
             <div class="help-section">
                 <div class="icon bracelet"></div>
                 <div class="help-label">${_("Gain 1 <strong>Silver Bracelet</strong>: The player adds 1 Silver Bracelet token to their ship.")} ${_("It is not possible to have more than 3.")} ${_("They are used for Trading.")}</div>
+            </div>
+            <div class="help-section">
+                <div class="icon coin"></div>
+                <div class="help-label">${_("Gain 1 <strong>Coin</strong>: The player adds 1 Coin token to their ship.")} ${_("It is not possible to have more than 3.")}</div>
             </div>
             <div class="help-section">
                 <div class="icon reputation"></div>
@@ -863,6 +893,13 @@ export class Game implements KnarrGame {
         this.setRecruits(args.playerId, +args.newScore);
     }
 
+    async notif_setPlayerCounter(args) {
+        const { name, value, playerId } = args;
+        if (name === 'coin') {
+            this.setCoins(playerId, value);
+        }
+    }
+
     notif_trade(args: NotifTradeArgs) {
         const playerId = args.playerId;
 
@@ -912,6 +949,7 @@ export class Game implements KnarrGame {
             case 3: return _("Recruit");
             case 4: return _("Reputation");
             case 5: return _("Card");
+            case 6: return _("Coin");
         }
     }
 

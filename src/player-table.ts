@@ -37,13 +37,14 @@ export class PlayerTable {
         }
         html += `
             <div id="player-table-${this.playerId}-destinations" class="destinations"></div>
-            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}">`;
+            <div id="player-table-${this.playerId}-boat" class="boat ${this.game.getBoatSide() == 2 ? 'advanced' : 'normal'}" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}" data-coins="${player.coin}">`;
         for (let i = 1; i <= 3; i++) {
             if (this.currentPlayer) {
                 html += `<div id="player-table-${this.playerId}-column${i}" class="column" data-number="${i}"></div>`;
             }
             html += `
             <div class="icon bracelet" data-number="${i}"></div>
+            <div class="icon coin" data-number="${i}"></div>
             <div class="icon recruit" data-number="${i}"></div>
             `;
         }
@@ -126,7 +127,7 @@ export class PlayerTable {
         });
     }
 
-    public updateCounter(type: 'recruits' | 'bracelets', count: number) {
+    public updateCounter(type: 'recruits' | 'bracelets' | 'coins', count: number) {
         document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
     }
 

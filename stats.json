@@ -35,6 +35,11 @@
             "name": "Reputation gained by played cards",
             "type": "int"
         },
+        "assetsCollectedByPlayedCards6": {
+            "id": 27,
+            "name": "Coins gained by played cards",
+            "type": "int"
+        },
         "recruitsUsedToChooseCard": {
             "id": 30,
             "name": "Recruits used to choose card",
@@ -88,6 +93,11 @@
         "assetsCollectedByDestination5": {
             "id": 48,
             "name": "Cards gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination6": {
+            "id": 49,
+            "name": "Coins gained by destinations",
             "type": "int"
         },
         "recruitsUsedToPayDestination": {
@@ -150,6 +160,11 @@
             "name": "Cards gained by trade",
             "type": "int"
         },
+        "assetsCollectedByTrade6": {
+            "id": 71,
+            "name": "Coins gained by trade",
+            "type": "int"
+        },
         "activatedArtifacts": {
             "id": 80,
             "name": "Activated artifacts",
@@ -163,6 +178,11 @@
         "braceletsMissed": {
             "id": 91,
             "name": "Bracelets missed (already at 3)",
+            "type": "int"
+        },
+        "coinsMissed": {
+            "id": 92,
+            "name": "Coins missed (already at 3)",
             "type": "int"
         },
         "roundNumber": {
@@ -207,6 +227,11 @@
             "name": "Reputation gained by played cards",
             "type": "int"
         },
+        "assetsCollectedByPlayedCards6": {
+            "id": 27,
+            "name": "Coins gained by played cards",
+            "type": "int"
+        },
         "recruitsUsedToChooseCard": {
             "id": 30,
             "name": "Recruits used to choose card",
@@ -260,6 +285,11 @@
         "assetsCollectedByDestination5": {
             "id": 48,
             "name": "Cards gained by destinations",
+            "type": "int"
+        },
+        "assetsCollectedByDestination6": {
+            "id": 49,
+            "name": "Coins gained by destinations",
             "type": "int"
         },
         "recruitsUsedToPayDestination": {
@@ -322,6 +352,11 @@
             "name": "Cards gained by trade",
             "type": "int"
         },
+        "assetsCollectedByTrade6": {
+            "id": 71,
+            "name": "Coins gained by trade",
+            "type": "int"
+        },
         "activatedArtifacts": {
             "id": 80,
             "name": "Activated artifacts",
@@ -335,6 +370,11 @@
         "braceletsMissed": {
             "id": 91,
             "name": "Bracelets missed (already at 3)",
+            "type": "int"
+        },
+        "coinsMissed": {
+            "id": 92,
+            "name": "Coins missed (already at 3)",
             "type": "int"
         }
     }

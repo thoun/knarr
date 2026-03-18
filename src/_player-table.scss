@@ -112,6 +112,37 @@
       }
     }
 
+    &[data-coins="0"] {
+      .icon.coin[data-number="1"] {
+        top: 108px;
+        left: 149px;
+      }
+      .icon.coin[data-number="2"] {
+        top: 108px;
+        left: 154px;
+      }
+      .icon.coin[data-number="3"] {
+        top: 108px;
+        left: 159px;
+      }
+    }
+    &[data-coins="1"] {
+      .icon.coin[data-number="2"] {
+        top: 108px;
+        left: 154px;
+      }
+      .icon.coin[data-number="3"] {
+        top: 108px;
+        left: 159px;
+      }
+    }
+    &[data-coins="2"] {
+      .icon.coin[data-number="3"] {
+        top: 108px;
+        left: 159px;
+      }
+    }
+
     .icon {
       position: absolute;
       box-shadow: 0 0 2px 1px black;
@@ -121,18 +152,21 @@
         top: 13px;
 
         &.recruit { left: 20px; }
+        &.coin { left: 138px; }
         &.bracelet { right: 20px; }
       }
       &[data-number="2"] {
         top: 53px;
 
         &.recruit { left: 11px; }
+        &.coin { left: 138px; }
         &.bracelet { right: 11px; }
       }
       &[data-number="1"] {
         top: 92px;
 
         &.recruit { left: 2px; }
+        &.coin { left: 138px; }
         &.bracelet { right: 2px; }
       }
     }

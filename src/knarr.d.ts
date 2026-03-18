@@ -31,6 +31,7 @@ export interface KnarrPlayer extends Player {
     reputation: number;
     recruit: number;
     bracelet: number;
+    coin: number;
     //handCount: number;
     hand?: Card[];
     playedCards: { [color: number]: Card[] };
@@ -51,6 +52,7 @@ export interface KnarrGamedatas {
     tablespeed: string;
 
     // Add here variables you set up in getAllDatas
+    skaliExpansion: boolean;
     cardDeckTop?: Card;
     cardDeckCount: number;
     cardDiscardCount: number;
