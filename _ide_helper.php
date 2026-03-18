@@ -302,6 +302,7 @@ namespace Bga\GameFramework {
     abstract class Bga {
         public Db\Globals $globals;
         public Notify $notify;
+        public Logs $logs;
         public Legacy $legacy;
         public Tournament $tournament;
         public TableOptions $tableOptions;
@@ -351,6 +352,25 @@ namespace Bga\GameFramework {
             //
         }
     }
+
+    abstract class Logs {
+        /**
+         * Returns the current move id, when doing an action, that should be stored along informations to undo.
+         * 
+         * @return int the current move id
+         */
+        function getCurrentMoveId(): int {
+            return 0;
+        }
+
+        /**
+         * Remove all logs from a move id that was stored during an action using `getCurrentMoveId()`.
+         * The game should be in the exact same point as it was before the stored action.
+         */
+        function remove(int $startMoveId): void {
+        }
+    }
+
 
     abstract class Legacy {
         /**
@@ -1827,8 +1847,6 @@ namespace Bga\GameFramework {
          *   player_name: string, 
          *   player_color: string, 
          *   player_no: string,
-         *   player_avatar: string,
-         *   player_canal: string,
          *   player_is_admin: string,
          *   player_zombie: int,
          *   player_eliminated: int,
@@ -2176,9 +2194,9 @@ namespace Bga\GameFramework {
          * This method is called only once, when a new game is launched. In this method, you must setup the game
          * according to the game rules, so that the game is ready to be played.
          *
-         * @param array<int, array{ player_canal: string, player_name: string, player_avatar: string, player_colors: array<string> }> $players
+         * @param array<int, array{ player_name: string, player_colors: array<string> }> $players
          * @param array $options
-         * @return void
+         * @return mixed the first state (id or class)
          */
         abstract protected function setupNewGame($players, $options = []);
 
