@@ -1,4 +1,4 @@
-import { DIFFERENT, EQUAL } from "./knarr";
+import { DIFFERENT, EQUAL } from "./Game";
 import { Destination, KnarrGame } from "./knarr.d";
 import { BgaCards } from "./libs";
 

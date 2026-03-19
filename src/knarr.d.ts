@@ -26,6 +26,17 @@ export interface Destination {
     gains: (number | null)[];
 }
 
+export interface Building {
+    id: number;
+    location: string;
+    locationArg: number;
+    number: number;
+    cost: { [color: number]: number };
+    gains: (number | null)[];
+    mostRaid: { [type: number]: number };
+    fewestRaid: { [type: number]: number };
+}
+
 export interface KnarrPlayer extends Player {
     playerNo: number;
     reputation: number;
@@ -60,6 +71,7 @@ export interface KnarrGamedatas {
     centerDestinationsDeckTop: { [letter: string]: Destination };
     centerDestinationsDeckCount: { [letter: string]: number };
     centerDestinations: { [letter: string]: Destination[] };
+    centerBuildings?: Building[];
     boatSideOption: number;
     variantOption: number;
     artifacts?: number[];
@@ -98,7 +110,9 @@ export interface EnteringPlayActionArgs {
     canRecruit: boolean;
     canExplore: boolean;
     canTrade: boolean;
+    canDevelopVillage: boolean;
     possibleDestinations: Destination[];
+    possibleBuildings: Building[];
 }
 
 export interface EnteringChooseNewCardArgs {

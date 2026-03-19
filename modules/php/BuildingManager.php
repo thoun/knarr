@@ -189,17 +189,24 @@ class BuildingManager {
     }
 
     public function onExporeLand(int $playerId, int $type) {
+        $row = $type === 2 ? 0 : 1;
         $this->applyRowGain(
             $playerId, 
-            $type === 2 ? 0 : 1,
+            $row,
             [RAID => 1]
         );
     }
     public function onRecruitViking(int $playerId, bool $uniqueOfThisColor) {
+        $row = $uniqueOfThisColor ? 3 : 2;
+
+        if ($row === 3 && $this->game->getPlayerCount() === 2) {
+            $this->game->playerRenewal->set($playerId, 1);
+        }
+
         $this->applyRowGain(
             $playerId, 
-            $uniqueOfThisColor ? 3 : 2,
-            $uniqueOfThisColor ? [COIN => 1] : [],
+            $row,
+            $row === 3 ? [COIN => 1] : [],
         );
     }
 

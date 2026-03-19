@@ -24,34 +24,7 @@ class PlayAction extends GameState
     }   
 
     function getArgs(int $activePlayerId): array {
-        $player = $this->game->getPlayer($activePlayerId);
-
-        $bracelets = $player->bracelet;
-        $recruits = $player->recruit;
-
-        $playedCardsColors = $this->game->vikingManager->getPlayedCardsColor($activePlayerId);
-
-        $recruitDone = boolval($this->game->getGameStateValue((string)RECRUIT_DONE));
-        $exploreDone = boolval($this->game->getGameStateValue((string)EXPLORE_DONE));
-        $tradeDone = boolval($this->game->getGameStateValue((string)TRADE_DONE));
-
-        $possibleDestinations = [];
-        if (!$exploreDone) {
-            $possibleDestinations = array_merge(
-                $this->game->destinationManager->getDestinationsByLocation('slotA'),
-                $this->game->destinationManager->getDestinationsByLocation('slotB'),
-                $this->game->destinationManager->getDestinationsByLocation('reserved', $activePlayerId),
-            );
-
-            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->game->destinationManager->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
-        }
-
-        return [
-            'possibleDestinations' => $possibleDestinations,
-            'canRecruit' => !$recruitDone,
-            'canExplore' => !$exploreDone,
-            'canTrade' => !$tradeDone && $bracelets > 0,
-        ];
+        return $this->game->argPlayAction($activePlayerId);
     }
 
     #[PossibleAction]
@@ -128,6 +101,49 @@ class PlayAction extends GameState
         $this->game->setGameStateValue((string)SELECTED_DESTINATION, $id);
 
         return ST_PLAYER_PAY_DESTINATION;
+    }
+
+    #[PossibleAction]
+    public function actTakeBuilding(int $id, int $activePlayerId, array $args) {
+        if (boolval($this->game->getGameStateValue((string)EXPLORE_DONE))) {
+            throw new UserException("Invalid action");
+        }
+
+        /** @var Building */
+        $building = \array_find($args['possibleBuildings'], fn($c) => $c->id == $id);
+
+        if ($building == null) {
+            throw new UserException("You can't take this building");
+        }
+
+        $coins = $building->cost[COIN];
+
+        $this->game->incPlayerCoin($activePlayerId, -$coins, clienttranslate('${player_name} pays ${absInc} coins(s) for the selected building'));
+        //$this->bga->playerStats->inc('coinsUsedToPayBuilding', $coins, $activePlayerId, updateTableStat: true);
+
+        $buildingIndex = intval($this->game->buildingManager->buildings->countCardInLocation('played'.$activePlayerId));
+        $this->game->buildingManager->buildings->moveCard($building->id, 'played'.$activePlayerId, $buildingIndex);
+
+        $this->bga->notify->all('takeBuilding', clienttranslate('${player_name} takes a building'), [
+            'playerId' => $activePlayerId,
+            'player_name' => $this->game->getPlayerName($activePlayerId),
+            'building' => $building,
+        ]);
+                    
+        //$this->bga->playerStats->inc('discoveredBuildings', 1, $activePlayerId, updateTableStat: true);
+
+        $newBuilding = $this->game->buildingManager->pickBuildingToSlot($building->locationArg);
+
+        $this->bga->notify->all('newTableBuilding', '', [
+            'building' => $newBuilding,
+            'buildingDeckTop' => $this->game->buildingManager->getBuildingDeckTop(),
+            'buildingDeckCount' => $this->game->buildingManager->getBuildingDeckCount(),
+        ]);
+
+        $this->game->setGameStateValue((string)\DEVELOPING_VILLAGE_DONE, 1);
+
+        //$this->game->redirectAfterAction($activePlayerId, true);
+        return PlayAction::class;
     }
 
     #[PossibleAction]

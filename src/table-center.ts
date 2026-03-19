@@ -1,4 +1,4 @@
-import { ANIMATION_MS } from "./knarr";
+import { ANIMATION_MS } from "./Game";
 import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination } from "./knarr.d";
 import { BgaCards } from "./libs";
 

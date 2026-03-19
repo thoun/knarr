@@ -1,5 +1,5 @@
 import { Card, Destination, KnarrGame, KnarrPlayer } from "./knarr.d";
-import { EQUAL, DIFFERENT } from "./knarr";
+import { EQUAL, DIFFERENT } from "./Game";
 import { BgaCards } from "./libs";
 
 export class PlayerTable {

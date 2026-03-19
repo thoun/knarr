@@ -213,6 +213,10 @@ export class Game implements KnarrGame {
             if (args.canRecruit) {
                 this.getCurrentPlayerTable()?.setHandSelectable(true);
             }
+            if (args.canDevelopVillage) {
+                // TODO make cards clickable instead
+                args.possibleBuildings.forEach(building => this.bga.statusBar.addActionButton(`Build ${building.id} (${building.cost[6]})`, () => this.bga.actions.performAction('actTakeBuilding', { id: building.id })));
+            }
         }
     }
 

@@ -26,6 +26,7 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
         $this->game->setGameStateValue((string)RECRUIT_DONE, 0);
         $this->game->setGameStateValue((string)EXPLORE_DONE, 0);
         $this->game->setGameStateValue((string)TRADE_DONE, 0);
+        $this->game->setGameStateValue((string)DEVELOPING_VILLAGE_DONE, 0);
         $this->game->setGameStateValue((string)PLAYED_CARD_COLOR, 0);
         $this->game->setGameStateValue((string)GO_DISCARD_TABLE_CARD, 0);
         $this->game->setGameStateValue((string)GO_RESERVE, 0);

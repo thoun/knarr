@@ -41,6 +41,7 @@ class Game extends Table {
     public RaidManager $raidManager;
     public ArtifactManager $artifactManager;
     public PlayerCounter $playerCoin;
+    public PlayerCounter $playerRenewal;
 
     public array $VP_BY_REPUTATION;
 
@@ -53,12 +54,14 @@ class Game extends Table {
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         $this->playerCoin = $this->bga->counterFactory->createPlayerCounter('coin', 0, 3);
+        $this->playerRenewal = $this->bga->counterFactory->createPlayerCounter('renewal', 0);
         
         $this->initGameStateLabels([
             LAST_TURN => LAST_TURN,
             RECRUIT_DONE => RECRUIT_DONE,
             EXPLORE_DONE => EXPLORE_DONE,
             TRADE_DONE => TRADE_DONE,
+            DEVELOPING_VILLAGE_DONE => DEVELOPING_VILLAGE_DONE,
             GO_DISCARD_TABLE_CARD => GO_DISCARD_TABLE_CARD,
             GO_RESERVE => GO_RESERVE,
             PLAYED_CARD_COLOR => PLAYED_CARD_COLOR,
@@ -116,6 +119,7 @@ class Game extends Table {
         $variantOption = $this->getVariantOption();
         $skaliExpansion = $this->isSkaliExpansion();
         $this->playerCoin->initDb($playerIds, $skaliExpansion ? 1 : 0);
+        $this->playerRenewal->initDb($playerIds, $skaliExpansion && count($playerIds) === 2 ? 1 : 0);
 
         if ($this->getBoatSideOption() == 3) {
             $this->setGameStateValue(BOAT_SIDE_OPTION, bga_rand(1, 2));
@@ -126,6 +130,7 @@ class Game extends Table {
         $this->setGameStateInitialValue(RECRUIT_DONE, 0);
         $this->setGameStateInitialValue(EXPLORE_DONE, 0);
         $this->setGameStateInitialValue(TRADE_DONE, 0);
+        $this->setGameStateInitialValue(DEVELOPING_VILLAGE_DONE, 0);
         $this->setGameStateInitialValue(PLAYED_CARD_COLOR, 0);
         $this->setGameStateInitialValue(GO_DISCARD_TABLE_CARD, 0);
         $this->setGameStateInitialValue(GO_RESERVE, 0);
@@ -249,6 +254,10 @@ class Game extends Table {
             $result['centerDestinationsDeckTop'][$letter] = $this->destinationManager->getDestinationDeckTop($letter);
             $result['centerDestinationsDeckCount'][$letter] = $this->destinationManager->getDestinationDeckCount($letter);
             $result['centerDestinations'][$letter] = $this->destinationManager->getDestinationsByLocation('slot'.$letter);
+        }
+
+        if ($skaliExpansion) {
+            $result['centerBuildings'] = $this->buildingManager->getBuildingsByLocation('slot');
         }
 
         $result['firstPlayerId'] = $firstPlayerId;
@@ -405,6 +414,7 @@ class Game extends Table {
         $recruitDone = boolval($this->getGameStateValue((string)RECRUIT_DONE));
         $exploreDone = boolval($this->getGameStateValue((string)EXPLORE_DONE));
         $tradeDone = boolval($this->getGameStateValue((string)TRADE_DONE));
+        $developingVillageDone = boolval($this->getGameStateValue((string)DEVELOPING_VILLAGE_DONE));
 
         $possibleDestinations = [];
         if (!$exploreDone) {
@@ -417,11 +427,20 @@ class Game extends Table {
             $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->destinationManager->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
         }
 
+        $possibleBuildings = [];
+        if (!$developingVillageDone && $this->isSkaliExpansion()) {
+            $possibleBuildings = $this->buildingManager->getBuildingsByLocation('slot');
+
+            $possibleBuildings = array_values(array_filter($possibleBuildings, fn($building) => $player->coin >= $building->cost[COIN]));
+        }
+
         return [
             'possibleDestinations' => $possibleDestinations,
+            'possibleBuildings' => $possibleBuildings,
             'canRecruit' => !$recruitDone,
             'canExplore' => !$exploreDone,
             'canTrade' => !$tradeDone && $bracelets > 0,
+            'canDevelopVillage' => !$developingVillageDone && $player->coin > 0,
         ];
     }
     
@@ -452,7 +471,7 @@ class Game extends Table {
 
         $args = $this->argPlayAction($playerId);
 
-        $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'];
+        $canPlay = $args['canRecruit'] || $args['canExplore'] || $args['canTrade'] || $args['canDevelopVillage'];
 
         if ($canPlay) {
             $this->gamestate->nextState('next');

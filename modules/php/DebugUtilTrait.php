@@ -2,6 +2,7 @@
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
+use Bga\GameFramework\Components\Counters\PlayerCounter;
 
 function debug(...$debugData) {
     if (Game::getBgaEnvironment() != 'studio') { 
@@ -14,6 +15,7 @@ trait DebugUtilTrait {
     public DestinationManager $destinationManager;
     public BuildingManager $buildingManager;
     public RaidManager $raidManager;
+    public PlayerCounter $playerCoin;
 
     public Bga $bga;
 
@@ -60,6 +62,10 @@ trait DebugUtilTrait {
     
     function debug_SetPlayerReputation(int $playerId, int $score) {
 		$this->DbQuery("UPDATE player SET `player_reputation` = $score WHERE player_id = $playerId");
+    }
+    
+    function debug_SetPlayerCoins(int $playerId, int $coins) {
+		$this->playerCoin->set($playerId, $coins);
     }
 
     function debug_LastTurn() {

@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 
 export default {
-  input: 'src/knarr.ts',
+  input: 'src/Game.ts',
   output: {
     file: 'modules/js/Game.js',
     format: 'es',
