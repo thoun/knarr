@@ -62,7 +62,7 @@ class PlayAction extends GameState
             
 
         $hand = $this->game->getCardsByLocation('hand', $activePlayerId);
-        $card = $this->game->array_find($hand, fn($c) => $c->id == $id);
+        $card = \array_find($hand, fn($c) => $c->id == $id);
 
         if ($card == null || $card->location != 'hand' || $card->locationArg != $activePlayerId) {
             throw new UserException("You can't play this card");
@@ -115,7 +115,7 @@ class PlayAction extends GameState
             throw new UserException("Invalid action");
         }
 
-        $destination = $this->game->array_find($args['possibleDestinations'], fn($c) => $c->id == $id);
+        $destination = \array_find($args['possibleDestinations'], fn($c) => $c->id == $id);
 
         if ($destination == null) {
             throw new UserException("You can't take this destination");

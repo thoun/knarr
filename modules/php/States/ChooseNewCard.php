@@ -36,7 +36,7 @@ class ChooseNewCard extends GameState
 
     #[PossibleAction]
     public function actChooseNewCard(int $id, int $activePlayerId, array $args) {
-        $card = $this->game->array_find($args['centerCards'], fn($card) => $card->id == $id);
+        $card = \array_find($args['centerCards'], fn($card) => $card->id == $id);
 
         if ($card == null || $card->location != 'slot') {
             throw new UserException("You can't play this card");

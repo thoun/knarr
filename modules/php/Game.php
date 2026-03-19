@@ -257,53 +257,6 @@ class Game extends Table {
         return $maxScore * 100 / 40;
     }
 
-    function array_find(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return $value;
-            }
-        }
-        return null;
-    }
-
-    function array_findIndex(array $array, callable $fn) {
-        $index = 0;
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return $index;
-            }
-            $index++;
-        }
-        return null;
-    }
-
-    function array_find_key(array $array, callable $fn) {
-        foreach ($array as $key => $value) {
-            if($fn($value)) {
-                return $key;
-            }
-        }
-        return null;
-    }
-
-    function array_some(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if($fn($value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    function array_every(array $array, callable $fn) {
-        foreach ($array as $value) {
-            if(!$fn($value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     function setGlobalVariable(string $name, /*object|array*/ $obj) {
         /*if ($obj == null) {
             throw new \Error('Global Variable null');
