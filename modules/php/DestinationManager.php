@@ -166,4 +166,24 @@ class DestinationManager {
             }
         }
     }
+
+    function getTradeGains(int $playerId, int $bracelets, array $boatGain) {
+        $destinations = $this->getDestinationsByLocation('played'.$playerId);
+
+        $gains = [];
+
+        $rows = array_merge(
+            [$boatGain],
+            array_map(fn($destination) => $destination->gains, $destinations),
+        );
+        foreach ($rows as $row) {
+            for ($i = 0; $i < $bracelets; $i++) {
+                if ($row[$i] !== null) {
+                    $gains[] = $row[$i];
+                }
+            }
+        }
+
+        return $gains;
+    }
 }

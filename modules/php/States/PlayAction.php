@@ -106,6 +106,10 @@ class PlayAction extends GameState
             }
         }
 
+        if ($this->game->isSkaliExpansion()) {
+            $this->game->buildingManager->onRecruitViking($activePlayerId, count($cardsOfColor) <= 1);
+        }
+
         return ST_PLAYER_CHOOSE_NEW_CARD;
     }
 

@@ -112,6 +112,10 @@ class PayDestination extends GameState
             }
         }
 
+        if ($this->game->isSkaliExpansion()) {
+            $this->game->buildingManager->onExporeLand($activePlayerId, $destination->type);
+        }
+
         $remainingCardsToTake = $this->game->getGlobalVariable(REMAINING_CARDS_TO_TAKE);
         if ($remainingCardsToTake != null) {
             $remainingCardsToTake->fromReserve = $fromReserve;

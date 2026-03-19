@@ -22,7 +22,6 @@ namespace Bga\Games\Knarr;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
-use Destination;
 use KnarrPlayer;
 
 require_once('objects/card.php');
@@ -194,8 +193,9 @@ class Game extends Table {
 
         $firstPlayerId = null;
         $isEndScore = $this->gamestate->getCurrentMainStateId() >= ST_END_SCORE;
+        $skaliExpansion = $this->isSkaliExpansion();
 
-        $result['skaliExpansion'] = $this->isSkaliExpansion();
+        $result['skaliExpansion'] = $skaliExpansion;
         $result['boatSideOption'] = $this->getBoatSideOption();
         $result['variantOption'] = $this->getVariantOption();
         $result['reservePossible'] = false;
@@ -220,6 +220,9 @@ class Game extends Table {
             }
             $player['destinations'] = $this->destinationManager->getDestinationsByLocation('played'.$playerId);
             //$player['handCount'] = intval($this->vikingManager->cards->countCardInLocation('hand', $playerId));
+            if ($skaliExpansion) {
+                $player['buildings'] = $this->buildingManager->getBuildingsByLocation('played'.$playerId);
+            }
 
             if ($currentPlayerId == $playerId) {
                 $player['hand'] = $this->vikingManager->getCardsByLocation('hand', $playerId);
@@ -479,6 +482,13 @@ class Game extends Table {
             switch ($type) {
                 case VP: 
                     $effectiveGains[VP] = $amount;
+                    if ($effectiveGains[VP] < 0) {
+                        // make sure the score doesn't go under 0
+                        $playerScore = $this->bga->playerScore->get($playerId);
+                        if (-$effectiveGains[VP] > $playerScore) {
+                            $effectiveGains[VP] = -$playerScore;
+                        }
+                    }
                     $this->bga->playerScore->inc($playerId, $effectiveGains[VP], null);
                     $this->checkMaxScore($playerId);
                     break;
@@ -586,23 +596,7 @@ class Game extends Table {
     }
 
     function getTradeGains(int $playerId, int $bracelets) {
-        $destinations = $this->destinationManager->getDestinationsByLocation('played'.$playerId);
-
-        $gains = [];
-
-        $rows = array_merge(
-            [$this->getBoatGain()],
-            array_map(fn($destination) => $destination->gains, $destinations),
-        );
-        foreach ($rows as $row) {
-            for ($i = 0; $i < $bracelets; $i++) {
-                if ($row[$i] !== null) {
-                    $gains[] = $row[$i];
-                }
-            }
-        }
-
-        return $gains;
+        return $this->destinationManager->getTradeGains($playerId, $bracelets, $this->getBoatGain());
     }
 
     public function cardDeckAutoReshuffle() {

@@ -12,8 +12,10 @@ require_once(__DIR__.'/objects/building.php');
 class BuildingManager {
     public Deck $buildings;
     public array $BUILDINGS;
+    private \Bga\GameFramework\Bga $bga;
 
     public function __construct(private Game $game) {
+        $this->bga = $game->bga;
         $this->buildings = $this->game->deckFactory->createDeck('building');
         $this->buildings->autoreshuffle = false;
 
@@ -109,4 +111,126 @@ class BuildingManager {
             $this->buildings->pickCardForLocation('deck', 'slot', $slot);
         }
     }
+
+    public function getMostRaidGains(int $playerId): array {
+        $buildings = $this->getBuildingsByLocation('played'.$playerId);
+
+        $gains = [];
+        $rows = array_merge(
+            [[VP => 2]],
+            array_map(fn($building) => $building->mostRaid, $buildings),
+        );
+        foreach ($rows as $row) {
+            if ($row !== null) {
+                $gains[] = $row;
+            }
+        }
+
+        return $gains;
+    }
+
+    public function getFewestRaidGains(int $playerId): array {
+        $buildings = $this->getBuildingsByLocation('played'.$playerId);
+
+        $gains = [];
+        $rows = array_merge(
+            [[VP => -1]],
+            array_map(fn($building) => $building->fewestRaid, $buildings),
+        );
+        foreach ($rows as $row) {
+            if ($row !== null) {
+                $gains[] = $row;
+            }
+        }
+
+        return $gains;
+    }
+
+    function getRowGains(int $playerId, int $row, array $extraGain) {
+        $buildings = $this->getBuildingsByLocation('played'.$playerId);
+
+        $gains = [];
+        $rows = array_merge(
+            [$extraGain],
+            array_map(fn($building) => $building->gains[$row], $buildings),
+        );
+        foreach ($rows as $row) {
+            if ($row !== null) {
+                $gains[] = $row;
+            }
+        }
+
+        return $gains;
+    }
+
+    private function applyRowGain(int $playerId, int $row, array $extraGain) {
+        $gains = $this->getRowGains($playerId, $row, $extraGain); 
+        
+        $groupGains = $this->game->groupGains($gains);
+        $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'trade');
+
+        $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the village'), [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerName($playerId),
+            'effectiveGains' => $effectiveGains,
+            'gains' => $effectiveGains, // for logs
+        ]);
+
+        $this->bga->playerStats->inc('buildingActions', 1, $playerId, updateTableStat: true);
+        $this->bga->playerStats->inc('buildingActions'.$row, 1, $playerId, updateTableStat: true);
+
+        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $this->bga->playerStats->inc('assetsCollectedByBuilding', $allGains, $playerId, updateTableStat: true);
+        foreach ($effectiveGains as $type => $count) {
+            if ($count > 0) {
+                $this->bga->playerStats->inc('assetsCollectedByBuilding'.$type, $count, $playerId, updateTableStat: true);
+            }
+        }
+    }
+
+    public function onExporeLand(int $playerId, int $type) {
+        $this->applyRowGain(
+            $playerId, 
+            $type === 2 ? 0 : 1,
+            [RAID => 1]
+        );
+    }
+    public function onRecruitViking(int $playerId, bool $uniqueOfThisColor) {
+        $this->applyRowGain(
+            $playerId, 
+            $uniqueOfThisColor ? 3 : 2,
+            $uniqueOfThisColor ? [COIN => 1] : [],
+        );
+    }
+
+    public function onRaidTriggered(array $playerIdsWithMostRaidTokens, array $playerIdsWithFewestRaidTokens) {
+        $gainPerPlayer = [];
+        foreach($playerIdsWithMostRaidTokens as $playerId) {
+            $gainPerPlayer[$playerId] = $this->getMostRaidGains($playerId);
+        }
+        foreach($playerIdsWithFewestRaidTokens as $playerId) {
+            $gainPerPlayer[$playerId] = array_merge($gainPerPlayer[$playerId] ?? [], $this->getFewestRaidGains($playerId));
+        }
+
+        foreach ($gainPerPlayer as $playerId => $gains) {
+            $groupGains = $this->game->groupGains($gains);
+            $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'trade');
+
+            $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the raid'), [
+                'playerId' => $playerId,
+                'player_name' => $this->game->getPlayerName($playerId),
+                'effectiveGains' => $effectiveGains,
+                'gains' => $effectiveGains, // for logs
+            ]);
+
+            $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+            $this->bga->playerStats->inc('assetsCollectedByRaid', $allGains, $playerId, updateTableStat: true);
+            foreach ($effectiveGains as $type => $count) {
+                if ($count > 0) {
+                    $this->bga->playerStats->inc('assetsCollectedByRaid'.$type, $count, $playerId, updateTableStat: true);
+                }
+            }
+        }
+    }
+
 }
