@@ -72,7 +72,7 @@ class DiscardCard extends GameState
     function zombie(int $playerId) {
         $playedCards = [];
         foreach ([1,2,3,4,5] as $color) {
-            $playedCards = array_merge($playedCards, $this->game->getCardsByLocation('played'.$playerId.'-'.$color));
+            $playedCards = array_merge($playedCards, $this->game->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color));
         }
         $cardId = $this->getRandomZombieChoice(array_map(fn($card) => $card->id, $playedCards));
 

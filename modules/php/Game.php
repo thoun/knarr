@@ -208,24 +208,24 @@ class Game extends Table {
             $player['coin'] = intval($player['coin']);
             $player['playedCards'] = [];
             foreach ([1,2,3,4,5] as $color) {
-                $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+                $player['playedCards'][$color] = $this->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color);
             }
-            $player['destinations'] = $this->getDestinationsByLocation('played'.$playerId);
+            $player['destinations'] = $this->destinationManager->getDestinationsByLocation('played'.$playerId);
             //$player['handCount'] = intval($this->vikingManager->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
-                $player['hand'] = $this->getCardsByLocation('hand', $playerId);
+                $player['hand'] = $this->vikingManager->getCardsByLocation('hand', $playerId);
             }
 
             if ($result['reservePossible']) {
-                $player['reservedDestinations'] = $this->getDestinationsByLocation('reserved', $playerId);
+                $player['reservedDestinations'] = $this->destinationManager->getDestinationsByLocation('reserved', $playerId);
             }
         }
 
         $result['cardDeckTop'] = $this->vikingManager->getCardDeckTop();
         $result['cardDeckCount'] = $this->vikingManager->getCardDeckCount();
         $result['cardDiscardCount'] = $this->vikingManager->getCardDiscardCount();
-        $result['centerCards'] = $this->getCardsByLocation('slot');
+        $result['centerCards'] = $this->vikingManager->getCardsByLocation('slot');
         $result['centerDestinationsDeckTop'] = [];
         $result['centerDestinationsDeckCount'] = [];
         $result['centerDestinations'] = [];
@@ -233,7 +233,7 @@ class Game extends Table {
         foreach (['A', 'B'] as $letter) {
             $result['centerDestinationsDeckTop'][$letter] = $this->destinationManager->getDestinationDeckTop($letter);
             $result['centerDestinationsDeckCount'][$letter] = $this->destinationManager->getDestinationDeckCount($letter);
-            $result['centerDestinations'][$letter] = $this->getDestinationsByLocation('slot'.$letter);
+            $result['centerDestinations'][$letter] = $this->destinationManager->getDestinationsByLocation('slot'.$letter);
         }
 
         $result['firstPlayerId'] = $firstPlayerId;
@@ -367,14 +367,6 @@ class Game extends Table {
         }
     }
 
-    function getCardsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        return $this->vikingManager->getCardsByLocation($location, $location_arg, $type, $number);
-    }
-
-    function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        return $this->destinationManager->getDestinationsByLocation($location, $location_arg, $type, $number);
-    }
-
     function getBoatSideOption(): int {
         return $this->bga->tableOptions->get(BOAT_SIDE_OPTION);
     }
@@ -402,9 +394,9 @@ class Game extends Table {
         $possibleDestinations = [];
         if (!$exploreDone) {
             $possibleDestinations = array_merge(
-                $this->getDestinationsByLocation('slotA'),
-                $this->getDestinationsByLocation('slotB'),
-                $this->getDestinationsByLocation('reserved', $activePlayerId),
+                $this->destinationManager->getDestinationsByLocation('slotA'),
+                $this->destinationManager->getDestinationsByLocation('slotB'),
+                $this->destinationManager->getDestinationsByLocation('reserved', $activePlayerId),
             );
 
             $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
@@ -426,7 +418,7 @@ class Game extends Table {
         if (boolval($this->getGameStateValue(GO_RESERVE))) {
             $this->incGameStateValue(GO_RESERVE, -1);
             $this->setGameStateValue(PLAYED_CARD_COLOR, 0);
-            $reserved = $this->getDestinationsByLocation('reserved', $playerId);
+            $reserved = $this->destinationManager->getDestinationsByLocation('reserved', $playerId);
             if (count($reserved) >= 2) {
                 $this->bga->notify->all('log', clienttranslate('${player_name} cannot reserve a destination because he already has 2'), [
                     'playerId' => $playerId,
@@ -513,7 +505,7 @@ class Game extends Table {
                     $this->DbQuery("UPDATE player SET `player_reputation` = `player_reputation` + ".$effectiveGains[REPUTATION]." WHERE player_id = $playerId");
                     break;
                 case CARD: 
-                    $available = $this->getAvailableDeckCards();
+                    $available = $this->vikingManager->getAvailableDeckCards();
                     $effectiveGains[CARD] = min($amount, $available);
                     for ($i = 0; $i < $effectiveGains[CARD]; $i++) {
                         $this->powerTakeCard($playerId);
@@ -536,7 +528,7 @@ class Game extends Table {
         $player = $this->getPlayer($playerId);
 
         $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-        $centerCards = $this->getCardsByLocation('slot');
+        $centerCards = $this->vikingManager->getCardsByLocation('slot');
 
         $allFree = false;
         if ($this->getVariantOption() >= 2) {
@@ -633,7 +625,7 @@ class Game extends Table {
     function getPlayedCardsByColor(int $playerId) {
         $playedCardsByColor = [];
         foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+            $playedCardsByColor[$color] = $this->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color);
         }
         return $playedCardsByColor;
     }
@@ -643,7 +635,7 @@ class Game extends Table {
             $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
         }
         foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+            $playedCardsByColor[$color] = $this->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color);
         }
         return array_map(fn($cards) => count($cards), $playedCardsByColor);
     }
@@ -782,12 +774,8 @@ class Game extends Table {
         return $endTurn;
     }
 
-    function getAvailableDeckCards() {
-        return $this->vikingManager->getAvailableDeckCards();
-    }
-
     function getTradeGains(int $playerId, int $bracelets) {
-        $destinations = $this->getDestinationsByLocation('played'.$playerId);
+        $destinations = $this->destinationManager->getDestinationsByLocation('played'.$playerId);
 
         $gains = [];
 
@@ -848,7 +836,7 @@ class Game extends Table {
         if ($this->getVariantOption() >= 2) {
             $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
             if (in_array(ARTIFACT_HELMET, $artifacts) && $destinationIndex > 0 && $destination->type == 2) {
-                $previousDestination = $this->getDestinationsByLocation('played'.$playerId)[$destinationIndex - 1];
+                $previousDestination = $this->destinationManager->getDestinationsByLocation('played'.$playerId)[$destinationIndex - 1];
                 if ($previousDestination->type == 1) {
                     $this->setGameStateValue(RECRUIT_DONE, 0);
                     $this->bga->notify->all('log', clienttranslate('${player_name} can do the recruit action thanks to ${artifact_name} effect'), [

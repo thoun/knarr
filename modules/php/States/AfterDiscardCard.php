@@ -34,7 +34,7 @@ class AfterDiscardCard extends \Bga\GameFramework\States\GameState
             $this->game->deleteGlobalVariable(REMAINING_CARDS_TO_TAKE);
             $this->game->endOfRecruit($playerId, $remainingCardsToTake->slotColor);
         } else {
-            $available = $this->game->getAvailableDeckCards();
+            $available = $this->game->vikingManager->getAvailableDeckCards();
             $effectiveGain = min($remainingCardsToTake->remaining, $available);
             for ($i = 0; $i < $effectiveGain; $i++) {
                 $this->game->powerTakeCard($playerId);

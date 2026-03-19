@@ -38,9 +38,9 @@ class PlayAction extends GameState
         $possibleDestinations = [];
         if (!$exploreDone) {
             $possibleDestinations = array_merge(
-                $this->game->getDestinationsByLocation('slotA'),
-                $this->game->getDestinationsByLocation('slotB'),
-                $this->game->getDestinationsByLocation('reserved', $activePlayerId),
+                $this->game->destinationManager->getDestinationsByLocation('slotA'),
+                $this->game->destinationManager->getDestinationsByLocation('slotB'),
+                $this->game->destinationManager->getDestinationsByLocation('reserved', $activePlayerId),
             );
 
             $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->game->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
@@ -61,7 +61,7 @@ class PlayAction extends GameState
         }
             
 
-        $hand = $this->game->getCardsByLocation('hand', $activePlayerId);
+        $hand = $this->game->vikingManager->getCardsByLocation('hand', $activePlayerId);
         $card = \array_find($hand, fn($c) => $c->id == $id);
 
         if ($card == null || $card->location != 'hand' || $card->locationArg != $activePlayerId) {
@@ -70,7 +70,7 @@ class PlayAction extends GameState
 
         $this->game->vikingManager->cards->moveCard($card->id, 'played'.$activePlayerId.'-'.$card->color, intval($this->game->destinationManager->destinations->countCardInLocation('played'.$activePlayerId.'-'.$card->color)));
 
-        $cardsOfColor = $this->game->getCardsByLocation('played'.$activePlayerId.'-'.$card->color);
+        $cardsOfColor = $this->game->vikingManager->getCardsByLocation('played'.$activePlayerId.'-'.$card->color);
         $gains = array_map(fn($card) => $card->gain, $cardsOfColor);
         $groupGains = $this->game->groupGains($gains);
         $effectiveGains = $this->game->gainResources($activePlayerId, $groupGains, 'recruit');

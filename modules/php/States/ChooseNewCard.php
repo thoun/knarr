@@ -64,7 +64,7 @@ class ChooseNewCard extends GameState
             'card_color' => $this->game->getColorName($card->color), // for logs
         ]);
 
-        if ($this->game->getAvailableDeckCards() >= 1) {
+        if ($this->game->vikingManager->getAvailableDeckCards() >= 1) {
             $this->game->endOfRecruit($activePlayerId, $slotColor);
         } else {
             $this->game->setGlobalVariable(REMAINING_CARDS_TO_TAKE, [
