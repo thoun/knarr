@@ -2,7 +2,6 @@
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
-use Bga\GameFramework\Components\Deck;
 
 function debug(...$debugData) {
     if (Game::getBgaEnvironment() != 'studio') { 
@@ -11,7 +10,7 @@ function debug(...$debugData) {
 }
 
 trait DebugUtilTrait {
-    public Deck $cards;
+    public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
 
     public Bga $bga;
@@ -32,15 +31,15 @@ trait DebugUtilTrait {
         //$this->debug_AddDestinations(2343492, 'A', 15);
         //$this->debug_AddDestinations(2343492, 'B', 10);
 
-        //$this->cards->pickCardsForLocation(13, 'deck', 'void');
+        //$this->vikingManager->cards->pickCardsForLocation(13, 'deck', 'void');
         //$this->setGlobalVariable(ARTIFACTS, [ARTIFACT_HELMET]);
         
         //$this->debug_LastTurn();
 
         $playerId = 2343492;
         for ($i = 0; $i < 5; $i++) {
-            $card = $this->getCardFromDb($this->cards->getCardOnTop('deck'));
-            $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinationManager->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
+            $card = $this->vikingManager->getCardOnTopOfDeck();
+            $this->vikingManager->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinationManager->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
         }
         /*$this->debug_Empty();*/
     }
@@ -66,8 +65,8 @@ trait DebugUtilTrait {
     }
     
     function debug_Empty() {
-		$this->cards->moveAllCardsInLocation('deck', 'void');
-        $this->cards->moveAllCardsInLocation('discard', 'void');
+		$this->vikingManager->cards->moveAllCardsInLocation('deck', 'void');
+        $this->vikingManager->cards->moveAllCardsInLocation('discard', 'void');
     }
 
     function debug_AddDestinations($playerId, $letter, $number) {

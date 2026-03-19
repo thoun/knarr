@@ -49,19 +49,19 @@ class DiscardCard extends GameState
 
     #[PossibleAction]
     public function actDiscardCard(int $id, int $currentPlayerId) {
-        $card = $this->game->getCardFromDb($this->game->cards->getCard($id));
+        $card = $this->game->vikingManager->getCard($id);
 
         if ($card == null || !str_starts_with($card->location, "played$currentPlayerId")) {
             throw new UserException("You must choose a card in front of you");
         }
 
-        $this->game->cards->moveCard($card->id, 'discard');
+        $this->game->vikingManager->cards->moveCard($card->id, 'discard');
 
         $this->bga->notify->all('discardCards', clienttranslate('${player_name} discards a cards to refill the deck'), [
             'playerId' => $currentPlayerId,
             'player_name' => $this->game->getPlayerName($currentPlayerId),
             'cards' => [$card],
-            'cardDiscardCount' => intval($this->game->cards->countCardInLocation('discard')),
+            'cardDiscardCount' => $this->game->vikingManager->getCardDiscardCount(),
         ]);
 
         $this->bga->playerStats->inc('discardedCards', 1, $currentPlayerId, updateTableStat: true);

@@ -75,14 +75,14 @@ class PayDestination extends GameState
         }
 
         if (count($cardsToDiscard)) {
-            $this->game->cards->moveCards(array_map(fn($card) => $card->id, $cardsToDiscard), 'discard');
+            $this->game->vikingManager->cards->moveCards(array_map(fn($card) => $card->id, $cardsToDiscard), 'discard');
 
             $this->bga->notify->all('discardCards', clienttranslate('${player_name} discards ${number} cards(s) for the selected destination'), [
                 'playerId' => $activePlayerId,
                 'player_name' => $this->game->getPlayerName($activePlayerId),
                 'cards' => $cardsToDiscard,
                 'number' => count($cardsToDiscard), // for logs
-                'cardDiscardCount' => intval($this->game->cards->countCardInLocation('discard')),
+                'cardDiscardCount' => $this->game->vikingManager->getCardDiscardCount(),
             ]);
         }
 

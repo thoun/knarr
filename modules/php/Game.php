@@ -19,12 +19,9 @@
 
 namespace Bga\Games\Knarr;
 
-use Bga\GameFramework\Components\Deck;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
-use Card;
-use CardType;
 use Destination;
 use KnarrPlayer;
 
@@ -37,12 +34,11 @@ require_once('constants.inc.php');
 class Game extends Table {
     use DebugUtilTrait;
 
-    public Deck $cards;
+    public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
     public PlayerCounter $playerCoin;
 
     public array $VP_BY_REPUTATION;
-    public array $CARDS;
 
 	function __construct() {
         // Your global variables labels:
@@ -68,9 +64,7 @@ class Game extends Table {
             BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
         ]);   
 		
-        $this->cards = $this->deckFactory->createDeck("card");
-        $this->cards->autoreshuffle = true;     
-        $this->cards->autoreshuffle_trigger = ['obj' => $this, 'method' => 'cardDeckAutoReshuffle'];
+        $this->vikingManager = new VikingManager($this);
         $this->destinationManager = new DestinationManager($this);
 
         $this->VP_BY_REPUTATION = [
@@ -78,33 +72,6 @@ class Game extends Table {
             6 => 2,
             10 => 3,
             14 => 5,
-        ];
-
-        $this->CARDS = [    
-            new CardType(BLUE, VP, [2 => 2, 3 => 3, 4 => 4]),
-            new CardType(BLUE, BRACELET, [2 => 1, 3 => 2, 4 => 2]),
-            new CardType(BLUE, RECRUIT, [2 => 1, 3 => 1, 4 => 1]),
-            new CardType(BLUE, REPUTATION, [2 => 2, 3 => 2, 4 => 3]),
-
-            new CardType(YELLOW, VP, [2 => 3, 3 => 4, 4 => 5]),
-            new CardType(YELLOW, BRACELET, [2 => 1, 3 => 1, 4 => 2]),
-            new CardType(YELLOW, RECRUIT, [2 => 0, 3 => 1, 4 => 1]),
-            new CardType(YELLOW, REPUTATION, [2 => 2, 3 => 2, 4 => 2]),
-
-            new CardType(PURPLE, VP, [2 => 1, 3 => 2, 4 => 4]),
-            new CardType(PURPLE, BRACELET, [2 => 2, 3 => 2, 4 => 2]),
-            new CardType(PURPLE, RECRUIT, [2 => 2, 3 => 2, 4 => 2]),
-            new CardType(PURPLE, REPUTATION, [2 => 1, 3 => 2, 4 => 2]),
-
-            new CardType(GREEN, VP, [2 => 2, 3 => 3, 4 => 4]),
-            new CardType(GREEN, BRACELET, [2 => 1, 3 => 1, 4 => 2]),
-            new CardType(GREEN, RECRUIT, [2 => 2, 3 => 3, 4 => 3]),
-            new CardType(GREEN, REPUTATION, [2 => 1, 3 => 1, 4 => 1]),
-
-            new CardType(RED, VP, [2 => 3, 3 => 3, 4 => 4]),
-            new CardType(RED, BRACELET, [2 => 2, 3 => 3, 4 => 3]),
-            new CardType(RED, RECRUIT, [2 => 1, 3 => 1, 4 => 2]),
-            new CardType(RED, REPUTATION, [2 => 0, 3 => 1, 4 => 1]),
         ];
 	}
 
@@ -185,7 +152,7 @@ class Game extends Table {
         }
 
         // setup the initial game situation here
-        $this->setupCards($playerIds);
+        $this->vikingManager->setupCards($playerIds);
         $this->destinationManager->setupDestinations();
         if ($variantOption >= 2) {
             $this->setupArtifacts($variantOption, count($players));
@@ -244,7 +211,7 @@ class Game extends Table {
                 $player['playedCards'][$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
             }
             $player['destinations'] = $this->getDestinationsByLocation('played'.$playerId);
-            //$player['handCount'] = intval($this->cards->countCardInLocation('hand', $playerId));
+            //$player['handCount'] = intval($this->vikingManager->cards->countCardInLocation('hand', $playerId));
 
             if ($currentPlayerId == $playerId) {
                 $player['hand'] = $this->getCardsByLocation('hand', $playerId);
@@ -255,9 +222,9 @@ class Game extends Table {
             }
         }
 
-        $result['cardDeckTop'] = \Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck')));
-        $result['cardDeckCount'] = intval($this->cards->countCardInLocation('deck'));
-        $result['cardDiscardCount'] = intval($this->cards->countCardInLocation('discard'));
+        $result['cardDeckTop'] = $this->vikingManager->getCardDeckTop();
+        $result['cardDeckCount'] = $this->vikingManager->getCardDeckCount();
+        $result['cardDiscardCount'] = $this->vikingManager->getCardDiscardCount();
         $result['centerCards'] = $this->getCardsByLocation('slot');
         $result['centerDestinationsDeckTop'] = [];
         $result['centerDestinationsDeckCount'] = [];
@@ -447,65 +414,8 @@ class Game extends Table {
         }
     }
 
-    function getCardFromDb(/*array|null*/ $dbCard) {
-        if ($dbCard == null) {
-            return null;
-        }
-        return new Card($dbCard);
-    }
-
-    function getCardsFromDb(array $dbCards) {
-        return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbCards));
-    }
-
-    function getCardById(int $id) {
-        $sql = "SELECT * FROM `card` WHERE `card_id` = $id";
-        $dbResults = $this->getCollectionFromDb($sql);
-        $cards = array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
-        return count($cards) > 0 ? $cards[0] : null;
-    }
-
     function getCardsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        $sql = "SELECT * FROM `card` WHERE `card_location` = '$location'";
-        if ($location_arg !== null) {
-            $sql .= " AND `card_location_arg` = $location_arg";
-        }
-        if ($type !== null) {
-            $sql .= " AND `card_type` = $type";
-        }
-        if ($number !== null) {
-            $sql .= " AND `card_type_arg` = $number";
-        }
-        $sql .= " ORDER BY `card_location_arg`";
-        $dbResults = $this->getCollectionFromDb($sql);
-        return array_map(fn($dbCard) => $this->getCardFromDb($dbCard), array_values($dbResults));
-    }
-
-    function setupCards(array $playersIds) {
-        $playerCount = count($playersIds);
-        foreach ($this->CARDS as $cardType) {
-            $cards[] = [ 'type' => $cardType->color, 'type_arg' => $cardType->gain, 'nbr' => $cardType->number[$playerCount] ];
-        }
-        $this->cards->createCards($cards, 'deck');
-        $this->cards->shuffle('deck');
-
-        foreach ([1,2,3,4,5] as $slot) {
-            $this->cards->pickCardForLocation('deck', 'slot', $slot);
-        }
-
-        foreach ($playersIds as $playerId) {
-            $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
-            while ($playedCards[0]->color == $playedCards[1]->color) {
-                $this->cards->moveAllCardsInLocation('played'.$playerId, 'deck');
-                $this->cards->shuffle('deck');
-                $playedCards = $this->getCardsFromDb($this->cards->pickCardsForLocation(2, 'deck', 'played'.$playerId));
-            }
-            foreach ($playedCards as $playedCard) {
-                $this->cards->moveCard($playedCard->id, 'played'.$playerId.'-'.$playedCard->color);
-            }
-
-            $this->cards->pickCardsForLocation(3, 'deck', 'hand', $playerId);
-        }
+        return $this->vikingManager->getCardsByLocation($location, $location_arg, $type, $number);
     }
 
     function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
@@ -752,15 +662,15 @@ class Game extends Table {
     }
 
     function powerTakeCard(int $playerId) {
-        $card = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
-        $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
+        $card = $this->vikingManager->pickDeckCard();
+        $this->vikingManager->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->vikingManager->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
 
         $this->bga->notify->all('takeDeckCard', clienttranslate('${player_name} takes a ${card_color} ${card_type} card from the deck'), [
             'playerId' => $playerId,
             'player_name' => $this->getPlayerName($playerId),
             'card' => $card,
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
+            'cardDeckTop' => $this->vikingManager->getCardDeckTop(),
+            'cardDeckCount' => $this->vikingManager->getCardDeckCount(),
             'card_type' => $this->getGainName($card->gain), // for logs
             'card_color' => $this->getColorName($card->color), // for logs
         ]);
@@ -920,7 +830,7 @@ class Game extends Table {
     }
 
     function getAvailableDeckCards() {
-        return intval($this->cards->countCardInLocation('deck')) + intval($this->cards->countCardInLocation('discard'));
+        return $this->vikingManager->getAvailableDeckCards();
     }
 
     function getTradeGains(int $playerId, int $bracelets) {
@@ -945,21 +855,19 @@ class Game extends Table {
 
     public function cardDeckAutoReshuffle() {
         $this->bga->notify->all('cardDeckReset', clienttranslate('The card deck has been reshuffled'), [            
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')),
-            'cardDiscardCount' => intval($this->cards->countCardInLocation('discard')),
+            'cardDeckTop' => $this->vikingManager->getCardDeckTop(),
+            'cardDeckCount' => $this->vikingManager->getCardDeckCount(),
+            'cardDiscardCount' => $this->vikingManager->getCardDiscardCount(),
         ]);
     }
 
     public function endOfRecruit(int $playerId, int $slotColor) {
-        $newTableCard = $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'slot', $slotColor));
-        $newTableCard->location = 'slot';
-        $newTableCard->locationArg = $slotColor;
+        $newTableCard = $this->vikingManager->pickCardToSlot($slotColor);
 
         $this->bga->notify->all('newTableCard', '', [
             'card' => $newTableCard,
-            'cardDeckTop' => Card::onlyId($this->getCardFromDb($this->cards->getCardOnTop('deck'))),
-            'cardDeckCount' => intval($this->cards->countCardInLocation('deck')) + 1, // to count the new card
+            'cardDeckTop' => $this->vikingManager->getCardDeckTop(),
+            'cardDeckCount' => $this->vikingManager->getCardDeckCount() + 1, // to count the new card
         ]);
 
         $this->setGameStateValue(RECRUIT_DONE, 1);

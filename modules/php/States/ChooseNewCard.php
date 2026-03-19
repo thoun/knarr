@@ -53,7 +53,7 @@ class ChooseNewCard extends GameState
             }
         }
         
-        $this->game->cards->moveCard($card->id, 'hand', $activePlayerId);
+        $this->game->vikingManager->cards->moveCard($card->id, 'hand', $activePlayerId);
 
         $this->bga->notify->all('takeCard', clienttranslate('${player_name} takes the ${card_color} ${card_type} card from the table (${color} column)'), [
             'playerId' => $activePlayerId,
