@@ -68,7 +68,7 @@ class PlayAction extends GameState
             throw new UserException("You can't play this card");
         }
 
-        $this->game->cards->moveCard($card->id, 'played'.$activePlayerId.'-'.$card->color, intval($this->game->destinations->countCardInLocation('played'.$activePlayerId.'-'.$card->color)));
+        $this->game->cards->moveCard($card->id, 'played'.$activePlayerId.'-'.$card->color, intval($this->game->destinationManager->destinations->countCardInLocation('played'.$activePlayerId.'-'.$card->color)));
 
         $cardsOfColor = $this->game->getCardsByLocation('played'.$activePlayerId.'-'.$card->color);
         $gains = array_map(fn($card) => $card->gain, $cardsOfColor);

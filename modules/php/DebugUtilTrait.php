@@ -12,7 +12,7 @@ function debug(...$debugData) {
 
 trait DebugUtilTrait {
     public Deck $cards;
-    public Deck $destinations;
+    public DestinationManager $destinationManager;
 
     public Bga $bga;
 
@@ -40,7 +40,7 @@ trait DebugUtilTrait {
         $playerId = 2343492;
         for ($i = 0; $i < 5; $i++) {
             $card = $this->getCardFromDb($this->cards->getCardOnTop('deck'));
-            $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
+            $this->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->destinationManager->destinations->countCardInLocation('played'.$playerId.'-'.$card->color)));
         }
         /*$this->debug_Empty();*/
     }
@@ -72,8 +72,8 @@ trait DebugUtilTrait {
 
     function debug_AddDestinations($playerId, $letter, $number) {
         for ($i = 0; $i < $number; $i++) {
-            $destinationIndex = intval($this->destinations->countCardInLocation('played'.$playerId));
-            $this->destinations->pickCardForLocation('deck'.$letter, 'played'.$playerId, $destinationIndex);
+            $destinationIndex = intval($this->destinationManager->destinations->countCardInLocation('played'.$playerId));
+            $this->destinationManager->destinations->pickCardForLocation('deck'.$letter, 'played'.$playerId, $destinationIndex);
         }
     }
 }

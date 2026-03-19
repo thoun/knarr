@@ -26,7 +26,6 @@ use Bga\GameFramework\Table;
 use Card;
 use CardType;
 use Destination;
-use DestinationType;
 use KnarrPlayer;
 
 require_once('objects/card.php');
@@ -39,11 +38,10 @@ class Game extends Table {
     use DebugUtilTrait;
 
     public Deck $cards;
-    public Deck $destinations;
+    public DestinationManager $destinationManager;
     public PlayerCounter $playerCoin;
 
     public array $VP_BY_REPUTATION;
-    public array $DESTINATIONS;
     public array $CARDS;
 
 	function __construct() {
@@ -73,55 +71,13 @@ class Game extends Table {
         $this->cards = $this->deckFactory->createDeck("card");
         $this->cards->autoreshuffle = true;     
         $this->cards->autoreshuffle_trigger = ['obj' => $this, 'method' => 'cardDeckAutoReshuffle'];
-		
-        $this->destinations = $this->deckFactory->createDeck("destination");
-        $this->destinations->autoreshuffle = false;
+        $this->destinationManager = new DestinationManager($this);
 
         $this->VP_BY_REPUTATION = [
             3 => 1,
             6 => 2,
             10 => 3,
             14 => 5,
-        ];
-
-        $this->DESTINATIONS = [
-            // A
-            1 => new DestinationType([DIFFERENT => 3], [RECRUIT => 1, REPUTATION => 1, CARD => 1], [null, VP, null]),
-            2 => new DestinationType([DIFFERENT => 3], [BRACELET => 1, REPUTATION => 1, CARD => 1], [null, VP, null]),
-            3 => new DestinationType([DIFFERENT => 3], [BRACELET => 1, RECRUIT => 1, CARD => 1], [null, VP, null]),
-            4 => new DestinationType([DIFFERENT => 3], [BRACELET => 1], [VP, REPUTATION, RECRUIT]),
-            5 => new DestinationType([DIFFERENT => 3], [BRACELET => 1], [VP, REPUTATION, RECRUIT]),
-            6 => new DestinationType([PURPLE => 2], [BRACELET => 1, CARD => 1], [null, VP, CARD]),
-            7 => new DestinationType([PURPLE => 2], [CARD => 1], [CARD, null, VP]),
-            8 => new DestinationType([PURPLE => 2], [CARD => 1], [VP, CARD, null]),
-            9 => new DestinationType([BLUE => 2], [REPUTATION => 2], [null, VP, REPUTATION]),
-            10 => new DestinationType([BLUE => 2], [RECRUIT => 1, REPUTATION => 1], [REPUTATION, null, VP]),
-            11 => new DestinationType([BLUE => 2], [BRACELET => 1, REPUTATION => 1], [null, REPUTATION, VP]),
-            12 => new DestinationType([GREEN => 2], [BRACELET => 1, RECRUIT => 1], [VP, null, RECRUIT]),
-            13 => new DestinationType([GREEN => 2], [RECRUIT => 1], [RECRUIT, VP, null]),
-            14 => new DestinationType([GREEN => 2], [RECRUIT => 2], [null, RECRUIT, null]),
-            15 => new DestinationType([YELLOW => 2], [], [VP, VP, VP]),
-            16 => new DestinationType([YELLOW => 2], [REPUTATION => 1], [VP, VP, null]),
-            17 => new DestinationType([YELLOW => 2], [RECRUIT => 1], [VP, VP, null]),
-            18 => new DestinationType([RED => 2], [BRACELET => 1, CARD => 1], [VP, null, VP]),
-            19 => new DestinationType([RED => 2], [BRACELET => 1, REPUTATION => 1], [VP, null, VP]),
-            20 => new DestinationType([RED => 2], [BRACELET => 1], [VP, VP, null]),
-            // B
-            21 => new DestinationType([EQUAL => 4], [VP => 5, RECRUIT => 1], [null, null, VP]),
-            22 => new DestinationType([EQUAL => 4], [VP => 5, REPUTATION => 1], [null, null, VP]),
-            23 => new DestinationType([EQUAL => 4], [VP => 5, BRACELET => 1], [null, null, VP]),
-            24 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, BRACELET => 1, RECRUIT => 1, REPUTATION => 1, CARD => 1], [null, null, VP]),
-            25 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, BRACELET => 1, RECRUIT => 1, REPUTATION => 1, CARD => 1], [null, null, VP]),
-            26 => new DestinationType([PURPLE => 2, YELLOW => 2], [VP => 6], [null, VP, null]),
-            27 => new DestinationType([PURPLE => 3, RED => 2], [VP => 8, CARD => 1], [null, null, VP]),
-            28 => new DestinationType([BLUE => 2, RED => 2], [VP => 6], [null, VP, null]),
-            29 => new DestinationType([BLUE => 3, PURPLE => 2], [VP => 7, REPUTATION => 2], [null, null, VP]),
-            30 => new DestinationType([GREEN => 2, PURPLE => 2], [VP => 6], [null, VP, null]),
-            31 => new DestinationType([GREEN => 3, BLUE => 2], [VP => 8, RECRUIT => 1], [null, null, VP]),
-            32 => new DestinationType([YELLOW => 2, BLUE => 2], [VP => 6], [null, VP, null]),
-            33 => new DestinationType([YELLOW => 3, GREEN => 2], [VP => 9], [null, null, VP]),
-            34 => new DestinationType([RED => 2, GREEN => 2], [VP => 6], [null, VP, null]),
-            35 => new DestinationType([RED => 3, YELLOW => 2], [VP => 7, BRACELET => 1], [null, null, VP]),
         ];
 
         $this->CARDS = [    
@@ -230,7 +186,7 @@ class Game extends Table {
 
         // setup the initial game situation here
         $this->setupCards($playerIds);
-        $this->setupDestinations();
+        $this->destinationManager->setupDestinations();
         if ($variantOption >= 2) {
             $this->setupArtifacts($variantOption, count($players));
         }
@@ -308,8 +264,8 @@ class Game extends Table {
         $result['centerDestinations'] = [];
 
         foreach (['A', 'B'] as $letter) {
-            $result['centerDestinationsDeckTop'][$letter] = \Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$letter)));
-            $result['centerDestinationsDeckCount'][$letter] = intval($this->destinations->countCardInLocation('deck'.$letter));
+            $result['centerDestinationsDeckTop'][$letter] = $this->destinationManager->getDestinationDeckTop($letter);
+            $result['centerDestinationsDeckCount'][$letter] = $this->destinationManager->getDestinationDeckCount($letter);
             $result['centerDestinations'][$letter] = $this->getDestinationsByLocation('slot'.$letter);
         }
 
@@ -552,48 +508,8 @@ class Game extends Table {
         }
     }
 
-    function getDestinationFromDb(/*array|null*/ $dbCard) {
-        if ($dbCard == null) {
-            return null;
-        }
-        return new Destination($dbCard, $this->DESTINATIONS);
-    }
-
-    function getDestinationsFromDb(array $dbCards) {
-        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbCards));
-    }
-
     function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
-        $sql = "SELECT * FROM `destination` WHERE `card_location` = '$location'";
-        if ($location_arg !== null) {
-            $sql .= " AND `card_location_arg` = $location_arg";
-        }
-        if ($type !== null) {
-            $sql .= " AND `card_type` = $type";
-        }
-        if ($number !== null) {
-            $sql .= " AND `card_type_arg` = $number";
-        }
-        $sql .= " ORDER BY `card_location_arg`";
-        $dbResults = $this->getCollectionFromDb($sql);
-        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbResults));
-    }
-
-    function setupDestinations() {
-        $cards[] = ['A' => [], 'B' => []];
-        foreach ($this->DESTINATIONS as $number => $destinationType) {
-            $cards[$number > 20 ? 'B' : 'A'][] = [ 'type' => $number > 20 ? 2 : 1, 'type_arg' => $number, 'nbr' => 1 ];
-        }
-        foreach (['A', 'B'] as $type) {
-            $this->destinations->createCards($cards[$type], 'deck'.$type);
-            $this->destinations->shuffle('deck'.$type);
-        }
-
-        foreach ([1,2,3] as $slot) {
-            foreach (['A', 'B'] as $type) {
-                $this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $slot);
-            }
-        }
+        return $this->destinationManager->getDestinationsByLocation($location, $location_arg, $type, $number);
     }
 
     function getBoatSideOption(): int {
@@ -1055,15 +971,13 @@ class Game extends Table {
     public function endExplore(int $playerId, bool $fromReserve, object $destination, int $destinationIndex) {
         if (!$fromReserve) {
             $type = $destination->type == 2 ? 'B' : 'A';
-            $newDestination = $this->getDestinationFromDb($this->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $destination->locationArg));
-            $newDestination->location = 'slot'.$type;
-            $newDestination->locationArg = $destination->locationArg;
+            $newDestination = $this->destinationManager->pickDestinationToSlot($type, $destination->locationArg);
 
             $this->bga->notify->all('newTableDestination', '', [
                 'destination' => $newDestination,
                 'letter' => $type,
-                'destinationDeckTop' => Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$type))),
-                'destinationDeckCount' => intval($this->destinations->countCardInLocation('deck'.$type)),
+                'destinationDeckTop' => $this->destinationManager->getDestinationDeckTop($type),
+                'destinationDeckCount' => $this->destinationManager->getDestinationDeckCount($type),
             ]);
         }
 

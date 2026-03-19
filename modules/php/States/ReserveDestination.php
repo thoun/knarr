@@ -9,7 +9,6 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\UserException;
 use Bga\Games\Knarr\Game;
-use Destination;
 
 class ReserveDestination extends GameState
 {
@@ -30,13 +29,13 @@ class ReserveDestination extends GameState
 
     #[PossibleAction]
     public function actReserveDestination(int $id, int $activePlayerId) {
-        $destination = $this->game->getDestinationFromDb($this->game->destinations->getCard($id));
+        $destination = $this->game->destinationManager->getDestination($id);
 
         if ($destination == null || !in_array($destination->location, ['slotA', 'slotB'])) {
             throw new UserException("You can't reserve this destination");
         }
 
-        $this->game->destinations->moveCard($destination->id, 'reserved', $activePlayerId);
+        $this->game->destinationManager->destinations->moveCard($destination->id, 'reserved', $activePlayerId);
         $type = $destination->type == 2 ? 'B' : 'A';
 
         $this->bga->notify->all('reserveDestination', clienttranslate('${player_name} reserves a destination from line ${line_letter}'), [
@@ -46,15 +45,13 @@ class ReserveDestination extends GameState
             'line_letter' => $type, // for logs
         ]);
 
-        $newDestination = $this->game->getDestinationFromDb($this->game->destinations->pickCardForLocation('deck'.$type, 'slot'.$type, $destination->locationArg));
-        $newDestination->location = 'slot'.$type;
-        $newDestination->locationArg = $destination->locationArg;
+        $newDestination = $this->game->destinationManager->pickDestinationToSlot($type, $destination->locationArg);
 
         $this->bga->notify->all('newTableDestination', '', [
             'destination' => $newDestination,
             'letter' => $type,
-            'destinationDeckTop' => Destination::onlyId($this->game->getDestinationFromDb($this->game->destinations->getCardOnTop('deck'.$type))),
-            'destinationDeckCount' => intval($this->game->destinations->countCardInLocation('deck'.$type)),
+            'destinationDeckTop' => $this->game->destinationManager->getDestinationDeckTop($type),
+            'destinationDeckCount' => $this->game->destinationManager->getDestinationDeckCount($type),
         ]);
 
         $this->gamestate->nextState('next');

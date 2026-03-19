@@ -32,7 +32,7 @@ class PayDestination extends GameState
     }   
 
     function getArgs(int $activePlayerId): array {
-        $selectedDestination = $this->game->getDestinationFromDb($this->game->destinations->getCard(intval($this->game->getGameStateValue((string)SELECTED_DESTINATION))));
+        $selectedDestination = $this->game->destinationManager->getDestination(intval($this->game->getGameStateValue((string)SELECTED_DESTINATION)));
 
         return [
             'selectedDestination' => $selectedDestination,
@@ -46,7 +46,7 @@ class PayDestination extends GameState
             throw new UserException("Not enough recruits");
         }
 
-        $destination = $this->game->getDestinationFromDb($this->game->destinations->getCard($this->game->getGameStateValue((string)SELECTED_DESTINATION)));
+        $destination = $this->game->destinationManager->getDestination($this->game->getGameStateValue((string)SELECTED_DESTINATION));
         $fromReserve = $destination->location == 'reserved';
         
         // will contain only selected cards of player
@@ -86,8 +86,8 @@ class PayDestination extends GameState
             ]);
         }
 
-        $destinationIndex = intval($this->game->destinations->countCardInLocation('played'.$activePlayerId));
-        $this->game->destinations->moveCard($destination->id, 'played'.$activePlayerId, $destinationIndex);
+        $destinationIndex = intval($this->game->destinationManager->destinations->countCardInLocation('played'.$activePlayerId));
+        $this->game->destinationManager->destinations->moveCard($destination->id, 'played'.$activePlayerId, $destinationIndex);
 
         $effectiveGains = $this->game->gainResources($activePlayerId, $destination->immediateGains, 'explore');
         $type = $destination->type == 2 ? 'B' : 'A';
