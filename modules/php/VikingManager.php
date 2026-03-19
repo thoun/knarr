@@ -46,7 +46,7 @@ class VikingManager {
         ];
     }
 
-    private function getCardFromDb(/*array|null*/ $dbCard) {
+    private function getCardFromDb(?array $dbCard) {
         if ($dbCard == null) {
             return null;
         }
@@ -65,7 +65,7 @@ class VikingManager {
         return $this->getCardFromDb($this->cards->getCardOnTop('deck'));
     }
 
-    public function getCardsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
+    public function getCardsByLocation(string $location, ?int $location_arg = null, ?int $type = null, ?int $number = null) {
         $sql = "SELECT * FROM `card` WHERE `card_location` = '$location'";
         if ($location_arg !== null) {
             $sql .= " AND `card_location_arg` = $location_arg";

@@ -26,6 +26,7 @@ define('RECRUIT', 3);
 define('REPUTATION', 4);
 define('CARD', 5);
 define('COIN', 6);
+const RAID = 7;
 
 /*
  * Artifacts

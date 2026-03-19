@@ -11,13 +11,15 @@ require_once(__DIR__.'/objects/destination.php');
 
 class DestinationManager {
     public Deck $destinations;
-    public array $DESTINATIONS;
+    public array $DESTINATIONS_BASE_GAME;
+    public array $DESTINATIONS_SKALI;
+    public array $ALL_DESTINATIONS;
 
     public function __construct(private Game $game) {
         $this->destinations = $this->game->deckFactory->createDeck('destination');
         $this->destinations->autoreshuffle = false;
 
-        $this->DESTINATIONS = [
+        $this->DESTINATIONS_BASE_GAME = [
             // A
             1 => new DestinationType([DIFFERENT => 3], [RECRUIT => 1, REPUTATION => 1, CARD => 1], [null, VP, null]),
             2 => new DestinationType([DIFFERENT => 3], [BRACELET => 1, REPUTATION => 1, CARD => 1], [null, VP, null]),
@@ -56,24 +58,40 @@ class DestinationManager {
             34 => new DestinationType([RED => 2, GREEN => 2], [VP => 6], [null, VP, null]),
             35 => new DestinationType([RED => 3, YELLOW => 2], [VP => 7, BRACELET => 1], [null, null, VP]),
         ];
+
+        $this->DESTINATIONS_SKALI = [
+            // A
+            101 => new DestinationType([PURPLE => 3], [COIN => 1, CARD => 1], [CARD, COIN, null]),
+            102 => new DestinationType([YELLOW => 3], [COIN => 2], [VP, COIN, VP]),
+            103 => new DestinationType([RED => 3], [BRACELET => 2], [null, COIN, VP]),
+            104 => new DestinationType([GREEN => 3], [COIN => 1, RECRUIT => 1], [RECRUIT, COIN, null]),
+            105 => new DestinationType([BLUE => 3], [COIN => 2], [REPUTATION, COIN, null]),
+            106 => new DestinationType([DIFFERENT => 3], [REPUTATION => 1, BRACELET => 1], [COIN, null, null]),
+            107 => new DestinationType([DIFFERENT => 3], [BRACELET => 1, CARD => 1], [COIN, null, null]),
+            108 => new DestinationType([DIFFERENT => 3], [RECRUIT => 1, BRACELET => 1], [COIN, null, null]),
+            // B
+            109 => new DestinationType([EQUAL => 4], [VP => 4, COIN => 1], [null, RAID, null]),
+            110 => new DestinationType([EQUAL => 4], [VP => 4, COIN => 1], [null, RAID, null]),
+            111 => new DestinationType([YELLOW => 1, BLUE => 2, PURPLE => 2], [VP => 5, COIN => 1, CARD => 1, REPUTATION => 1], [null, null, RAID]),
+            112 => new DestinationType([RED => 2, YELLOW => 1, GREEN => 2], [VP => 5, COIN => 1, CARD => 1, REPUTATION => 1], [null, null, RAID]),
+            113 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, COIN => 2], [null, null, RAID]),
+        ];
+
+        $this->ALL_DESTINATIONS = $this->DESTINATIONS_BASE_GAME + $this->DESTINATIONS_SKALI;
     }
 
-    private function getDestinationFromDb(/*array|null*/ $dbCard) {
+    private function getDestinationFromDb(?array $dbCard) {
         if ($dbCard == null) {
             return null;
         }
-        return new Destination($dbCard, $this->DESTINATIONS);
-    }
-
-    private function getDestinationsFromDb(array $dbCards) {
-        return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbCards));
+        return new Destination($dbCard, $this->ALL_DESTINATIONS);
     }
 
     public function getDestination(int $id) {
         return $this->getDestinationFromDb($this->destinations->getCard($id));
     }
 
-    public function getDestinationsByLocation(string $location, /*int|null*/ $location_arg = null, /*int|null*/ $type = null, /*int|null*/ $number = null) {
+    public function getDestinationsByLocation(string $location, ?int $location_arg = null, ?int $type = null, ?int $number = null) {
         $sql = "SELECT * FROM `destination` WHERE `card_location` = '$location'";
         if ($location_arg !== null) {
             $sql .= " AND `card_location_arg` = $location_arg";
@@ -127,10 +145,15 @@ class DestinationManager {
         return $destination;
     }
 
-    public function setupDestinations() {
+    public function setupDestinations(bool $skaliExpansion): void {
         $cards = ['A' => [], 'B' => []];
-        foreach ($this->DESTINATIONS as $number => $destinationType) {
+        foreach ($this->DESTINATIONS_BASE_GAME as $number => $destinationType) {
             $cards[$number > 20 ? 'B' : 'A'][] = ['type' => $number > 20 ? 2 : 1, 'type_arg' => $number, 'nbr' => 1];
+        }
+        if ($skaliExpansion) {
+            foreach ($this->DESTINATIONS_SKALI as $number => $destinationType) {
+                $cards[$number > 108 ? 'B' : 'A'][] = ['type' => $number > 108 ? 2 : 1, 'type_arg' => $number, 'nbr' => 1];
+            }
         }
         foreach (['A', 'B'] as $type) {
             $this->destinations->createCards($cards[$type], 'deck'.$type);

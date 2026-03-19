@@ -155,7 +155,7 @@ class Game extends Table {
 
         // setup the initial game situation here
         $this->vikingManager->setupCards($playerIds);
-        $this->destinationManager->setupDestinations();
+        $this->destinationManager->setupDestinations($skaliExpansion);
         if ($variantOption >= 2) {
             $this->artifactManager->setupArtifacts($variantOption, count($players));
         }
