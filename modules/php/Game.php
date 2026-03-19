@@ -385,7 +385,7 @@ class Game extends Table {
         $bracelets = $player->bracelet;
         $recruits = $player->recruit;
 
-        $playedCardsColors = $this->getPlayedCardsColor($activePlayerId);
+        $playedCardsColors = $this->vikingManager->getPlayedCardsColor($activePlayerId);
 
         $recruitDone = boolval($this->getGameStateValue((string)RECRUIT_DONE));
         $exploreDone = boolval($this->getGameStateValue((string)EXPLORE_DONE));
@@ -399,7 +399,7 @@ class Game extends Table {
                 $this->destinationManager->getDestinationsByLocation('reserved', $activePlayerId),
             );
 
-            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
+            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->destinationManager->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
         }
 
         return [
@@ -536,7 +536,7 @@ class Game extends Table {
             if (in_array(ARTIFACT_CAULDRON, $artifacts)) {
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
                     $allFree = $playedCardsColors[$playedCardColor] == 2;
 
                     $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
@@ -550,27 +550,6 @@ class Game extends Table {
             'recruits' => $player->recruit,
             'allFree' => $allFree,
         ];
-    }
-
-    function canTakeDestination(Destination $destination, array $playedCardsColors, int $recruits, bool $strict) {
-        $missingCards = 0;
-
-        foreach ($destination->cost as $color => $required) {
-            $available = 0;
-            if ($color == EQUAL) {
-                $available = max($playedCardsColors);
-            } else if ($color == DIFFERENT) {
-                $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
-            } else {
-                $available = ($playedCardsColors[$color] ?? 0); 
-            }
-
-            if ($available < $required) {
-                $missingCards += ($required - $available);
-            }
-        }
-
-        return $strict ? $recruits == $missingCards : $recruits >= $missingCards;
     }
 
     function getGainName(int $gain) {
@@ -622,24 +601,6 @@ class Game extends Table {
 
     }
 
-    function getPlayedCardsByColor(int $playerId) {
-        $playedCardsByColor = [];
-        foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color);
-        }
-        return $playedCardsByColor;
-    }
-
-    function getPlayedCardsColor(int $playerId, /*array | null*/ $playedCardsByColor = null) {
-        if ($playedCardsByColor === null) {
-            $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
-        }
-        foreach ([1,2,3,4,5] as $color) {
-            $playedCardsByColor[$color] = $this->vikingManager->getCardsByLocation('played'.$playerId.'-'.$color);
-        }
-        return array_map(fn($cards) => count($cards), $playedCardsByColor);
-    }
-
     function setupArtifacts(int $option, int $playerCount) {
         $availableArtifacts = [1, 2, 3, 4, 5, 6, 7];
         $artifacts = [];
@@ -678,14 +639,9 @@ class Game extends Table {
         return $endTurn;
     }
 
-    function getCompletedLines(int $playerId) {
-        $playedCardsColors = $this->getPlayedCardsColor($playerId);
-        return min($playedCardsColors);
-    }
-
     function completedAPlayedLine(int $playerId) {
         $completedLines = intval($this->getGameStateValue(COMPLETED_LINES));
-        return $this->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
+        return $this->vikingManager->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
     }
 
     function checkArtifact(int $playerId, int $artifact) {
@@ -693,7 +649,7 @@ class Game extends Table {
             case ARTIFACT_SILVER_COIN:
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] > 3) {
                         $groupGains = [
                             VP => 1,
@@ -716,7 +672,7 @@ class Game extends Table {
             case ARTIFACT_GOLDEN_BRACELET:
                 $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->getPlayedCardsColor($playerId);
+                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] == 3) {
                         $this->setGameStateValue(GO_RESERVE, 1);
 
@@ -733,7 +689,7 @@ class Game extends Table {
         switch ($artifact) {
             case ARTIFACT_AMULET:
                 if ($this->completedAPlayedLine($playerId)) {
-                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effect
+                    $this->setGameStateValue(COMPLETED_LINES, $this->vikingManager->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effect
                     $groupGains = [
                         BRACELET => 1,
                         RECRUIT => 1,
@@ -756,7 +712,7 @@ class Game extends Table {
             case ARTIFACT_WEATHERVANE:
                 if ($this->completedAPlayedLine($playerId)) {
                     $this->setGameStateValue(EXPLORE_DONE, 0);
-                    $this->setGameStateValue(COMPLETED_LINES, $this->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effectrId)]);
+                    $this->setGameStateValue(COMPLETED_LINES, $this->vikingManager->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effectrId)]);
 
                     $this->bga->notify->all('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
                         'playerId' => $playerId,

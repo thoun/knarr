@@ -29,7 +29,7 @@ class PlayAction extends GameState
         $bracelets = $player->bracelet;
         $recruits = $player->recruit;
 
-        $playedCardsColors = $this->game->getPlayedCardsColor($activePlayerId);
+        $playedCardsColors = $this->game->vikingManager->getPlayedCardsColor($activePlayerId);
 
         $recruitDone = boolval($this->game->getGameStateValue((string)RECRUIT_DONE));
         $exploreDone = boolval($this->game->getGameStateValue((string)EXPLORE_DONE));
@@ -43,7 +43,7 @@ class PlayAction extends GameState
                 $this->game->destinationManager->getDestinationsByLocation('reserved', $activePlayerId),
             );
 
-            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->game->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
+            $possibleDestinations = array_values(array_filter($possibleDestinations, fn($destination) => $this->game->destinationManager->canTakeDestination($destination, $playedCardsColors, $recruits, false)));
         }
 
         return [

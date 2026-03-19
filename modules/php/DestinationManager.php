@@ -89,6 +89,27 @@ class DestinationManager {
         return array_map(fn($dbCard) => $this->getDestinationFromDb($dbCard), array_values($dbResults));
     }
 
+    public function canTakeDestination(Destination $destination, array $playedCardsColors, int $recruits, bool $strict): bool {
+        $missingCards = 0;
+
+        foreach ($destination->cost as $color => $required) {
+            $available = 0;
+            if ($color == EQUAL) {
+                $available = max($playedCardsColors);
+            } else if ($color == DIFFERENT) {
+                $available = count(array_filter($playedCardsColors, fn($count) => $count > 0));
+            } else {
+                $available = ($playedCardsColors[$color] ?? 0);
+            }
+
+            if ($available < $required) {
+                $missingCards += ($required - $available);
+            }
+        }
+
+        return $strict ? $recruits == $missingCards : $recruits >= $missingCards;
+    }
+
     public function getDestinationDeckTop(string $type) {
         return Destination::onlyId($this->getDestinationFromDb($this->destinations->getCardOnTop('deck'.$type)));
     }

@@ -97,6 +97,26 @@ class VikingManager {
         return $this->getCardDeckCount() + $this->getCardDiscardCount();
     }
 
+    public function getPlayedCardsByColor(int $playerId): array {
+        $playedCardsByColor = [];
+        foreach ([1, 2, 3, 4, 5] as $color) {
+            $playedCardsByColor[$color] = $this->getCardsByLocation('played'.$playerId.'-'.$color);
+        }
+        return $playedCardsByColor;
+    }
+
+    public function getPlayedCardsColor(int $playerId, ?array $playedCardsByColor = null): array {
+        if ($playedCardsByColor === null) {
+            $playedCardsByColor = $this->getPlayedCardsByColor($playerId);
+        }
+        return array_map(fn($cards) => count($cards), $playedCardsByColor);
+    }
+
+    public function getCompletedLines(int $playerId): int {
+        $playedCardsColors = $this->getPlayedCardsColor($playerId);
+        return min($playedCardsColors);
+    }
+
     public function pickDeckCard() {
         return $this->getCardFromDb($this->cards->pickCardForLocation('deck', 'played'));
     }

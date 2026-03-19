@@ -33,7 +33,7 @@ class ScoreReputation extends \Bga\GameFramework\States\GameState
         $this->game->incPlayerScore($activePlayerId, $inc, clienttranslate('${player_name} scores ${incScore} Victory Point(s) with reputation'));
         $this->bga->playerStats->inc('reputationPoints', $inc, $activePlayerId, updateTableStat: true);
 
-        $this->game->setGameStateValue((string)COMPLETED_LINES, $this->game->getCompletedLines($activePlayerId));
+        $this->game->setGameStateValue((string)COMPLETED_LINES, $this->game->vikingManager->getCompletedLines($activePlayerId));
         
         return ST_PLAYER_PLAY_ACTION;
     }

@@ -54,7 +54,7 @@ class PayDestination extends GameState
         $selectedPlayedCardsColors = [];
         $cardsToDiscard = [];
         if (count($ids) > 0) {
-            $playedCardsByColor = $this->game->getPlayedCardsByColor($activePlayerId);
+            $playedCardsByColor = $this->game->vikingManager->getPlayedCardsByColor($activePlayerId);
             foreach ([1,2,3,4,5] as $color) {
                 $playedCardsByColor[$color] = array_values(array_filter($playedCardsByColor[$color], fn($card) => in_array($card->id, $ids)));
                 $selectedPlayedCardsColors[$color] = count($playedCardsByColor[$color]);
@@ -62,7 +62,7 @@ class PayDestination extends GameState
             }
         }
 
-        $valid = $this->game->canTakeDestination($destination, $selectedPlayedCardsColors, $recruits, true);
+        $valid = $this->game->destinationManager->canTakeDestination($destination, $selectedPlayedCardsColors, $recruits, true);
         if (!$valid) {
             throw new UserException("Invalid payment for this destination");
         }
