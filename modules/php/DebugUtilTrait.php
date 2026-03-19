@@ -12,6 +12,7 @@ function debug(...$debugData) {
 trait DebugUtilTrait {
     public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
+    public BuildingManager $buildingManager;
 
     public Bga $bga;
 

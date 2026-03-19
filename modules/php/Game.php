@@ -27,6 +27,7 @@ use KnarrPlayer;
 
 require_once('objects/card.php');
 require_once('objects/destination.php');
+require_once('objects/building.php');
 require_once('objects/player.php');
 require_once('objects/undo.php');
 require_once('constants.inc.php');
@@ -36,6 +37,7 @@ class Game extends Table {
 
     public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
+    public BuildingManager $buildingManager;
     public ArtifactManager $artifactManager;
     public PlayerCounter $playerCoin;
 
@@ -67,6 +69,7 @@ class Game extends Table {
 		
         $this->vikingManager = new VikingManager($this);
         $this->destinationManager = new DestinationManager($this);
+        $this->buildingManager = new BuildingManager($this);
         $this->artifactManager = new ArtifactManager($this);
 
         $this->VP_BY_REPUTATION = [
@@ -158,6 +161,9 @@ class Game extends Table {
         $this->destinationManager->setupDestinations($skaliExpansion);
         if ($variantOption >= 2) {
             $this->artifactManager->setupArtifacts($variantOption, count($players));
+        }
+        if ($skaliExpansion) {
+            $this->buildingManager->setupBuildings();
         }
 
         // Activate first player (which is in general a good idea :) )
