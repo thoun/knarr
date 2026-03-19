@@ -13,6 +13,7 @@ trait DebugUtilTrait {
     public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
     public BuildingManager $buildingManager;
+    public RaidManager $raidManager;
 
     public Bga $bga;
 

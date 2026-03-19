@@ -35,11 +35,6 @@
             "name": "Reputation gained by played cards",
             "type": "int"
         },
-        "assetsCollectedByPlayedCards6": {
-            "id": 27,
-            "name": "Coins gained by played cards",
-            "type": "int"
-        },
         "recruitsUsedToChooseCard": {
             "id": 30,
             "name": "Recruits used to choose card",
@@ -165,6 +160,11 @@
             "name": "Coins gained by trade",
             "type": "int"
         },
+        "assetsCollectedByTrade7": {
+            "id": 72,
+            "name": "Raid tokens gained by trade",
+            "type": "int"
+        },
         "activatedArtifacts": {
             "id": 80,
             "name": "Activated artifacts",
@@ -183,6 +183,11 @@
         "coinsMissed": {
             "id": 92,
             "name": "Coins missed (already at 3)",
+            "type": "int"
+        },
+        "raidMissed": {
+            "id": 93,
+            "name": "Raid token missed",
             "type": "int"
         },
         "roundNumber": {
@@ -227,11 +232,6 @@
             "name": "Reputation gained by played cards",
             "type": "int"
         },
-        "assetsCollectedByPlayedCards6": {
-            "id": 27,
-            "name": "Coins gained by played cards",
-            "type": "int"
-        },
         "recruitsUsedToChooseCard": {
             "id": 30,
             "name": "Recruits used to choose card",
@@ -357,6 +357,11 @@
             "name": "Coins gained by trade",
             "type": "int"
         },
+        "assetsCollectedByTrade7": {
+            "id": 72,
+            "name": "Raid tokens gained by trade",
+            "type": "int"
+        },
         "activatedArtifacts": {
             "id": 80,
             "name": "Activated artifacts",
@@ -375,6 +380,11 @@
         "coinsMissed": {
             "id": 92,
             "name": "Coins missed (already at 3)",
+            "type": "int"
+        },
+        "raidMissed": {
+            "id": 93,
+            "name": "Raid token missed",
             "type": "int"
         }
     }

@@ -20,6 +20,8 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
     }
 
     function onEnteringState() {
+        $this->game->raidManager->triggerRaid();
+
         //$this->deleteGlobalVariables([UNDO, POWER_PAY_ONE_LESS]);
         $this->game->setGameStateValue((string)RECRUIT_DONE, 0);
         $this->game->setGameStateValue((string)EXPLORE_DONE, 0);

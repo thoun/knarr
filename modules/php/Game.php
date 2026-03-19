@@ -27,6 +27,7 @@ use KnarrPlayer;
 require_once('objects/card.php');
 require_once('objects/destination.php');
 require_once('objects/building.php');
+require_once('objects/raid.php');
 require_once('objects/player.php');
 require_once('objects/undo.php');
 require_once('constants.inc.php');
@@ -37,6 +38,7 @@ class Game extends Table {
     public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
     public BuildingManager $buildingManager;
+    public RaidManager $raidManager;
     public ArtifactManager $artifactManager;
     public PlayerCounter $playerCoin;
 
@@ -69,6 +71,7 @@ class Game extends Table {
         $this->vikingManager = new VikingManager($this);
         $this->destinationManager = new DestinationManager($this);
         $this->buildingManager = new BuildingManager($this);
+        $this->raidManager = new RaidManager($this);
         $this->artifactManager = new ArtifactManager($this);
 
         $this->VP_BY_REPUTATION = [
@@ -152,7 +155,7 @@ class Game extends Table {
             ], 0, updateTableStat: true);
         }
         if ($skaliExpansion) {
-            $this->playerStats->init(["assetsCollectedByPlayedCards6", "assetsCollectedByDestination6", "assetsCollectedByTrade6", "coinsMissed",], 0, updateTableStat: true);
+            $this->playerStats->init(["assetsCollectedByDestination6", "assetsCollectedByTrade6", "assetsCollectedByTrade7", "coinsMissed",], 0, updateTableStat: true);
         }
 
         // setup the initial game situation here
@@ -163,6 +166,7 @@ class Game extends Table {
         }
         if ($skaliExpansion) {
             $this->buildingManager->setupBuildings();
+            $this->raidManager->setupRaids($playerIds);
         }
 
         // Activate first player (which is in general a good idea :) )
@@ -536,6 +540,16 @@ class Game extends Table {
                         ]);
                     }
                     break;
+                case RAID:
+                    $effectiveGains[RAID] = min($amount, $this->raidManager->getAvailableRaidTokens());
+                    if ($effectiveGains[RAID] > 0) {
+                        $this->raidManager->gainRaidTokens($playerId, $effectiveGains[COIN]);
+                    }
+
+                    if ($effectiveGains[RAID] < $amount) {
+                        $this->bga->playerStats->inc('raidMissed', $amount - $effectiveGains[RAID], $playerId, updateTableStat: true);
+                    }
+                    break;
             }
         }
 
@@ -566,6 +580,7 @@ class Game extends Table {
             case REPUTATION: return clienttranslate("Reputation");
             case CARD: return clienttranslate("Card");
             case COIN: return clienttranslate("Coin");
+            case RAID: return clienttranslate("Raid");
         }
     }
 
