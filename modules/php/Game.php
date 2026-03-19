@@ -36,6 +36,7 @@ class Game extends Table {
 
     public VikingManager $vikingManager;
     public DestinationManager $destinationManager;
+    public ArtifactManager $artifactManager;
     public PlayerCounter $playerCoin;
 
     public array $VP_BY_REPUTATION;
@@ -66,6 +67,7 @@ class Game extends Table {
 		
         $this->vikingManager = new VikingManager($this);
         $this->destinationManager = new DestinationManager($this);
+        $this->artifactManager = new ArtifactManager($this);
 
         $this->VP_BY_REPUTATION = [
             3 => 1,
@@ -155,7 +157,7 @@ class Game extends Table {
         $this->vikingManager->setupCards($playerIds);
         $this->destinationManager->setupDestinations();
         if ($variantOption >= 2) {
-            $this->setupArtifacts($variantOption, count($players));
+            $this->artifactManager->setupArtifacts($variantOption, count($players));
         }
 
         // Activate first player (which is in general a good idea :) )
@@ -192,8 +194,8 @@ class Game extends Table {
         $result['variantOption'] = $this->getVariantOption();
         $result['reservePossible'] = false;
         if ($result['variantOption'] >= 2) {
-            $result['artifacts'] = $this->getGlobalVariable(ARTIFACTS, true);
-            $result['reservePossible'] = in_array(ARTIFACT_GOLDEN_BRACELET, $result['artifacts']);
+            $result['artifacts'] = $this->artifactManager->getArtifacts();
+            $result['reservePossible'] = $this->artifactManager->isReservePossible();
         }
         
         foreach($result['players'] as $playerId => &$player) {
@@ -411,8 +413,8 @@ class Game extends Table {
     }
     
     function redirectAfterAction(int $playerId, bool $checkArtifacts) {
-        if ($checkArtifacts && $this->getVariantOption() >= 2) {
-            $this->checkArtifacts($playerId);
+        if ($checkArtifacts) {
+            $this->artifactManager->checkArtifacts($playerId);
         }
 
         if (boolval($this->getGameStateValue(GO_RESERVE))) {
@@ -442,7 +444,7 @@ class Game extends Table {
         if ($canPlay) {
             $this->gamestate->nextState('next');
         } else {
-            $endTurn = $this->checkEndTurnArtifacts($playerId);
+            $endTurn = $this->artifactManager->checkEndTurnArtifacts($playerId);
 
             $this->gamestate->nextState(!$endTurn ? 'next' : 'endTurn');
         }
@@ -530,19 +532,7 @@ class Game extends Table {
         $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
         $centerCards = $this->vikingManager->getCardsByLocation('slot');
 
-        $allFree = false;
-        if ($this->getVariantOption() >= 2) {
-            $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
-            if (in_array(ARTIFACT_CAULDRON, $artifacts)) {
-                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-                if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
-                    $allFree = $playedCardsColors[$playedCardColor] == 2;
-
-                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                }
-            }
-        }
+        $allFree = $this->artifactManager->isChooseNewCardAllFree($playerId);
 
         return [
             'centerCards' => $centerCards,
@@ -573,18 +563,6 @@ class Game extends Table {
         }
     }
 
-    function getArtifactName(int $artifact) {
-        switch ($artifact) {
-            case ARTIFACT_MEAD_CUP: return clienttranslate("Mead Cup");
-            case ARTIFACT_SILVER_COIN: return clienttranslate("Silver coin");
-            case ARTIFACT_CAULDRON: return clienttranslate("Cauldron");
-            case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
-            case ARTIFACT_HELMET: return clienttranslate("Helmet");
-            case ARTIFACT_AMULET: return clienttranslate("Amulet");
-            case ARTIFACT_WEATHERVANE: return clienttranslate("Weathervane");
-        }
-    }
-
     function powerTakeCard(int $playerId) {
         $card = $this->vikingManager->pickDeckCard();
         $this->vikingManager->cards->moveCard($card->id, 'played'.$playerId.'-'.$card->color, intval($this->vikingManager->cards->countCardInLocation('played'.$playerId.'-'.$card->color)));
@@ -599,135 +577,6 @@ class Game extends Table {
             'card_color' => $this->getColorName($card->color), // for logs
         ]);
 
-    }
-
-    function setupArtifacts(int $option, int $playerCount) {
-        $availableArtifacts = [1, 2, 3, 4, 5, 6, 7];
-        $artifacts = [];
-
-        if ($option == 2 && $playerCount == 2) {
-            $artifacts[] = array_shift($availableArtifacts);
-        }
-
-        $index = bga_rand(1, count($availableArtifacts)) - 1;
-        $artifacts[] = $availableArtifacts[$index];
-        array_splice($availableArtifacts, $index, 1);
-
-        $this->setGlobalVariable(ARTIFACTS, $artifacts);
-    }
-
-    function checkArtifacts(int $playerId) {
-        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
-
-        foreach ($artifacts as $artifact) {
-            $this->checkArtifact($playerId, $artifact);
-        }
-    }
-
-    function checkEndTurnArtifacts(int $playerId) {
-        $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
-
-        $endTurn = true;
-
-        foreach ($artifacts as $artifact) {
-            $result = $this->checkEndTurnArtifact($playerId, $artifact);
-            if (!$result) {
-                $endTurn = false;
-            }
-        }
-
-        return $endTurn;
-    }
-
-    function completedAPlayedLine(int $playerId) {
-        $completedLines = intval($this->getGameStateValue(COMPLETED_LINES));
-        return $this->vikingManager->getCompletedLines($playerId) > $completedLines; // completed a line during the turn
-    }
-
-    function checkArtifact(int $playerId, int $artifact) {
-        switch ($artifact) {
-            case ARTIFACT_SILVER_COIN:
-                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-                if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
-                    if ($playedCardsColors[$playedCardColor] > 3) {
-                        $groupGains = [
-                            VP => 1,
-                        ];
-                        $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:silver-coins');
-    
-                        $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
-                            'playerId' => $playerId,
-                            'player_name' => $this->getPlayerName($playerId),
-                            'effectiveGains' => $effectiveGains,
-                            'gains' => $effectiveGains, // for logs
-                            'artifact_name' => $this->getArtifactName($artifact), // for logs
-                            'i18n' => ['artifact_name'],
-                        ]);
-
-                        $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                    }
-                }
-                break;
-            case ARTIFACT_GOLDEN_BRACELET:
-                $playedCardColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
-                if ($playedCardColor > 0) {
-                    $playedCardsColors = $this->vikingManager->getPlayedCardsColor($playerId);
-                    if ($playedCardsColors[$playedCardColor] == 3) {
-                        $this->setGameStateValue(GO_RESERVE, 1);
-
-                        $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                    }
-                }
-                break;
-        }
-        $this->checkEndTurnArtifact($playerId, $artifact);
-    }
-
-    function checkEndTurnArtifact(int $playerId, int $artifact) {
-        $endTurn = true;
-        switch ($artifact) {
-            case ARTIFACT_AMULET:
-                if ($this->completedAPlayedLine($playerId)) {
-                    $this->setGameStateValue(COMPLETED_LINES, $this->vikingManager->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effect
-                    $groupGains = [
-                        BRACELET => 1,
-                        RECRUIT => 1,
-                        REPUTATION => 1,
-                    ];
-                    $effectiveGains = $this->gainResources($playerId, $groupGains, 'artifact:amulet');
-
-                    $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
-                        'playerId' => $playerId,
-                        'player_name' => $this->getPlayerName($playerId),
-                        'effectiveGains' => $effectiveGains,
-                        'gains' => $effectiveGains, // for logs
-                        'artifact_name' => $this->getArtifactName($artifact), // for logs
-                        'i18n' => ['artifact_name'],
-                    ]);
-
-                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                }
-                break;
-            case ARTIFACT_WEATHERVANE:
-                if ($this->completedAPlayedLine($playerId)) {
-                    $this->setGameStateValue(EXPLORE_DONE, 0);
-                    $this->setGameStateValue(COMPLETED_LINES, $this->vikingManager->getCompletedLines($playerId)); // make sure the bonus turn doesn't retrigger the effectrId)]);
-
-                    $this->bga->notify->all('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
-                        'playerId' => $playerId,
-                        'player_name' => $this->getPlayerName($playerId),
-                        'artifact_name' => $this->getArtifactName($artifact), // for logs
-                        'i18n' => ['artifact_name'],
-                    ]);
-
-                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                    
-                    $endTurn = false;
-                }
-                break;
-        }
-        return $endTurn;
     }
 
     function getTradeGains(int $playerId, int $bracelets) {
@@ -789,28 +638,7 @@ class Game extends Table {
         $this->setGameStateValue(RECRUIT_DONE, 1);
         $this->setGameStateValue(EXPLORE_DONE, 1);
 
-        if ($this->getVariantOption() >= 2) {
-            $artifacts = $this->getGlobalVariable(ARTIFACTS, true) ?? [];
-            if (in_array(ARTIFACT_HELMET, $artifacts) && $destinationIndex > 0 && $destination->type == 2) {
-                $previousDestination = $this->destinationManager->getDestinationsByLocation('played'.$playerId)[$destinationIndex - 1];
-                if ($previousDestination->type == 1) {
-                    $this->setGameStateValue(RECRUIT_DONE, 0);
-                    $this->bga->notify->all('log', clienttranslate('${player_name} can do the recruit action thanks to ${artifact_name} effect'), [
-                        'player_name' => $this->getPlayerName($playerId),
-                        'artifact_name' => $this->getArtifactName(ARTIFACT_HELMET), // for logs
-                        'i18n' => ['artifact_name'],
-                    ]);
-
-                    $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-                }
-            }
-
-            if (in_array(ARTIFACT_MEAD_CUP, $artifacts)) {
-                $this->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
-
-                $this->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
-            }
-        }
+        $this->artifactManager->handleEndExplore($playerId, $destination, $destinationIndex);
 
         $this->redirectAfterAction($playerId, true);
     }    

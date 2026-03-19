@@ -91,7 +91,7 @@ class PlayAction extends GameState
         if ($argChooseNewCard['allFree']) {
             $this->bga->notify->all('log', clienttranslate('${player_name} can recruit any viking for free thanks to ${artifact_name} effect'), [
                 'player_name' => $this->game->getPlayerName($activePlayerId),
-                'artifact_name' => $this->game->getArtifactName(ARTIFACT_CAULDRON), // for logs
+                'artifact_name' => $this->game->artifactManager->getArtifactName(ARTIFACT_CAULDRON), // for logs
                 'i18n' => ['artifact_name'],
             ]);
         }
@@ -133,7 +133,7 @@ class PlayAction extends GameState
     
     #[PossibleAction]
     public function actEndTurn(int $currentPlayerId) {
-        $endTurn = $this->game->checkEndTurnArtifacts($currentPlayerId);
+        $endTurn = $this->game->artifactManager->checkEndTurnArtifacts($currentPlayerId);
 
         return $endTurn ? NextPlayer::class : PlayAction::class;
     }
