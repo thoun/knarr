@@ -441,6 +441,7 @@ class Game extends Table {
             'canExplore' => !$exploreDone,
             'canTrade' => !$tradeDone && $bracelets > 0,
             'canDevelopVillage' => !$developingVillageDone && $player->coin > 0,
+            'canRenewBuildings' => $this->playerRenewal->get($activePlayerId) > 0,
         ];
     }
     

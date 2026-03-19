@@ -4,6 +4,7 @@ import { DestinationsManager } from './destinations';
 import { Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
+import { RenewBuildings } from './states/RenewBuildings';
 import { TableCenter } from './table-center';
 
 export const ANIMATION_MS = 500;
@@ -55,8 +56,13 @@ export class Game implements KnarrGame {
 
     public bga: Bga;
 
+    public RenewBuildings: RenewBuildings;
+
     constructor(bga: Bga) {
         this.bga = bga;
+
+        this.RenewBuildings = new RenewBuildings(this, bga);
+        this.bga.states.register('RenewBuildings', this.RenewBuildings);
     }
     
     /*
@@ -341,7 +347,11 @@ export class Game implements KnarrGame {
             switch (stateName) {
                 case 'PlayAction':
                     const playActionArgs = args as EnteringPlayActionArgs;
-                    this.bga.statusBar.addActionButton(_("Trade"), () => this.goTrade(), { disabled: !playActionArgs.canTrade });
+                    this.bga.statusBar.addActionButton(_("Trade"), () => this.bga.actions.performAction('actGoTrade'), { disabled: !playActionArgs.canTrade });
+
+                    if (args.canRenewBuildings) {
+                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'));
+                    }
                     
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
@@ -697,10 +707,6 @@ export class Game implements KnarrGame {
         }
     }
   	
-    public goTrade() {
-        this.bga.actions.performAction('actGoTrade');
-    }
-  	
     public playCard(id: number) {
         this.bga.actions.performAction('actPlayCard', {
             id
@@ -901,6 +907,8 @@ export class Game implements KnarrGame {
         const { name, value, playerId } = args;
         if (name === 'coin') {
             this.setCoins(playerId, value);
+        } else if (name === 'renewal') {
+            // TODO
         }
     }
 

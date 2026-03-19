@@ -111,6 +111,7 @@ export interface EnteringPlayActionArgs {
     canExplore: boolean;
     canTrade: boolean;
     canDevelopVillage: boolean;
+    canRenewBuildings: boolean;
     possibleDestinations: Destination[];
     possibleBuildings: Building[];
 }

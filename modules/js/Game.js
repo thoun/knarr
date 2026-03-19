@@ -357,6 +357,25 @@ class PlayerTable {
     }
 }
 
+class RenewBuildings {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+    /**
+     * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
+     */
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.renewButton = this.bga.statusBar.addActionButton(_('Renew selected Buildings'), () => this.bga.actions.performAction("actRenewBuildings", { ids: [] /* TODO*/ }), { disabled: true });
+            this.bga.statusBar.addActionButton(_('Cancel'), () => this.bga.actions.performAction("actCancel"), { color: 'secondary' });
+        }
+    }
+    onTableBuildingSelectionChange() {
+        // TODO get selection and set   this.renewButton.disabled      
+    }
+}
+
 const POINT_CASE_SIZE_LEFT = 38.8;
 const POINT_CASE_SIZE_TOP = 37.6;
 function sleep(ms) {
@@ -579,6 +598,8 @@ class Game {
         this.crewCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.bga = bga;
+        this.RenewBuildings = new RenewBuildings(this, bga);
+        this.bga.states.register('RenewBuildings', this.RenewBuildings);
     }
     /*
         setup:
@@ -828,7 +849,10 @@ class Game {
             switch (stateName) {
                 case 'PlayAction':
                     const playActionArgs = args;
-                    this.bga.statusBar.addActionButton(_("Trade"), () => this.goTrade(), { disabled: !playActionArgs.canTrade });
+                    this.bga.statusBar.addActionButton(_("Trade"), () => this.bga.actions.performAction('actGoTrade'), { disabled: !playActionArgs.canTrade });
+                    if (args.canRenewBuildings) {
+                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'));
+                    }
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
                             const warning = _("Are you sure you want to skip Helmet effect ? You can carry out a Recruit action");
@@ -1123,9 +1147,6 @@ class Game {
             this.setPayDestinationLabelAndState();
         }
     }
-    goTrade() {
-        this.bga.actions.performAction('actGoTrade');
-    }
     playCard(id) {
         this.bga.actions.performAction('actPlayCard', {
             id
@@ -1291,6 +1312,9 @@ class Game {
         const { name, value, playerId } = args;
         if (name === 'coin') {
             this.setCoins(playerId, value);
+        }
+        else if (name === 'renewal') {
+            // TODO
         }
     }
     notif_trade(args) {
