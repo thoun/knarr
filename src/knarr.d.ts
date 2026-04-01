@@ -34,7 +34,7 @@ export interface Building {
     locationArg: number;
     number: number;
     cost: { [color: number]: number };
-    gains: (number | null)[];
+    gains: ({ [type: number]: number } | null)[];
     mostRaid: { [type: number]: number };
     fewestRaid: { [type: number]: number };
 }

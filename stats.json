@@ -194,6 +194,71 @@
             "id": 10,
             "name": "Number of rounds",
             "type": "int"
+        },
+        "buildingActions": {
+            "id": 100,
+            "name": "Building action triggered",
+            "type": "int"
+        },
+        "buildingActions0": {
+            "id": 101,
+            "name": "Building action triggered : explore a Land of Influence (B)",
+            "type": "int"
+        },
+        "buildingActions1": {
+            "id": 102,
+            "name": "Building action triggered : explore a Trading Land (A)",
+            "type": "int"
+        },
+        "buildingActions2": {
+            "id": 103,
+            "name": "Building action triggered : recruit a viking of a color you already have",
+            "type": "int"
+        },
+        "buildingActions3": {
+            "id": 103,
+            "name": "Building action triggered : recruit a viking of a new color",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding": {
+            "id": 110,
+            "name": "Assets gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding1": {
+            "id": 111,
+            "name": "Victory points gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding2": {
+            "id": 112,
+            "name": "Bracelets gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding3": {
+            "id": 113,
+            "name": "Recruits gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding4": {
+            "id": 114,
+            "name": "Reputation gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding5": {
+            "id": 115,
+            "name": "Cards gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding6": {
+            "id": 116,
+            "name": "Coins gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding7": {
+            "id": 117,
+            "name": "Raid tokens gained by building",
+            "type": "int"
         }
     },
     "player": {
@@ -385,6 +450,71 @@
         "raidMissed": {
             "id": 93,
             "name": "Raid token missed",
+            "type": "int"
+        },
+        "buildingActions": {
+            "id": 100,
+            "name": "Building action triggered",
+            "type": "int"
+        },
+        "buildingActions0": {
+            "id": 101,
+            "name": "Building action triggered : explore a Land of Influence (B)",
+            "type": "int"
+        },
+        "buildingActions1": {
+            "id": 102,
+            "name": "Building action triggered : explore a Trading Land (A)",
+            "type": "int"
+        },
+        "buildingActions2": {
+            "id": 103,
+            "name": "Building action triggered : recruit a viking of a color you already have",
+            "type": "int"
+        },
+        "buildingActions3": {
+            "id": 103,
+            "name": "Building action triggered : recruit a viking of a new color",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding": {
+            "id": 110,
+            "name": "Assets gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding1": {
+            "id": 111,
+            "name": "Victory points gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding2": {
+            "id": 112,
+            "name": "Bracelets gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding3": {
+            "id": 113,
+            "name": "Recruits gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding4": {
+            "id": 114,
+            "name": "Reputation gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding5": {
+            "id": 115,
+            "name": "Cards gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding6": {
+            "id": 116,
+            "name": "Coins gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByBuilding7": {
+            "id": 117,
+            "name": "Raid tokens gained by building",
             "type": "int"
         }
     }

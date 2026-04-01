@@ -165,8 +165,17 @@ class BuildingManager {
 
     private function applyRowGain(int $playerId, int $row, array $extraGain) {
         $gains = $this->getRowGains($playerId, $row, $extraGain); 
+
+        $groupGains = [];
+
+        foreach ($gains as $gain => $quantity) {
+            if (array_key_exists($gain, $groupGains)) {
+                $groupGains[$gain] += $quantity;
+            } else {
+                $groupGains[$gain] = $quantity;
+            }
+        }
         
-        $groupGains = $this->game->groupGains($gains);
         $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'trade');
 
         $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the village'), [

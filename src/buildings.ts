@@ -4,7 +4,7 @@ import { BgaCards } from "./libs";
 export class BuildingsManager extends BgaCards.CardManager<Building> {
     constructor (public game: KnarrGame) {
         super(game, {
-            getId: (card) => `building-${card.id}`,
+            getId: (card: Building) => `building-${card.id}`,
             setupDiv: (card: Building, div: HTMLElement) => {
                 div.classList.add('knarr-building');
                 div.dataset.cardId = ''+card.id;
@@ -16,7 +16,7 @@ export class BuildingsManager extends BgaCards.CardManager<Building> {
                     game.setTooltip(div.id, this.getTooltip(card));
                 }
             },
-            isCardVisible: card => Boolean(card.number),
+            isCardVisible: (card: Building) => Boolean(card.number),
             cardWidth: 111,
             cardHeight: 173,
         });
@@ -37,6 +37,20 @@ export class BuildingsManager extends BgaCards.CardManager<Building> {
         if (building.fewestRaid) {
             message += `<br><strong>${_("Fewest raid tokens penalties:")}</strong> ${this.getGains(building.fewestRaid)}`;
         }
+        message += `<br><hr>`;
+
+        building.gains.forEach((gain, index) => {
+            if (gain !== null) {
+                let label = '';
+                switch (index) {
+                    case 0: label = _('When a player explores a Land of Influence (B):'); break;
+                    case 1: label = _('When a player explores a Trading Land (A):'); break;
+                    case 2: label = _('When a viking is recruited of a color you already have:'); break;
+                    case 3: label = _('When a viking of a new color is recruited:'); break;
+                }
+                message += `<br><strong>${label}</strong> ${this.getGains(gain)}`;
+            }
+        });
  
         return message;
     }
