@@ -748,6 +748,154 @@ body > .card {
   background-position-y: 100%;
 }
 
+.knarr-building {
+  display: inline-block;
+  position: relative;
+  width: 111px;
+  height: 173px;
+  border-radius: 8px;
+}
+.knarr-building .card-sides .card-side {
+  border-radius: 8px;
+  background-size: 200% auto;
+  background-image: url("img/skali/buildings.jpg");
+}
+.knarr-building .card-sides .card-side > * {
+  pointer-events: none;
+  user-select: none;
+}
+.knarr-building.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
+  animation: selectable-card-animation 1s alternate infinite ease-in-out;
+}
+.knarr-building.bga-cards_selectable-card:not(.bga-cards_disabled-card) .card-side {
+  box-shadow: unset;
+}
+.knarr-building.bga-cards_selected-card:not(.bga-cards_disabled-card) {
+  box-shadow: 0 0 5px 5px orange;
+}
+.knarr-building.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
+  box-shadow: unset;
+}
+.knarr-building[data-type="1"] .card-side {
+  background-position-x: 0%;
+}
+.knarr-building[data-type="2"] .card-side {
+  background-position-x: 100%;
+}
+.knarr-building[data-type="1"] .front[data-number="1"] {
+  background-position-y: 5%;
+}
+.knarr-building[data-type="1"] .front[data-number="2"] {
+  background-position-y: 10%;
+}
+.knarr-building[data-type="1"] .front[data-number="3"] {
+  background-position-y: 15%;
+}
+.knarr-building[data-type="1"] .front[data-number="4"] {
+  background-position-y: 20%;
+}
+.knarr-building[data-type="1"] .front[data-number="5"] {
+  background-position-y: 25%;
+}
+.knarr-building[data-type="1"] .front[data-number="6"] {
+  background-position-y: 30%;
+}
+.knarr-building[data-type="1"] .front[data-number="7"] {
+  background-position-y: 35%;
+}
+.knarr-building[data-type="1"] .front[data-number="8"] {
+  background-position-y: 40%;
+}
+.knarr-building[data-type="1"] .front[data-number="9"] {
+  background-position-y: 45%;
+}
+.knarr-building[data-type="1"] .front[data-number="10"] {
+  background-position-y: 50%;
+}
+.knarr-building[data-type="1"] .front[data-number="11"] {
+  background-position-y: 55%;
+}
+.knarr-building[data-type="1"] .front[data-number="12"] {
+  background-position-y: 60%;
+}
+.knarr-building[data-type="1"] .front[data-number="13"] {
+  background-position-y: 65%;
+}
+.knarr-building[data-type="1"] .front[data-number="14"] {
+  background-position-y: 70%;
+}
+.knarr-building[data-type="1"] .front[data-number="15"] {
+  background-position-y: 75%;
+}
+.knarr-building[data-type="1"] .front[data-number="16"] {
+  background-position-y: 80%;
+}
+.knarr-building[data-type="1"] .front[data-number="17"] {
+  background-position-y: 85%;
+}
+.knarr-building[data-type="1"] .front[data-number="18"] {
+  background-position-y: 90%;
+}
+.knarr-building[data-type="1"] .front[data-number="19"] {
+  background-position-y: 95%;
+}
+.knarr-building[data-type="1"] .front[data-number="20"] {
+  background-position-y: 100%;
+}
+.knarr-building[data-type="2"] .front[data-number="21"] {
+  background-position-y: 5%;
+}
+.knarr-building[data-type="2"] .front[data-number="22"] {
+  background-position-y: 10%;
+}
+.knarr-building[data-type="2"] .front[data-number="23"] {
+  background-position-y: 15%;
+}
+.knarr-building[data-type="2"] .front[data-number="24"] {
+  background-position-y: 20%;
+}
+.knarr-building[data-type="2"] .front[data-number="25"] {
+  background-position-y: 25%;
+}
+.knarr-building[data-type="2"] .front[data-number="26"] {
+  background-position-y: 30%;
+}
+.knarr-building[data-type="2"] .front[data-number="27"] {
+  background-position-y: 35%;
+}
+.knarr-building[data-type="2"] .front[data-number="28"] {
+  background-position-y: 40%;
+}
+.knarr-building[data-type="2"] .front[data-number="29"] {
+  background-position-y: 45%;
+}
+.knarr-building[data-type="2"] .front[data-number="30"] {
+  background-position-y: 50%;
+}
+.knarr-building[data-type="2"] .front[data-number="31"] {
+  background-position-y: 55%;
+}
+.knarr-building[data-type="2"] .front[data-number="32"] {
+  background-position-y: 60%;
+}
+.knarr-building[data-type="2"] .front[data-number="33"] {
+  background-position-y: 65%;
+}
+.knarr-building[data-type="2"] .front[data-number="34"] {
+  background-position-y: 70%;
+}
+.knarr-building[data-type="2"] .front[data-number="35"] {
+  background-position-y: 75%;
+}
+
+@keyframes selectable-card-animation {
+  0% {
+    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+  }
+  100% {
+    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+  }
+}
 #table-center-wrapper {
   display: flex;
   justify-content: center;
@@ -990,30 +1138,6 @@ body > .card {
   top: 108px;
   right: 60px;
 }
-.player-table .boat[data-coins="0"] .icon.coin[data-number="1"] {
-  top: 108px;
-  left: 149px;
-}
-.player-table .boat[data-coins="0"] .icon.coin[data-number="2"] {
-  top: 108px;
-  left: 154px;
-}
-.player-table .boat[data-coins="0"] .icon.coin[data-number="3"] {
-  top: 108px;
-  left: 159px;
-}
-.player-table .boat[data-coins="1"] .icon.coin[data-number="2"] {
-  top: 108px;
-  left: 154px;
-}
-.player-table .boat[data-coins="1"] .icon.coin[data-number="3"] {
-  top: 108px;
-  left: 159px;
-}
-.player-table .boat[data-coins="2"] .icon.coin[data-number="3"] {
-  top: 108px;
-  left: 159px;
-}
 .player-table .boat .icon {
   position: absolute;
   box-shadow: 0 0 2px 1px black;
@@ -1025,9 +1149,6 @@ body > .card {
 .player-table .boat .icon[data-number="3"].recruit {
   left: 20px;
 }
-.player-table .boat .icon[data-number="3"].coin {
-  left: 138px;
-}
 .player-table .boat .icon[data-number="3"].bracelet {
   right: 20px;
 }
@@ -1037,9 +1158,6 @@ body > .card {
 .player-table .boat .icon[data-number="2"].recruit {
   left: 11px;
 }
-.player-table .boat .icon[data-number="2"].coin {
-  left: 138px;
-}
 .player-table .boat .icon[data-number="2"].bracelet {
   right: 11px;
 }
@@ -1048,9 +1166,6 @@ body > .card {
 }
 .player-table .boat .icon[data-number="1"].recruit {
   left: 2px;
-}
-.player-table .boat .icon[data-number="1"].coin {
-  left: 138px;
 }
 .player-table .boat .icon[data-number="1"].bracelet {
   right: 2px;
@@ -1072,6 +1187,84 @@ body > .card {
 }
 .player-table .boat .column.highlight {
   box-shadow: 0 0 2px 3px orange;
+}
+.player-table .skali-row {
+  display: flex;
+  justify-content: left;
+  margin-bottom: 8px;
+}
+.player-table .skali-row .buildings {
+  margin-left: 80px;
+}
+.player-table .skali-row .buildings .knarr-building {
+  margin-left: -80px;
+}
+.player-table .skali {
+  position: relative;
+  width: 221px;
+  height: 173px;
+  background-image: url("img/skali/skalis.png");
+  background-size: 100% auto;
+  margin-left: 16px;
+}
+.player-table .skali[data-color="7c5654"] {
+  background-position-y: 0%;
+}
+.player-table .skali[data-color=d6d6d7] {
+  background-position-y: 33.3333333333%;
+}
+.player-table .skali[data-color=b79d86] {
+  background-position-y: 66.6666666667%;
+}
+.player-table .skali[data-color="1e2c36"] {
+  background-position-y: 100%;
+}
+.player-table .skali[data-coins="0"] .icon.coin[data-number="1"] {
+  top: 130px;
+  left: 49px;
+}
+.player-table .skali[data-coins="0"] .icon.coin[data-number="2"] {
+  top: 130px;
+  left: 54px;
+}
+.player-table .skali[data-coins="0"] .icon.coin[data-number="3"] {
+  top: 130px;
+  left: 59px;
+}
+.player-table .skali[data-coins="1"] .icon.coin[data-number="2"] {
+  top: 130px;
+  left: 54px;
+}
+.player-table .skali[data-coins="1"] .icon.coin[data-number="3"] {
+  top: 130px;
+  left: 59px;
+}
+.player-table .skali[data-coins="2"] .icon.coin[data-number="3"] {
+  top: 130px;
+  left: 59px;
+}
+.player-table .skali .icon {
+  position: absolute;
+  box-shadow: 0 0 2px 1px black;
+  transition: left 0.5s, right 0.5s, top 0.5s;
+}
+.player-table .skali .icon[data-number="3"] {
+  top: 29px;
+}
+.player-table .skali .icon[data-number="3"].coin {
+  left: -16px;
+}
+.player-table .skali .icon[data-number="2"] {
+  top: 70px;
+}
+.player-table .skali .icon[data-number="2"].coin {
+  left: -16px;
+}
+.player-table .skali .icon[data-number="1"] {
+  top: 112px;
+}
+.player-table .skali .icon[data-number="1"].coin {
+  left: -16px;
 }
 .player-table .block-with-text {
   display: flex;
@@ -1209,21 +1402,19 @@ html, .mode_3d #game_play_area_background {
   background-position-x: 0%;
 }
 .icon.reputation, .icon[data-type="4"] {
-  background-position-x: 25%;
+  background-position-x: 20%;
 }
 .icon.bracelet, .icon[data-type="2"] {
-  background-position-x: 50%;
+  background-position-x: 40%;
 }
 .icon.recruit, .icon[data-type="3"] {
-  background-position-x: 75%;
+  background-position-x: 60%;
 }
 .icon.take-card, .icon[data-type="5"] {
-  background-position-x: 100%;
+  background-position-x: 80%;
 }
 .icon.coin, .icon[data-type="6"] {
-  background-image: radial-gradient(circle at 35% 35%, #fff8cb 0%, #f7d25a 35%, #d39a26 68%, #8f5b10 100%);
-  background-size: cover;
-  box-shadow: inset 0 0 0 2px #ffeeb1, inset 0 0 0 5px #d9a938;
+  background-position-x: 100%;
 }
 
 .color {

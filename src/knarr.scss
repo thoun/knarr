@@ -6,6 +6,7 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
 @import 'cards';
 @import 'destinations';
 @import 'artifacts';
+@import 'buildings';
 @import 'table-center';
 @import 'playerboards';
 @import 'player-table';
@@ -42,24 +43,22 @@ html, .mode_3d #game_play_area_background {
   border-radius: 50%;
   
   &.vp, &[data-type="1"] {
-    background-position-x: #{0 * 100% / 4};
+    background-position-x: #{0 * 100% / 5};
   }  
   &.reputation, &[data-type="4"] {
-    background-position-x: #{1 * 100% / 4};
+    background-position-x: #{1 * 100% / 5};
   }  
   &.bracelet, &[data-type="2"] {
-    background-position-x: #{2 * 100% / 4};
+    background-position-x: #{2 * 100% / 5};
   }
   &.recruit, &[data-type="3"] {
-    background-position-x: #{3 * 100% / 4};
+    background-position-x: #{3 * 100% / 5};
   }
   &.take-card, &[data-type="5"] {
-    background-position-x: #{4 * 100% / 4};
+    background-position-x: #{4 * 100% / 5};
   }
   &.coin, &[data-type="6"] {
-    background-image: radial-gradient(circle at 35% 35%, #fff8cb 0%, #f7d25a 35%, #d39a26 68%, #8f5b10 100%);
-    background-size: cover;
-    box-shadow: inset 0 0 0 2px #ffeeb1, inset 0 0 0 5px #d9a938;
+    background-position-x: #{5 * 100% / 5};
   }
 }
 

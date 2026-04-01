@@ -124,7 +124,7 @@ class PlayAction extends GameState
         $buildingIndex = intval($this->game->buildingManager->buildings->countCardInLocation('played'.$activePlayerId));
         $this->game->buildingManager->buildings->moveCard($building->id, 'played'.$activePlayerId, $buildingIndex);
 
-        $this->bga->notify->all('takeBuilding', clienttranslate('${player_name} takes a building'), [ // TODO
+        $this->bga->notify->all('takeBuilding', clienttranslate('${player_name} takes a building'), [
             'playerId' => $activePlayerId,
             'player_name' => $this->game->getPlayerName($activePlayerId),
             'building' => $building,
@@ -134,7 +134,7 @@ class PlayAction extends GameState
 
         $newBuilding = $this->game->buildingManager->pickBuildingToSlot($building->locationArg);
 
-        $this->bga->notify->all('newTableBuilding', '', [ // TODO
+        $this->bga->notify->all('newTableBuilding', '', [ 
             'building' => $newBuilding,
             'buildingDeckTop' => $this->game->buildingManager->getBuildingDeckTop(),
             'buildingDeckCount' => $this->game->buildingManager->getBuildingDeckCount(),

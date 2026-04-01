@@ -1,4 +1,4 @@
-import { Card, Destination, KnarrGame, KnarrPlayer } from "./knarr.d";
+import { Building, Card, Destination, KnarrGame, KnarrPlayer } from "./knarr.d";
 import { EQUAL, DIFFERENT } from "./Game";
 import { BgaCards } from "./libs";
 
@@ -14,17 +14,36 @@ export class PlayerTable {
     public destinations: BgaCards.LineStock<Destination>;
     // @ts-ignore
     public reservedDestinations?: BgaCards.LineStock<Destination>;
+    // @ts-ignore
+    public buildings?: BgaCards.LineStock<Building>;
     public limitSelection: number | null = null;
 
     private currentPlayer: boolean;
 
-    constructor(private game: KnarrGame, player: KnarrPlayer, reservePossible: boolean) {
+    constructor(private game: KnarrGame, player: KnarrPlayer, reservePossible: boolean,) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.bga.players.getCurrentPlayerId();
 
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper ${player.color == 'd6d6d7' ? 'name-shadow' : ''}"><span class="name-marker" data-color="${player.color}"></span>&nbsp;${player.name}</div>
+        `;
+        if (this.game.isSkaliExpansion()) {
+            html += `
+                <div class="skali-row">
+                    <div id="player-table-${this.playerId}-skali" class="skali" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}" data-coins="${player.coin}">`;
+            for (let i = 1; i <= 3; i++) {
+                html += `
+                <div class="icon coin" data-number="${i}"></div>
+                `;
+            }
+            html += `
+                    </div>
+                    <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
+                </div>`;
+        }
+        
+        html += `
             <div class="cols">
             <div class="col col1">
         `;
@@ -44,7 +63,6 @@ export class PlayerTable {
             }
             html += `
             <div class="icon bracelet" data-number="${i}"></div>
-            <div class="icon coin" data-number="${i}"></div>
             <div class="icon recruit" data-number="${i}"></div>
             `;
         }
@@ -119,6 +137,16 @@ export class PlayerTable {
             });            
             this.reservedDestinations.addCards(player.reservedDestinations);
             this.reservedDestinations.onCardClick = (card: Destination) => this.game.onTableDestinationClick(card);
+        }
+
+        if (this.game.isSkaliExpansion()) {
+            this.buildings = new BgaCards.LineStock/*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
+                center: false,
+            });
+            if (this.game.getPlayerCount() === 2) { // special 2-players building
+                this.buildings.addCard({ id: -this.playerId, number: -1 });
+            }
+            this.buildings.addCards(player.buildings);
         }
 
         [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
@@ -234,5 +262,9 @@ export class PlayerTable {
                 visibleCards.insertAdjacentElement('afterend', reservedDestinations);
             }
         }
+    }
+    
+    public takeBuilding(building: Building) {
+        return this.buildings.addCard(building);
     }
 }

@@ -1,0 +1,64 @@
+.knarr-building {
+  display: inline-block;
+  position: relative;
+  width: 111px;
+  height: 173px;
+  border-radius: 8px;
+
+  .card-sides {
+      .card-side {
+          border-radius: 8px;
+          background-size: 200% auto;
+          background-image: url('img/skali/buildings.jpg');
+
+          &>* {
+              pointer-events: none;
+              user-select: none;
+          }
+      }
+  }    
+
+  &.bga-cards_selectable-card:not(.bga-cards_disabled-card) {
+      &:not(.bga-cards_selected-card) {
+          animation: selectable-card-animation 1s alternate infinite ease-in-out;
+      }
+
+      .card-side {
+          box-shadow: unset;
+      }
+  }    
+
+  &.bga-cards_selected-card:not(.bga-cards_disabled-card) {
+      box-shadow: 0 0 5px 5px orange;
+
+      .card-side {
+          box-shadow: unset;
+      }
+  }
+
+  @for $type from 1 through 2 {
+    &[data-type="#{$type}"] .card-side {
+        background-position-x: #{($type - 1) * 100%};
+    }
+  }
+
+    @for $number from 1 through 20 {
+        &[data-type="1"] .front[data-number="#{$number}"] {
+            background-position-y: #{$number * 100% / 20};
+        }
+    }
+    @for $number from 21 through 35 {
+        &[data-type="2"] .front[data-number="#{$number}"] {
+            background-position-y: #{($number - 20) * 100% / 20};
+        }
+    }
+}
+
+@keyframes selectable-card-animation {
+  0% {
+    box-shadow: 0 0 3px 2px rgb(255, 212, 131);
+  }
+  100% { 
+    box-shadow: 0 0 5px 3px rgb(255, 212, 131);
+  }
+}

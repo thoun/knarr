@@ -257,6 +257,8 @@ class Game extends Table {
         }
 
         if ($skaliExpansion) {
+            $result['centerBuildingsDeckTop'] = $this->buildingManager->getBuildingDeckTop();
+            $result['centerBuildingsDeckCount'] = $this->buildingManager->getBuildingDeckCount();
             $result['centerBuildings'] = $this->buildingManager->getBuildingsByLocation('slot');
         }
 

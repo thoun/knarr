@@ -3,9 +3,11 @@
  */
 
 import { ArtifactsManager } from "./artifacts";
+import { BuildingsManager } from "./buildings";
 import { CardsManager } from "./cards";
 import { DestinationsManager } from "./destinations";
 import { PlayerTable } from "./player-table";
+import { TableCenter } from "./table-center";
 
 export interface Card {
     id: number;
@@ -48,6 +50,7 @@ export interface KnarrPlayer extends Player {
     playedCards: { [color: number]: Card[] };
     destinations: Destination[];
     reservedDestinations?: Destination[];
+    buildings?: Building[];
 }
 
 export interface KnarrGamedatas {
@@ -71,6 +74,8 @@ export interface KnarrGamedatas {
     centerDestinationsDeckTop: { [letter: string]: Destination };
     centerDestinationsDeckCount: { [letter: string]: number };
     centerDestinations: { [letter: string]: Destination[] };
+    centerBuildingsDeckTop?: Building;
+    centerBuildingsDeckCount?: number;
     centerBuildings?: Building[];
     boatSideOption: number;
     variantOption: number;
@@ -81,12 +86,16 @@ export interface KnarrGamedatas {
 }
 
 export interface KnarrGame {
-    bga: Bga;
+    bga: Bga<KnarrPlayer, KnarrGamedatas>;
 
     cardsManager: CardsManager;
     destinationsManager: DestinationsManager;
     artifactsManager: ArtifactsManager;
+    buildingsManager: BuildingsManager;
 
+    tableCenter: TableCenter;
+
+    getPlayerCount(): number;
     getPlayer(playerId: number): KnarrPlayer;
     //getGain(type: number): string;
     //getColor(color: number): string;
@@ -95,12 +104,14 @@ export interface KnarrGame {
     getDestinationType(type: number): string;
     getBoatSide(): number;
     getVariantOption(): number;
+    isSkaliExpansion(): boolean;
     getGameStateName(): string;
     getCurrentPlayerTable(): PlayerTable | null;
 
     setTooltip(id: string, html: string): void;
     highlightPlayerTokens(playerId: number | null): void;
     onTableDestinationClick(destination: Destination): void;
+    onTableBuildingClick(building: Building): void;
     onHandCardClick(card: Card): void;
     onTableCardClick(card: Card): void;
     onPlayedCardClick(card: Card): void;
@@ -201,4 +212,20 @@ export interface NotifCardDeckResetArgs {
     cardDeckTop?: Card;
     cardDeckCount: number;
     cardDiscardCount: number;
+}
+
+export interface NotifBuildingArgs {
+    playerId: number;
+    building: Building;
+}
+
+export interface NotifBuildingArgs {
+    playerId: number;
+    building: Building;
+}
+
+export interface NotifNewTableBuildingArgs {
+    building: Building;
+    buildingDeckTop?: Building;
+    buildingDeckCount: number;
 }

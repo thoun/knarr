@@ -69,6 +69,45 @@ class ArtifactsManager extends BgaCards.CardManager {
     }
 }
 
+class BuildingsManager extends BgaCards.CardManager {
+    constructor(game) {
+        super(game, {
+            getId: (card) => `building-${card.id}`,
+            setupDiv: (card, div) => {
+                div.classList.add('knarr-building');
+                div.dataset.cardId = '' + card.id;
+                div.dataset.type = '' + card.number;
+            },
+            setupFrontDiv: (card, div) => {
+                div.dataset.number = '' + card.number;
+                if (card.number) {
+                    game.setTooltip(div.id, this.getTooltip(card));
+                }
+            },
+            isCardVisible: card => Boolean(card.number),
+            cardWidth: 111,
+            cardHeight: 173,
+        });
+        this.game = game;
+    }
+    getGains(gains) {
+        return Object.entries(gains).map(entry => `<strong>${entry[1]}</strong> ${this.game.getTooltipGain(Number(entry[0]))}`).join(', ');
+    }
+    getTooltip(building) {
+        if (building.number === -1) {
+            return `<strong>${_('Special Building')}</strong>`;
+        }
+        let message = `<strong>${_("Cost:")}</strong> ${this.getGains(building.cost)}`;
+        if (building.mostRaid) {
+            message += `<br><strong>${_("Most raid tokens gains:")}</strong> ${this.getGains(building.mostRaid)}`;
+        }
+        if (building.fewestRaid) {
+            message += `<br><strong>${_("Fewest raid tokens penalties:")}</strong> ${this.getGains(building.fewestRaid)}`;
+        }
+        return message;
+    }
+}
+
 class CardsManager extends BgaCards.CardManager {
     constructor(game) {
         super(game, {
@@ -169,6 +208,22 @@ class PlayerTable {
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper ${player.color == 'd6d6d7' ? 'name-shadow' : ''}"><span class="name-marker" data-color="${player.color}"></span>&nbsp;${player.name}</div>
+        `;
+        if (this.game.isSkaliExpansion()) {
+            html += `
+                <div class="skali-row">
+                    <div id="player-table-${this.playerId}-skali" class="skali" data-color="${player.color}" data-recruits="${player.recruit}" data-bracelets="${player.bracelet}" data-coins="${player.coin}">`;
+            for (let i = 1; i <= 3; i++) {
+                html += `
+                <div class="icon coin" data-number="${i}"></div>
+                `;
+            }
+            html += `
+                    </div>
+                    <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
+                </div>`;
+        }
+        html += `
             <div class="cols">
             <div class="col col1">
         `;
@@ -188,7 +243,6 @@ class PlayerTable {
             }
             html += `
             <div class="icon bracelet" data-number="${i}"></div>
-            <div class="icon coin" data-number="${i}"></div>
             <div class="icon recruit" data-number="${i}"></div>
             `;
         }
@@ -254,6 +308,15 @@ class PlayerTable {
             });
             this.reservedDestinations.addCards(player.reservedDestinations);
             this.reservedDestinations.onCardClick = (card) => this.game.onTableDestinationClick(card);
+        }
+        if (this.game.isSkaliExpansion()) {
+            this.buildings = new BgaCards.LineStock /*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
+                center: false,
+            });
+            if (this.game.getPlayerCount() === 2) { // special 2-players building
+                this.buildings.addCard({ id: -this.playerId, number: -1 });
+            }
+            this.buildings.addCards(player.buildings);
         }
         [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
             elem.addEventListener('mouseenter', () => this.game.highlightPlayerTokens(this.playerId));
@@ -355,6 +418,9 @@ class PlayerTable {
             }
         }
     }
+    takeBuilding(building) {
+        return this.buildings.addCard(building);
+    }
 }
 
 class RenewBuildings {
@@ -362,17 +428,21 @@ class RenewBuildings {
         this.game = game;
         this.bga = bga;
     }
-    /**
-     * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
-     */
     onEnteringState(args, isCurrentPlayerActive) {
         if (isCurrentPlayerActive) {
-            this.renewButton = this.bga.statusBar.addActionButton(_('Renew selected Buildings'), () => this.bga.actions.performAction("actRenewBuildings", { ids: [] /* TODO*/ }), { disabled: true });
+            this.renewButton = this.bga.statusBar.addActionButton(_('Renew selected Buildings'), () => this.bga.actions.performAction("actRenewBuildings", { ids: this.game.tableCenter.getSelectedBuildings().map(building => building.id) }), { disabled: true });
             this.bga.statusBar.addActionButton(_('Cancel'), () => this.bga.actions.performAction("actCancel"), { color: 'secondary' });
+            this.game.tableCenter.setBuildingsSelectable(true, null, true);
+        }
+    }
+    onLeavingState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            this.game.tableCenter.setBuildingsSelectable(false);
         }
     }
     onTableBuildingSelectionChange() {
-        // TODO get selection and set   this.renewButton.disabled      
+        const selection = this.game.tableCenter.getSelectedBuildings();
+        this.renewButton.disabled = selection.length === 0 || selection.length > 2;
     }
 }
 
@@ -429,6 +499,21 @@ class TableCenter {
         this.destinations = [];
         this.vp = new Map();
         this.reputation = new Map();
+        const players = Object.values(gamedatas.players);
+        let html = `
+            ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
+            <div></div> <div id="board">
+                ${players.map(player => `
+                    <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
+                    <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
+                    `).join('')}
+            </div>
+            <div id="card-deck"></div> <div id="table-cards"></div>
+        `;
+        if (this.game.isSkaliExpansion()) {
+            html = `<div id="table-buildings-deck" class="table-buildings-deck"></div> <div id="table-buildings"></div>${html}`;
+        }
+        document.getElementById('table-center').insertAdjacentHTML('beforeend', html);
         ['A', 'B'].forEach(letter => {
             this.destinationsDecks[letter] = new BgaCards.Deck /*<Destination>*/(game.destinationsManager, document.getElementById(`table-destinations-${letter}-deck`), {
                 cardNumber: gamedatas.centerDestinationsDeckCount[letter],
@@ -452,14 +537,6 @@ class TableCenter {
         });
         this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
-        const players = Object.values(gamedatas.players);
-        let html = '';
-        // points
-        players.forEach(player => html += `
-            <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-            <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
-            `);
-        dojo.place(html, 'board');
         players.forEach(player => {
             this.game.setTooltip(`player-${player.id}-vp-marker`, player.name);
             this.game.setTooltip(`player-${player.id}-reputation-marker`, player.name);
@@ -473,6 +550,21 @@ class TableCenter {
             this.artifacts = new BgaCards.LineStock /*<number>*/(this.game.artifactsManager, document.getElementById(`artifacts`));
             this.artifacts.addCards(gamedatas.artifacts);
         }
+        if (this.game.isSkaliExpansion()) {
+            this.buildingsDeck = new BgaCards.Deck /*<Building>*/(game.buildingsManager, document.getElementById(`table-buildings-deck`), {
+                cardNumber: gamedatas.centerBuildingsDeckCount,
+                topCard: gamedatas.centerBuildingsDeckTop,
+                counter: {
+                    position: 'right',
+                },
+            });
+            this.buildings = new BgaCards.SlotStock /*<Building>*/(game.buildingsManager, document.getElementById(`table-buildings`), {
+                slotsIds: [1, 2, 3, 4],
+                mapCardToSlot: card => card.locationArg,
+            });
+            this.buildings.addCards(gamedatas.centerBuildings);
+            this.buildings.onCardClick = (card) => this.game.onTableBuildingClick(card);
+        }
     }
     newTableCard(card) {
         return this.cards.addCard(card);
@@ -482,11 +574,26 @@ class TableCenter {
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
         return promise;
     }
+    newTableBuilding(building, buildingDeckCount, buildingDeckTop) {
+        const promise = this.buildings.addCard(building);
+        this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
+        return promise;
+    }
     setDestinationsSelectable(selectable, selectableCards = null) {
         ['A', 'B'].forEach(letter => {
             this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
             this.destinations[letter].setSelectableCards(selectableCards);
         });
+    }
+    setBuildingsSelectable(selectable, selectableCards = null, multiple = false) {
+        if (!this.game.isSkaliExpansion()) {
+            return;
+        }
+        this.buildings.setSelectionMode(selectable ? (multiple ? 'multiple' : 'single') : 'none');
+        this.buildings.setSelectableCards(selectableCards);
+    }
+    getSelectedBuildings() {
+        return this.buildings.getSelection();
     }
     getVPCoordinates(points) {
         const cases = points % 40;
@@ -623,14 +730,14 @@ class Game {
         else {
             this.bga.images.dontPreloadImage('boats-advanced.png');
         }
+        if (gamedatas.skaliExpansion) {
+            this.bga.images.preloadImages(['skali/skalis.png', /* TODO 'skali/buildings.jpg'*/]);
+        }
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="table">
                 <div id="tables-and-center">
                     <div id="table-center-wrapper">
                         <div id="table-center">
-                            ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
-                            <div></div> <div id="board"></div>
-                            <div id="card-deck"></div> <div id="table-cards"></div>
                         </div>
                     </div>
                     <div id="tables"></div>
@@ -644,6 +751,7 @@ class Game {
         this.destinationsManager = new DestinationsManager(this);
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new BgaAnimations.AnimationManager(this);
+        this.buildingsManager = new BuildingsManager(this);
         new BgaJumpTo.JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
@@ -741,8 +849,7 @@ class Game {
                 this.getCurrentPlayerTable()?.setHandSelectable(true);
             }
             if (args.canDevelopVillage) {
-                // TODO make cards clickable instead
-                args.possibleBuildings.forEach(building => this.bga.statusBar.addActionButton(`Build ${building.id} (${building.cost[6]})`, () => this.bga.actions.performAction('actTakeBuilding', { id: building.id })));
+                this.tableCenter.setBuildingsSelectable(true, args.possibleBuildings);
             }
         }
     }
@@ -799,6 +906,7 @@ class Game {
     }
     onLeavingPlayAction() {
         this.tableCenter.setDestinationsSelectable(false);
+        this.tableCenter.setBuildingsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
         this.getCurrentPlayerTable()?.setDestinationsSelectable(false);
     }
@@ -905,6 +1013,9 @@ class Game {
     setTooltipToClass(className, html) {
         this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
+    getPlayerCount() {
+        return Object.values(this.gamedatas.players).length;
+    }
     getPlayer(playerId) {
         return Object.values(this.gamedatas.players).find(player => Number(player.id) == playerId);
     }
@@ -919,6 +1030,9 @@ class Game {
     }
     getVariantOption() {
         return this.gamedatas.variantOption;
+    }
+    isSkaliExpansion() {
+        return this.gamedatas.skaliExpansion;
     }
     getGameStateName() {
         return this.gamedatas.gamestate.name;
@@ -1128,6 +1242,16 @@ class Game {
             this.takeDestination(destination.id);
         }
     }
+    onTableBuildingClick(building) {
+        if (this.gamedatas.gamestate.name == 'PlayAction') {
+            this.bga.actions.performAction('actTakeBuilding', {
+                id: building.id
+            });
+        }
+        else if (this.gamedatas.gamestate.name == 'RenewBuildings') {
+            this.RenewBuildings.onTableBuildingSelectionChange();
+        }
+    }
     onHandCardClick(card) {
         this.playCard(card.id);
     }
@@ -1240,6 +1364,8 @@ class Game {
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
             ['cardDeckReset', undefined],
+            ['takeBuilding', undefined],
+            ['newTableBuilding', undefined],
             ['lastTurn', 1],
         ];
         notifs.forEach((notif) => {
@@ -1339,6 +1465,14 @@ class Game {
     }
     notif_cardDeckReset(args) {
         return this.tableCenter.cardDeck.reset(args);
+    }
+    notif_takeBuilding(args) {
+        const playerId = args.playerId;
+        const playerTable = this.getPlayerTable(playerId);
+        return playerTable.takeBuilding(args.building);
+    }
+    notif_newTableBuilding(args) {
+        return this.tableCenter.newTableBuilding(args.building, args.buildingDeckCount, args.buildingDeckTop);
     }
     /**
      * Show last turn banner.

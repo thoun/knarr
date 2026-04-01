@@ -1,5 +1,5 @@
 import { ANIMATION_MS } from "./Game";
-import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination } from "./knarr.d";
+import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination, Building } from "./knarr.d";
 import { BgaCards } from "./libs";
 
 const POINT_CASE_SIZE_LEFT = 38.8;
@@ -59,6 +59,10 @@ class DeckWithDiscard extends BgaCards.Deck<Card> {
 
 export class TableCenter {
     // @ts-ignore
+    public buildingsDeck: Deck<Building>;
+    // @ts-ignore
+    public buildings: SlotStock<Building>;
+    // @ts-ignore
     public destinationsDecks: Deck<Destination>[] = [];
     public cardDeck: DeckWithDiscard;
     // @ts-ignore
@@ -72,6 +76,24 @@ export class TableCenter {
     private artifacts: BgaCards.LineStock<number>;
         
     constructor(private game: KnarrGame, gamedatas: KnarrGamedatas) {
+        const players = Object.values(gamedatas.players);
+        let html = `
+            ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
+            <div></div> <div id="board">
+                ${players.map(player =>
+                    `
+                    <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
+                    <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
+                    `
+                ).join('')}
+            </div>
+            <div id="card-deck"></div> <div id="table-cards"></div>
+        `;
+        if (this.game.isSkaliExpansion()) {
+            html = `<div id="table-buildings-deck" class="table-buildings-deck"></div> <div id="table-buildings"></div>${html}`;
+        }        
+        document.getElementById('table-center').insertAdjacentHTML('beforeend', html);
+
         ['A', 'B'].forEach(letter => {
             this.destinationsDecks[letter] = new BgaCards.Deck/*<Destination>*/(game.destinationsManager, document.getElementById(`table-destinations-${letter}-deck`), {
                 cardNumber: gamedatas.centerDestinationsDeckCount[letter],
@@ -98,17 +120,6 @@ export class TableCenter {
         });
         this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
-
-        const players = Object.values(gamedatas.players);
-        let html = '';
-        // points
-        players.forEach(player =>
-            html += `
-            <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-            <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
-            `
-        );
-        dojo.place(html, 'board');
         players.forEach(player => {
             this.game.setTooltip(`player-${player.id}-vp-marker`, player.name);
             this.game.setTooltip(`player-${player.id}-reputation-marker`, player.name);
@@ -125,6 +136,23 @@ export class TableCenter {
             this.artifacts = new BgaCards.LineStock/*<number>*/(this.game.artifactsManager, document.getElementById(`artifacts`));
             this.artifacts.addCards(gamedatas.artifacts);
         }
+
+        if (this.game.isSkaliExpansion()) {
+            this.buildingsDeck = new BgaCards.Deck/*<Building>*/(game.buildingsManager, document.getElementById(`table-buildings-deck`), {
+                cardNumber: gamedatas.centerBuildingsDeckCount,
+                topCard: gamedatas.centerBuildingsDeckTop,
+                counter: {
+                    position: 'right',
+                },
+            });
+
+            this.buildings = new BgaCards.SlotStock/*<Building>*/(game.buildingsManager, document.getElementById(`table-buildings`), {
+                slotsIds: [1, 2, 3, 4],
+                mapCardToSlot: card => card.locationArg,
+            });
+            this.buildings.addCards(gamedatas.centerBuildings);
+            this.buildings.onCardClick = (card: Building) => this.game.onTableBuildingClick(card);
+        }
     }
     
     public newTableCard(card: Card): Promise<boolean> {
@@ -136,12 +164,30 @@ export class TableCenter {
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
         return promise;
     } 
+
+    public newTableBuilding(building: Building, buildingDeckCount: number, buildingDeckTop?: Building) {
+        const promise = this.buildings.addCard(building);
+        this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
+        return promise;
+    }
     
     public setDestinationsSelectable(selectable: boolean, selectableCards: Destination[] | null = null) {
         ['A', 'B'].forEach(letter => {
             this.destinations[letter].setSelectionMode(selectable ? 'single' : 'none');
             this.destinations[letter].setSelectableCards(selectableCards);
         });
+    }
+    
+    public setBuildingsSelectable(selectable: boolean, selectableCards: Building[] | null = null, multiple: boolean = false) {
+        if (!this.game.isSkaliExpansion()) {
+            return;
+        }
+        this.buildings.setSelectionMode(selectable ? (multiple ? 'multiple' : 'single') : 'none');
+        this.buildings.setSelectableCards(selectableCards);
+    }
+
+    public getSelectedBuildings(): Building[] {
+        return this.buildings.getSelection();
     }
 
     private getVPCoordinates(points: number) {

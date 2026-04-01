@@ -1,7 +1,8 @@
 import { ArtifactsManager } from './artifacts';
+import { BuildingsManager } from './buildings';
 import { CardsManager } from './cards';
 import { DestinationsManager } from './destinations';
-import { Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
+import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
 import { RenewBuildings } from './states/RenewBuildings';
@@ -38,12 +39,13 @@ export class Game implements KnarrGame {
     public cardsManager: CardsManager;
     public destinationsManager: DestinationsManager;
     public artifactsManager: ArtifactsManager;
+    public buildingsManager: BuildingsManager;
 
     private zoomManager: InstanceType<typeof BgaZoom.Manager>;
     // @ts-ignore
     public animationManager: BgaAnimations.AnimationManager;
     private gamedatas: KnarrGamedatas;
-    private tableCenter: TableCenter;
+    public tableCenter: TableCenter;
     private playersTables: PlayerTable[] = [];
     //private handCounters: Counter[] = [];
     private reputationCounters: Counter[] = [];
@@ -54,11 +56,11 @@ export class Game implements KnarrGame {
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
 
-    public bga: Bga;
+    public bga: Bga<KnarrPlayer, KnarrGamedatas>;
 
     public RenewBuildings: RenewBuildings;
 
-    constructor(bga: Bga) {
+    constructor(bga: Bga<KnarrPlayer, KnarrGamedatas>) {
         this.bga = bga;
 
         this.RenewBuildings = new RenewBuildings(this, bga);
@@ -87,15 +89,15 @@ export class Game implements KnarrGame {
         } else {
             this.bga.images.dontPreloadImage('boats-advanced.png');
         }
+        if (gamedatas.skaliExpansion) {
+            this.bga.images.preloadImages(['skali/skalis.png',/* TODO 'skali/buildings.jpg'*/ ]);
+        }
 
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="table">
                 <div id="tables-and-center">
                     <div id="table-center-wrapper">
                         <div id="table-center">
-                            ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
-                            <div></div> <div id="board"></div>
-                            <div id="card-deck"></div> <div id="table-cards"></div>
                         </div>
                     </div>
                     <div id="tables"></div>
@@ -113,7 +115,8 @@ export class Game implements KnarrGame {
         this.cardsManager = new CardsManager(this);
         this.destinationsManager = new DestinationsManager(this);        
         this.artifactsManager = new ArtifactsManager(this);
-        this.animationManager = new BgaAnimations.AnimationManager(this);
+        this.animationManager = new BgaAnimations.AnimationManager(this);  
+        this.buildingsManager = new BuildingsManager(this);
         new BgaJumpTo.JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
@@ -220,8 +223,7 @@ export class Game implements KnarrGame {
                 this.getCurrentPlayerTable()?.setHandSelectable(true);
             }
             if (args.canDevelopVillage) {
-                // TODO make cards clickable instead
-                args.possibleBuildings.forEach(building => this.bga.statusBar.addActionButton(`Build ${building.id} (${building.cost[6]})`, () => this.bga.actions.performAction('actTakeBuilding', { id: building.id })));
+                this.tableCenter.setBuildingsSelectable(true, args.possibleBuildings);
             }
         }
     }
@@ -287,6 +289,7 @@ export class Game implements KnarrGame {
 
     private onLeavingPlayAction() {
         this.tableCenter.setDestinationsSelectable(false);
+        this.tableCenter.setBuildingsSelectable(false);
         this.getCurrentPlayerTable()?.setHandSelectable(false);
         this.getCurrentPlayerTable()?.setDestinationsSelectable(false);
     }
@@ -425,6 +428,10 @@ export class Game implements KnarrGame {
         this.bga.gameui.addTooltipHtmlToClass(className, html, this.TOOLTIP_DELAY);
     }
 
+    public getPlayerCount(): number {
+        return Object.values(this.gamedatas.players).length;
+    }
+
     public getPlayer(playerId: number): KnarrPlayer {
         return Object.values(this.gamedatas.players).find(player => Number(player.id) == playerId);
     }
@@ -443,6 +450,10 @@ export class Game implements KnarrGame {
 
     public getVariantOption(): number {
         return this.gamedatas.variantOption;
+    }
+
+    public isSkaliExpansion(): boolean {
+        return this.gamedatas.skaliExpansion;
     }
 
     public getGameStateName(): string {
@@ -687,6 +698,16 @@ export class Game implements KnarrGame {
         }
     }
 
+    public onTableBuildingClick(building: Building): void {
+        if (this.gamedatas.gamestate.name == 'PlayAction') {
+            this.bga.actions.performAction('actTakeBuilding', {
+                id: building.id
+            });
+        } else if (this.gamedatas.gamestate.name == 'RenewBuildings') {
+            this.RenewBuildings.onTableBuildingSelectionChange();
+        }
+    }
+
     public onHandCardClick(card: Card): void {
         this.playCard(card.id);
     }
@@ -815,6 +836,8 @@ export class Game implements KnarrGame {
             ['bracelet', ANIMATION_MS],
             ['recruit', ANIMATION_MS],
             ['cardDeckReset', undefined],
+            ['takeBuilding', undefined],
+            ['newTableBuilding', undefined],
             ['lastTurn', 1],
         ];
     
@@ -943,6 +966,17 @@ export class Game implements KnarrGame {
 
     notif_cardDeckReset(args: NotifCardDeckResetArgs) {
         return this.tableCenter.cardDeck.reset(args);
+    }
+
+    notif_takeBuilding(args: NotifBuildingArgs) {
+        const playerId = args.playerId;
+        const playerTable = this.getPlayerTable(playerId);
+
+        return playerTable.takeBuilding(args.building);        
+    }
+
+    notif_newTableBuilding(args: NotifNewTableBuildingArgs) {
+        return this.tableCenter.newTableBuilding(args.building, args.buildingDeckCount, args.buildingDeckTop);        
     }
     
     /** 

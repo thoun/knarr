@@ -113,37 +113,6 @@
       }
     }
 
-    &[data-coins="0"] {
-      .icon.coin[data-number="1"] {
-        top: 108px;
-        left: 149px;
-      }
-      .icon.coin[data-number="2"] {
-        top: 108px;
-        left: 154px;
-      }
-      .icon.coin[data-number="3"] {
-        top: 108px;
-        left: 159px;
-      }
-    }
-    &[data-coins="1"] {
-      .icon.coin[data-number="2"] {
-        top: 108px;
-        left: 154px;
-      }
-      .icon.coin[data-number="3"] {
-        top: 108px;
-        left: 159px;
-      }
-    }
-    &[data-coins="2"] {
-      .icon.coin[data-number="3"] {
-        top: 108px;
-        left: 159px;
-      }
-    }
-
     .icon {
       position: absolute;
       box-shadow: 0 0 2px 1px black;
@@ -153,21 +122,18 @@
         top: 13px;
 
         &.recruit { left: 20px; }
-        &.coin { left: 138px; }
         &.bracelet { right: 20px; }
       }
       &[data-number="2"] {
         top: 53px;
 
         &.recruit { left: 11px; }
-        &.coin { left: 138px; }
         &.bracelet { right: 11px; }
       }
       &[data-number="1"] {
         top: 92px;
 
         &.recruit { left: 2px; }
-        &.coin { left: 138px; }
         &.bracelet { right: 2px; }
       }
     }
@@ -186,6 +152,89 @@
 
       &.highlight {
         box-shadow: 0 0 2px 3px orange;
+      }
+    }
+  }
+
+  .skali-row {
+    display: flex;
+    justify-content: left;
+    margin-bottom: 8px;
+
+    .buildings {
+      margin-left: 80px;
+
+      .knarr-building {
+        margin-left: -80px;
+      }
+    }
+  }
+
+  .skali {
+    position: relative;
+    width: 221px;
+    height: 173px;
+    background-image: url('img/skali/skalis.png');
+    background-size: 100% auto;
+    margin-left: 16px;
+
+    @each $playerColor in $playerColors {
+      $i: index($playerColors, $playerColor) - 1;
+      &[data-color="#{$playerColor}"] { 
+        background-position-y: #{$i * 100% / 3};
+      }
+    }
+
+    &[data-coins="0"] {
+      .icon.coin[data-number="1"] {
+        top: 130px;
+        left: 49px;
+      }
+      .icon.coin[data-number="2"] {
+        top: 130px;
+        left: 54px;
+      }
+      .icon.coin[data-number="3"] {
+        top: 130px;
+        left: 59px;
+      }
+    }
+    &[data-coins="1"] {
+      .icon.coin[data-number="2"] {
+        top: 130px;
+        left: 54px;
+      }
+      .icon.coin[data-number="3"] {
+        top: 130px;
+        left: 59px;
+      }
+    }
+    &[data-coins="2"] {
+      .icon.coin[data-number="3"] {
+        top: 130px;
+        left: 59px;
+      }
+    }
+
+    .icon {
+      position: absolute;
+      box-shadow: 0 0 2px 1px black;
+      transition: left 0.5s, right 0.5s, top 0.5s;
+
+      &[data-number="3"] {
+        top: 29px;
+
+        &.coin { left: -16px; }
+      }
+      &[data-number="2"] {
+        top: 70px;
+
+        &.coin { left: -16px; }
+      }
+      &[data-number="1"] {
+        top: 112px;
+
+        &.coin { left: -16px; }
       }
     }
   }
