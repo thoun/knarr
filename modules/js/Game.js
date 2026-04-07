@@ -226,6 +226,7 @@ class PlayerTable {
         this.limitSelection = null;
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.bga.players.getCurrentPlayerId();
+        const twoPlayersGame = this.game.getPlayerCount() === 2;
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
             <div id="player-table-${this.playerId}-name" class="name-wrapper ${player.color == 'd6d6d7' ? 'name-shadow' : ''}"><span class="name-marker" data-color="${player.color}"></span>&nbsp;${player.name}</div>
@@ -240,6 +241,7 @@ class PlayerTable {
                 `;
             }
             html += `
+                        ${twoPlayersGame ? `<div id="player-table-${this.playerId}-renewal" class="icon renewal"></div>` : ``}
                         <div id="player-table-${this.playerId}-raid-tokens" class="raid-tokens"></div>
                     </div>
                     <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
@@ -337,10 +339,13 @@ class PlayerTable {
             this.buildings = new BgaCards.LineStock /*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
                 center: false,
             });
-            if (this.game.getPlayerCount() === 2) { // special 2-players building
+            if (twoPlayersGame) { // special 2-players building
                 this.buildings.addCard({ id: -this.playerId, number: -1 });
             }
             this.buildings.addCards(player.buildings);
+            if (player.renewal !== undefined) {
+                this.setRenewal(player.renewal);
+            }
         }
         [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
             elem.addEventListener('mouseenter', () => this.game.highlightPlayerTokens(this.playerId));
@@ -447,6 +452,9 @@ class PlayerTable {
     }
     gainRaidTokens(raidTokens) {
         return this.raidTokens.addCards(raidTokens);
+    }
+    setRenewal(value) {
+        document.getElementById(`player-table-${this.playerId}-renewal`).dataset.side = value ? 'front' : 'back';
     }
 }
 
@@ -752,7 +760,6 @@ const REPUTATION = 4;
 const CARD = 5;
 const COIN = 6;
 const RAID = 7;
-const FLIP_RENEW_TOKEN = 8;
 function getVpByReputation(reputation) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
@@ -1444,6 +1451,7 @@ class Game {
             ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
             ['resetRaidTokens', undefined],
+            ['setPlayerCounter', undefined],
             ['lastTurn', 1],
         ];
         notifs.forEach((notif) => {
@@ -1518,7 +1526,7 @@ class Game {
             this.setCoins(playerId, value);
         }
         else if (name === 'renewal') {
-            // TODO
+            this.getPlayerTable(playerId).setRenewal(value);
         }
     }
     notif_trade(args) {

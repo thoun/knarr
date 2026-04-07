@@ -48,7 +48,9 @@ class RenewBuildings extends GameState
             $this->game->buildingManager->buildings->insertCardOnExtremePosition($building->id, 'deck', false);
         }
 
-        $this->bga->notify->all('removeTableBuildings', '', [
+        $this->bga->notify->all('removeTableBuildings', clienttranslate('${player_name} use the Renewal token to renew ${count} Building card(s)'), [
+            'player_name' => $this->game->getPlayerNameById($activePlayerId),
+            'count' => count($selectedBuildings),
             'buildings' => $selectedBuildings,
             'buildingDeckTop' => $this->game->buildingManager->getBuildingDeckTop(),
             'buildingDeckCount' => $this->game->buildingManager->getBuildingDeckCount(),

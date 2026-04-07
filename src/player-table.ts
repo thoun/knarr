@@ -25,6 +25,7 @@ export class PlayerTable {
     constructor(private game: KnarrGame, player: KnarrPlayer, reservePossible: boolean,) {
         this.playerId = Number(player.id);
         this.currentPlayer = this.playerId == this.game.bga.players.getCurrentPlayerId();
+        const twoPlayersGame = this.game.getPlayerCount() === 2;
 
         let html = `
         <div id="player-table-${this.playerId}" class="player-table" style="--player-color: #${player.color};">
@@ -40,6 +41,7 @@ export class PlayerTable {
                 `;
             }
             html += `
+                        ${twoPlayersGame ? `<div id="player-table-${this.playerId}-renewal" class="icon renewal"></div>` : ``}
                         <div id="player-table-${this.playerId}-raid-tokens" class="raid-tokens"></div>
                     </div>
                     <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
@@ -149,10 +151,14 @@ export class PlayerTable {
             this.buildings = new BgaCards.LineStock/*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
                 center: false,
             });
-            if (this.game.getPlayerCount() === 2) { // special 2-players building
+            if (twoPlayersGame) { // special 2-players building
                 this.buildings.addCard({ id: -this.playerId, number: -1 });
             }
             this.buildings.addCards(player.buildings);
+
+            if (player.renewal !== undefined) {
+                this.setRenewal(player.renewal);
+            }
         }
 
         [document.getElementById(`player-table-${this.playerId}-name`), document.getElementById(`player-table-${this.playerId}-boat`)].forEach(elem => {
@@ -276,5 +282,9 @@ export class PlayerTable {
 
     public gainRaidTokens(raidTokens: RaidToken[]) {
         return this.raidTokens.addCards(raidTokens);
+    }
+    
+    public setRenewal(value: number) {
+        document.getElementById(`player-table-${this.playerId}-renewal`)!.dataset.side = value ? 'front' : 'back';
     }
 }

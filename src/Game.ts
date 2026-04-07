@@ -32,7 +32,6 @@ const REPUTATION = 4;
 const CARD = 5;
 const COIN = 6;
 const RAID = 7;
-const FLIP_RENEW_TOKEN = 8;
 
 function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
@@ -859,6 +858,7 @@ export class Game implements KnarrGame {
             ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
             ['resetRaidTokens', undefined],
+            ['setPlayerCounter', undefined],
             ['lastTurn', 1],
         ];
     
@@ -952,7 +952,7 @@ export class Game implements KnarrGame {
         if (name === 'coin') {
             this.setCoins(playerId, value);
         } else if (name === 'renewal') {
-            // TODO
+            this.getPlayerTable(playerId).setRenewal(value);
         }
     }
 

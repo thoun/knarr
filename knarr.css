@@ -1290,6 +1290,11 @@ body > .card {
   right: 24px;
   top: 5px;
 }
+.player-table .skali-row .icon.renewal {
+  position: absolute;
+  top: calc(50% - 16px);
+  left: calc(50% - 16px);
+}
 .player-table .skali {
   position: relative;
   width: 221px;

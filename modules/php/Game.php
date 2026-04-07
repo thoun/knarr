@@ -232,6 +232,9 @@ class Game extends Table {
             if ($skaliExpansion) {
                 $player['buildings'] = $this->buildingManager->getBuildingsByLocation('played'.$playerId);
                 $player['raidTokens'] = $this->raidManager->getPlayer($playerId);
+                if (count($result['players']) === 2) {
+                    $player['renewal'] = $this->playerRenewal->get($playerId);
+                }
             }
 
             if ($currentPlayerId == $playerId) {

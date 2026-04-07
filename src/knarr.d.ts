@@ -59,6 +59,7 @@ export interface KnarrPlayer extends Player {
     reservedDestinations?: Destination[];
     buildings?: Building[];
     raidTokens?: RaidToken[];
+    renewal?: number;
 }
 
 export interface KnarrGamedatas {
