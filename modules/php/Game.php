@@ -509,7 +509,7 @@ class Game extends Table {
         $player = $this->getPlayer($playerId);
 
         $effectiveGains = [];
-        $raidTokens = [];
+        $raidTokens = null;
 
         foreach ($groupGains as $type => $amount) {
             switch ($type) {

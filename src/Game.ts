@@ -212,7 +212,13 @@ export class Game implements KnarrGame {
         const isCurrentPlayerActive = this.bga.players.isCurrentPlayerActive();
 
         if (!args.canExplore && !args.canRecruit) {
-            this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can trade') :  _('${actplayer} can trade'));
+            if (args.canDevelopVillage && args.canTrade) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can trade or develop the village') :  _('${actplayer} can trade or develop the village'));
+            } else if (args.canDevelopVillage) {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can develop the village') :  _('${actplayer} can develop the village'));
+            } else {
+                this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can trade') :  _('${actplayer} can trade'));
+            }
         } else if (!args.canExplore) {
             this.bga.statusBar.setTitle(isCurrentPlayerActive ? _('${you} can recruit (play a card)') : _('${actplayer} can recruit (play a card)'));
         } else if (!args.canRecruit) {
@@ -1078,7 +1084,17 @@ export class Game implements KnarrGame {
                     }
                 }
 
-                ['you', 'actplayer', 'player_name'].forEach(field => {
+                if (args.player_names && Array.isArray(args.player_names)) {
+                    args.player_names = args.player_names.map((playerName: string) => {
+                        const player = Object.values(this.gamedatas.players).find(player => player.name === playerName);
+                        if (player) {
+                            return this.bga.players.getFormattedPlayerName(Number(player.id)).replace('#d6d6d7;', '#d6d6d7; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
+                        }
+                        return playerName;
+                    })
+                }
+
+                ['you', 'actplayer', 'player_name', 'player_names'].forEach(field => {
                     if (typeof args[field] === 'string' && args[field].indexOf('#d6d6d7;') !== -1 && args[field].indexOf('text-shadow') === -1) {
                         args[field] = args[field].replace('#d6d6d7;', '#d6d6d7; text-shadow: 0 0 1px black, 0 0 2px black, 0 0 3px black;');
                     }

@@ -61,7 +61,7 @@ class RaidManager {
     }
 
     public function triggerRaid(): void {
-        if (intval($this->raids->countCardInLocation('board')) > 0) {
+        if (!$this->game->isSkaliExpansion() || intval($this->raids->countCardInLocation('board')) > 0) {
             return; // no raid triggered if there is raid tokens on the board
         }
         $this->bga->notify->all('log', clienttranslate('There are no raid tokens on the board, a raid is triggered!'));
@@ -84,6 +84,15 @@ class RaidManager {
                 $playerIdsWithFewestRaidTokens[] = $playerId;
             }
         }
+
+        $this->bga->notify->all('log', clienttranslate('Players(s) with the most raid tokens : ${player_names}'), [
+            'player_names' => array_map(fn($playerId) => $this->game->getPlayerNameById($playerId), $playerIdsWithMostRaidTokens),
+            'separator' => ['player_names' => 'and'],
+        ]);
+        $this->bga->notify->all('log', clienttranslate('Players(s) with the fewest raid tokens : ${player_names}'), [
+            'player_names' => array_map(fn($playerId) => $this->game->getPlayerNameById($playerId), $playerIdsWithFewestRaidTokens),
+            'separator' => ['player_names' => 'and'],
+        ]);
 
         $this->game->buildingManager->onRaidTriggered($playerIdsWithMostRaidTokens, $playerIdsWithFewestRaidTokens);
 
