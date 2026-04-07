@@ -2,7 +2,7 @@ import { ArtifactsManager } from './artifacts';
 import { BuildingsManager } from './buildings';
 import { CardsManager } from './cards';
 import { DestinationsManager } from './destinations';
-import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
+import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifRemoveTableBuildingsArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
 import { RenewBuildings } from './states/RenewBuildings';
@@ -52,6 +52,7 @@ export class Game implements KnarrGame {
     private recruitCounters: Counter[] = [];
     private braceletCounters: Counter[] = [];
     private coinCounters: Counter[] = [];
+    private raidCounters: Counter[] = [];
     private crewCounters: Counter[] = [];
     
     private TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
@@ -90,7 +91,7 @@ export class Game implements KnarrGame {
             this.bga.images.dontPreloadImage('boats-advanced.png');
         }
         if (gamedatas.skaliExpansion) {
-            this.bga.images.preloadImages(['skali/skalis.png',/* TODO 'skali/buildings.jpg'*/ ]);
+            this.bga.images.preloadImages(['skali/skalis.png', 'skali/buildings.jpg', 'skali/destinations.jpg', ]);
         }
 
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
@@ -353,7 +354,7 @@ export class Game implements KnarrGame {
                     this.bga.statusBar.addActionButton(_("Trade"), () => this.bga.actions.performAction('actGoTrade'), { disabled: !playActionArgs.canTrade });
 
                     if (args.canRenewBuildings) {
-                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'));
+                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'), { color: 'secondary', });
                     }
                     
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
@@ -494,7 +495,11 @@ export class Game implements KnarrGame {
                     <div class="reputation icon"></div>
                     <span id="reputation-counter-${player.id}"></span> <span class="reputation-legend"><div class="vp icon"></div> / ${_('round')}</span>
                 </div>
-
+            
+                <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
+                    <div class="player-crew-cards"></div>
+                    <span id="crew-counter-${player.id}"></span>
+                </div>
             </div>
             <div class="counters">
             
@@ -511,12 +516,11 @@ export class Game implements KnarrGame {
                 <div id="coin-counter-wrapper-${player.id}" class="coin-counter">
                     <div class="coin icon"></div>
                     <span id="coin-counter-${player.id}"></span>
-                </div>` : ''}
-            
-                <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
-                    <div class="player-crew-cards"></div>
-                    <span id="crew-counter-${player.id}"></span>
                 </div>
+                <div id="raid-counter-wrapper-${player.id}" class="raid-counter">
+                    <div class="raid icon"></div>
+                    <span id="raid-counter-${player.id}"></span>
+                </div>` : ''}
 
             </div>
             <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
@@ -546,6 +550,11 @@ export class Game implements KnarrGame {
                     playerCounter: 'coin',
                     playerId,
                     value: player.coin,
+                });
+
+                this.raidCounters[playerId] = new ebg.counter();
+                this.raidCounters[playerId].create(`raid-counter-${playerId}`, {
+                    value: player.raidTokens?.length,
                 });
             }
 
@@ -837,6 +846,7 @@ export class Game implements KnarrGame {
             ['recruit', ANIMATION_MS],
             ['cardDeckReset', undefined],
             ['takeBuilding', undefined],
+            ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
             ['lastTurn', 1],
         ];
@@ -973,6 +983,10 @@ export class Game implements KnarrGame {
         const playerTable = this.getPlayerTable(playerId);
 
         return playerTable.takeBuilding(args.building);        
+    }
+
+    notif_removeTableBuildings(args: NotifRemoveTableBuildingsArgs) {
+        return this.tableCenter.removeTableBuildings(args.buildings, args.buildingDeckCount, args.buildingDeckTop);        
     }
 
     notif_newTableBuilding(args: NotifNewTableBuildingArgs) {

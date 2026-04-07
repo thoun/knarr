@@ -43,10 +43,10 @@ export class BuildingsManager extends BgaCards.CardManager<Building> {
             if (gain !== null) {
                 let label = '';
                 switch (index) {
-                    case 0: label = _('When a player explores a Land of Influence (B):'); break;
-                    case 1: label = _('When a player explores a Trading Land (A):'); break;
-                    case 2: label = _('When a viking is recruited of a color you already have:'); break;
-                    case 3: label = _('When a viking of a new color is recruited:'); break;
+                    case 0: label = _('When you explore a Land of Influence (B):'); break;
+                    case 1: label = _('When you explore a Trading Land (A):'); break;
+                    case 2: label = _('When you recruit a viking of a color you already have:'); break;
+                    case 3: label = _('When you recruit a viking of a new color:'); break;
                 }
                 message += `<br><strong>${label}</strong> ${this.getGains(gain)}`;
             }

@@ -43,22 +43,31 @@ html, .mode_3d #game_play_area_background {
   border-radius: 50%;
   
   &.vp, &[data-type="1"] {
-    background-position-x: #{0 * 100% / 5};
+    background-position-x: #{0 * 100% / 8};
   }  
   &.reputation, &[data-type="4"] {
-    background-position-x: #{1 * 100% / 5};
+    background-position-x: #{1 * 100% / 8};
   }  
   &.bracelet, &[data-type="2"] {
-    background-position-x: #{2 * 100% / 5};
+    background-position-x: #{2 * 100% / 8};
   }
   &.recruit, &[data-type="3"] {
-    background-position-x: #{3 * 100% / 5};
+    background-position-x: #{3 * 100% / 8};
   }
   &.take-card, &[data-type="5"] {
-    background-position-x: #{4 * 100% / 5};
+    background-position-x: #{4 * 100% / 8};
   }
   &.coin, &[data-type="6"] {
-    background-position-x: #{5 * 100% / 5};
+    background-position-x: #{5 * 100% / 8};
+  }
+  &.renewal {
+    background-position-x: #{6 * 100% / 8};
+  }
+  &.renewal[data-side="back"] {
+    background-position-x: #{7 * 100% / 8};
+  }
+  &.raid, &[data-type="7"] {
+    background-position-x: #{8 * 100% / 8};
   }
 }
 

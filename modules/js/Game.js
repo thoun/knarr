@@ -110,16 +110,16 @@ class BuildingsManager extends BgaCards.CardManager {
                 let label = '';
                 switch (index) {
                     case 0:
-                        label = _('When a player explores a Land of Influence (B):');
+                        label = _('When you explore a Land of Influence (B):');
                         break;
                     case 1:
-                        label = _('When a player explores a Trading Land (A):');
+                        label = _('When you explore a Trading Land (A):');
                         break;
                     case 2:
-                        label = _('When a viking is recruited of a color you already have:');
+                        label = _('When you recruit a viking of a color you already have:');
                         break;
                     case 3:
-                        label = _('When a viking of a new color is recruited:');
+                        label = _('When you recruit a viking of a new color:');
                         break;
                 }
                 message += `<br><strong>${label}</strong> ${this.getGains(gain)}`;
@@ -595,6 +595,11 @@ class TableCenter {
         this.destinationsDecks[letter].setCardNumber(destinationDeckCount, destinationDeckTop);
         return promise;
     }
+    removeTableBuildings(buildings, buildingDeckCount, buildingDeckTop) {
+        const promise = this.buildings.removeCards(buildings);
+        this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
+        return promise;
+    }
     newTableBuilding(building, buildingDeckCount, buildingDeckTop) {
         const promise = this.buildings.addCard(building);
         this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
@@ -723,6 +728,7 @@ class Game {
         this.recruitCounters = [];
         this.braceletCounters = [];
         this.coinCounters = [];
+        this.raidCounters = [];
         this.crewCounters = [];
         this.TOOLTIP_DELAY = document.body.classList.contains('touch-device') ? 1500 : undefined;
         this.bga = bga;
@@ -752,7 +758,7 @@ class Game {
             this.bga.images.dontPreloadImage('boats-advanced.png');
         }
         if (gamedatas.skaliExpansion) {
-            this.bga.images.preloadImages(['skali/skalis.png', /* TODO 'skali/buildings.jpg'*/]);
+            this.bga.images.preloadImages(['skali/skalis.png', 'skali/buildings.jpg', 'skali/destinations.jpg',]);
         }
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
             <div id="table">
@@ -980,7 +986,7 @@ class Game {
                     const playActionArgs = args;
                     this.bga.statusBar.addActionButton(_("Trade"), () => this.bga.actions.performAction('actGoTrade'), { disabled: !playActionArgs.canTrade });
                     if (args.canRenewBuildings) {
-                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'));
+                        this.bga.statusBar.addActionButton(_("Renew some building cards"), () => this.bga.actions.performAction('actGoRenewBuildings'), { color: 'secondary', });
                     }
                     if (!playActionArgs.canExplore || !playActionArgs.canRecruit) {
                         if (!playActionArgs.canExplore && playActionArgs.canRecruit) {
@@ -1086,7 +1092,11 @@ class Game {
                     <div class="reputation icon"></div>
                     <span id="reputation-counter-${player.id}"></span> <span class="reputation-legend"><div class="vp icon"></div> / ${_('round')}</span>
                 </div>
-
+            
+                <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
+                    <div class="player-crew-cards"></div>
+                    <span id="crew-counter-${player.id}"></span>
+                </div>
             </div>
             <div class="counters">
             
@@ -1103,12 +1113,11 @@ class Game {
                 <div id="coin-counter-wrapper-${player.id}" class="coin-counter">
                     <div class="coin icon"></div>
                     <span id="coin-counter-${player.id}"></span>
-                </div>` : ''}
-            
-                <div id="crew-counter-wrapper-${player.id}" class="crew-counter">
-                    <div class="player-crew-cards"></div>
-                    <span id="crew-counter-${player.id}"></span>
                 </div>
+                <div id="raid-counter-wrapper-${player.id}" class="raid-counter">
+                    <div class="raid icon"></div>
+                    <span id="raid-counter-${player.id}"></span>
+                </div>` : ''}
 
             </div>
             <div>${playerId == gamedatas.firstPlayerId ? `<div id="first-player">${_('First player')}</div>` : ''}</div>`;
@@ -1132,6 +1141,10 @@ class Game {
                     playerCounter: 'coin',
                     playerId,
                     value: player.coin,
+                });
+                this.raidCounters[playerId] = new ebg.counter();
+                this.raidCounters[playerId].create(`raid-counter-${playerId}`, {
+                    value: player.raidTokens?.length,
                 });
             }
             this.crewCounters[playerId] = new ebg.counter();
@@ -1386,6 +1399,7 @@ class Game {
             ['recruit', ANIMATION_MS],
             ['cardDeckReset', undefined],
             ['takeBuilding', undefined],
+            ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
             ['lastTurn', 1],
         ];
@@ -1491,6 +1505,9 @@ class Game {
         const playerId = args.playerId;
         const playerTable = this.getPlayerTable(playerId);
         return playerTable.takeBuilding(args.building);
+    }
+    notif_removeTableBuildings(args) {
+        return this.tableCenter.removeTableBuildings(args.buildings, args.buildingDeckCount, args.buildingDeckTop);
     }
     notif_newTableBuilding(args) {
         return this.tableCenter.newTableBuilding(args.building, args.buildingDeckCount, args.buildingDeckTop);

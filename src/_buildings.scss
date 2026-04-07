@@ -1,19 +1,23 @@
 .knarr-building {
   display: inline-block;
   position: relative;
-  width: 111px;
+  width: 124px;
   height: 173px;
   border-radius: 8px;
 
   .card-sides {
       .card-side {
           border-radius: 8px;
-          background-size: 200% auto;
+          background-size: auto 400%;
           background-image: url('img/skali/buildings.jpg');
 
           &>* {
               pointer-events: none;
               user-select: none;
+          }
+
+          &.back {
+            background-position: #{1 * 100% / 9} 0%;
           }
       }
   }    
@@ -36,20 +40,24 @@
       }
   }
 
-  @for $type from 1 through 2 {
-    &[data-type="#{$type}"] .card-side {
-        background-position-x: #{($type - 1) * 100%};
-    }
-  }
-
-    @for $number from 1 through 20 {
-        &[data-type="1"] .front[data-number="#{$number}"] {
-            background-position-y: #{$number * 100% / 20};
+    @for $number from 1 through 8 {
+        .front[data-number="#{$number}"] {
+            background-position: #{($number + 1) * 100% / 9} 0%;
         }
     }
-    @for $number from 21 through 35 {
-        &[data-type="2"] .front[data-number="#{$number}"] {
-            background-position-y: #{($number - 20) * 100% / 20};
+    @for $number from 9 through 18 {
+        .front[data-number="#{$number}"] {
+            background-position: #{($number - 9) * 100% / 9} 33.3333%;
+        }
+    }
+    @for $number from 19 through 28 {
+        .front[data-number="#{$number}"] {
+            background-position: #{($number - 19) * 100% / 9} 66.6666%;
+        }
+    }
+    @for $number from 29 through 35 {
+        .front[data-number="#{$number}"] {
+            background-position: #{($number - 29) * 100% / 9} 100%;
         }
     }
 }

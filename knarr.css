@@ -698,6 +698,58 @@ body > .card {
 .knarr-destination[data-type="2"] .front[data-number="35"] {
   background-position-y: 75%;
 }
+.knarr-destination[data-type="1"] .front[data-number="101"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 0%;
+}
+.knarr-destination[data-type="1"] .front[data-number="102"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 14.2857142857%;
+}
+.knarr-destination[data-type="1"] .front[data-number="103"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 28.5714285714%;
+}
+.knarr-destination[data-type="1"] .front[data-number="104"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 42.8571428571%;
+}
+.knarr-destination[data-type="1"] .front[data-number="105"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 57.1428571429%;
+}
+.knarr-destination[data-type="1"] .front[data-number="106"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 71.4285714286%;
+}
+.knarr-destination[data-type="1"] .front[data-number="107"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 85.7142857143%;
+}
+.knarr-destination[data-type="1"] .front[data-number="108"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 100%;
+}
+.knarr-destination[data-type="2"] .front[data-number="109"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 0%;
+}
+.knarr-destination[data-type="2"] .front[data-number="110"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 14.2857142857%;
+}
+.knarr-destination[data-type="2"] .front[data-number="111"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 28.5714285714%;
+}
+.knarr-destination[data-type="2"] .front[data-number="112"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 42.8571428571%;
+}
+.knarr-destination[data-type="2"] .front[data-number="113"] {
+  background-image: url("img/skali/destinations.jpg");
+  background-position-y: 57.1428571429%;
+}
 
 @keyframes selectable-card-animation {
   0% {
@@ -751,18 +803,21 @@ body > .card {
 .knarr-building {
   display: inline-block;
   position: relative;
-  width: 111px;
+  width: 124px;
   height: 173px;
   border-radius: 8px;
 }
 .knarr-building .card-sides .card-side {
   border-radius: 8px;
-  background-size: 200% auto;
+  background-size: auto 400%;
   background-image: url("img/skali/buildings.jpg");
 }
 .knarr-building .card-sides .card-side > * {
   pointer-events: none;
   user-select: none;
+}
+.knarr-building .card-sides .card-side.back {
+  background-position: 11.1111111111% 0%;
 }
 .knarr-building.bga-cards_selectable-card:not(.bga-cards_disabled-card):not(.bga-cards_selected-card) {
   animation: selectable-card-animation 1s alternate infinite ease-in-out;
@@ -776,116 +831,110 @@ body > .card {
 .knarr-building.bga-cards_selected-card:not(.bga-cards_disabled-card) .card-side {
   box-shadow: unset;
 }
-.knarr-building[data-type="1"] .card-side {
-  background-position-x: 0%;
+.knarr-building .front[data-number="1"] {
+  background-position: 22.2222222222% 0%;
 }
-.knarr-building[data-type="2"] .card-side {
-  background-position-x: 100%;
+.knarr-building .front[data-number="2"] {
+  background-position: 33.3333333333% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="1"] {
-  background-position-y: 5%;
+.knarr-building .front[data-number="3"] {
+  background-position: 44.4444444444% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="2"] {
-  background-position-y: 10%;
+.knarr-building .front[data-number="4"] {
+  background-position: 55.5555555556% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="3"] {
-  background-position-y: 15%;
+.knarr-building .front[data-number="5"] {
+  background-position: 66.6666666667% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="4"] {
-  background-position-y: 20%;
+.knarr-building .front[data-number="6"] {
+  background-position: 77.7777777778% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="5"] {
-  background-position-y: 25%;
+.knarr-building .front[data-number="7"] {
+  background-position: 88.8888888889% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="6"] {
-  background-position-y: 30%;
+.knarr-building .front[data-number="8"] {
+  background-position: 100% 0%;
 }
-.knarr-building[data-type="1"] .front[data-number="7"] {
-  background-position-y: 35%;
+.knarr-building .front[data-number="9"] {
+  background-position: 0% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="8"] {
-  background-position-y: 40%;
+.knarr-building .front[data-number="10"] {
+  background-position: 11.1111111111% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="9"] {
-  background-position-y: 45%;
+.knarr-building .front[data-number="11"] {
+  background-position: 22.2222222222% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="10"] {
-  background-position-y: 50%;
+.knarr-building .front[data-number="12"] {
+  background-position: 33.3333333333% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="11"] {
-  background-position-y: 55%;
+.knarr-building .front[data-number="13"] {
+  background-position: 44.4444444444% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="12"] {
-  background-position-y: 60%;
+.knarr-building .front[data-number="14"] {
+  background-position: 55.5555555556% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="13"] {
-  background-position-y: 65%;
+.knarr-building .front[data-number="15"] {
+  background-position: 66.6666666667% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="14"] {
-  background-position-y: 70%;
+.knarr-building .front[data-number="16"] {
+  background-position: 77.7777777778% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="15"] {
-  background-position-y: 75%;
+.knarr-building .front[data-number="17"] {
+  background-position: 88.8888888889% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="16"] {
-  background-position-y: 80%;
+.knarr-building .front[data-number="18"] {
+  background-position: 100% 33.3333%;
 }
-.knarr-building[data-type="1"] .front[data-number="17"] {
-  background-position-y: 85%;
+.knarr-building .front[data-number="19"] {
+  background-position: 0% 66.6666%;
 }
-.knarr-building[data-type="1"] .front[data-number="18"] {
-  background-position-y: 90%;
+.knarr-building .front[data-number="20"] {
+  background-position: 11.1111111111% 66.6666%;
 }
-.knarr-building[data-type="1"] .front[data-number="19"] {
-  background-position-y: 95%;
+.knarr-building .front[data-number="21"] {
+  background-position: 22.2222222222% 66.6666%;
 }
-.knarr-building[data-type="1"] .front[data-number="20"] {
-  background-position-y: 100%;
+.knarr-building .front[data-number="22"] {
+  background-position: 33.3333333333% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="21"] {
-  background-position-y: 5%;
+.knarr-building .front[data-number="23"] {
+  background-position: 44.4444444444% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="22"] {
-  background-position-y: 10%;
+.knarr-building .front[data-number="24"] {
+  background-position: 55.5555555556% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="23"] {
-  background-position-y: 15%;
+.knarr-building .front[data-number="25"] {
+  background-position: 66.6666666667% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="24"] {
-  background-position-y: 20%;
+.knarr-building .front[data-number="26"] {
+  background-position: 77.7777777778% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="25"] {
-  background-position-y: 25%;
+.knarr-building .front[data-number="27"] {
+  background-position: 88.8888888889% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="26"] {
-  background-position-y: 30%;
+.knarr-building .front[data-number="28"] {
+  background-position: 100% 66.6666%;
 }
-.knarr-building[data-type="2"] .front[data-number="27"] {
-  background-position-y: 35%;
+.knarr-building .front[data-number="29"] {
+  background-position: 0% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="28"] {
-  background-position-y: 40%;
+.knarr-building .front[data-number="30"] {
+  background-position: 11.1111111111% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="29"] {
-  background-position-y: 45%;
+.knarr-building .front[data-number="31"] {
+  background-position: 22.2222222222% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="30"] {
-  background-position-y: 50%;
+.knarr-building .front[data-number="32"] {
+  background-position: 33.3333333333% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="31"] {
-  background-position-y: 55%;
+.knarr-building .front[data-number="33"] {
+  background-position: 44.4444444444% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="32"] {
-  background-position-y: 60%;
+.knarr-building .front[data-number="34"] {
+  background-position: 55.5555555556% 100%;
 }
-.knarr-building[data-type="2"] .front[data-number="33"] {
-  background-position-y: 65%;
-}
-.knarr-building[data-type="2"] .front[data-number="34"] {
-  background-position-y: 70%;
-}
-.knarr-building[data-type="2"] .front[data-number="35"] {
-  background-position-y: 75%;
+.knarr-building .front[data-number="35"] {
+  background-position: 66.6666666667% 100%;
 }
 
 @keyframes selectable-card-animation {
@@ -906,6 +955,10 @@ body > .card {
   display: grid;
   grid-template-columns: 120px 690px;
   gap: 8px;
+}
+#table-center #table-buildings .slot {
+  width: 124px;
+  height: 173px;
 }
 #table-center .table-destinations-deck {
   margin-left: -102px;
@@ -1002,6 +1055,9 @@ body > .card {
 }
 .player-board .counters > div {
   flex: 1;
+}
+.player-board .counters > div.reputation-counter {
+  flex: 3;
 }
 .player-board .player-crew-cards {
   display: inline-block;
@@ -1402,18 +1458,27 @@ html, .mode_3d #game_play_area_background {
   background-position-x: 0%;
 }
 .icon.reputation, .icon[data-type="4"] {
-  background-position-x: 20%;
+  background-position-x: 12.5%;
 }
 .icon.bracelet, .icon[data-type="2"] {
-  background-position-x: 40%;
+  background-position-x: 25%;
 }
 .icon.recruit, .icon[data-type="3"] {
-  background-position-x: 60%;
+  background-position-x: 37.5%;
 }
 .icon.take-card, .icon[data-type="5"] {
-  background-position-x: 80%;
+  background-position-x: 50%;
 }
 .icon.coin, .icon[data-type="6"] {
+  background-position-x: 62.5%;
+}
+.icon.renewal {
+  background-position-x: 75%;
+}
+.icon.renewal[data-side=back] {
+  background-position-x: 87.5%;
+}
+.icon.raid, .icon[data-type="7"] {
   background-position-x: 100%;
 }
 

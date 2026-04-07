@@ -60,6 +60,18 @@
             background-position-y: #{($number - 20) * 100% / 20};
         }
     }
+    @for $number from 101 through 108 {
+        &[data-type="1"] .front[data-number="#{$number}"] {
+            background-image: url('img/skali/destinations.jpg');
+            background-position-y: #{($number - 101) * 100% / 7};
+        }
+    }
+    @for $number from 109 through 113 {
+        &[data-type="2"] .front[data-number="#{$number}"] {
+            background-image: url('img/skali/destinations.jpg');
+            background-position-y: #{($number - 109) * 100% / 7};
+        }
+    }
 }
 
 @keyframes selectable-card-animation {

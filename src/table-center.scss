@@ -10,6 +10,13 @@
   grid-template-columns: 120px 690px;
   gap: 8px;
 
+  #table-buildings {
+    .slot {      
+      width: 124px;
+      height: 173px;
+    }
+  }
+
   .table-destinations-deck {
     margin-left: -102px;
   }

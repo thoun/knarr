@@ -231,6 +231,7 @@ class Game extends Table {
             //$player['handCount'] = intval($this->vikingManager->cards->countCardInLocation('hand', $playerId));
             if ($skaliExpansion) {
                 $player['buildings'] = $this->buildingManager->getBuildingsByLocation('played'.$playerId);
+                $player['raidTokens'] = $this->raidManager->getPlayer($playerId);
             }
 
             if ($currentPlayerId == $playerId) {
@@ -260,6 +261,8 @@ class Game extends Table {
             $result['centerBuildingsDeckTop'] = $this->buildingManager->getBuildingDeckTop();
             $result['centerBuildingsDeckCount'] = $this->buildingManager->getBuildingDeckCount();
             $result['centerBuildings'] = $this->buildingManager->getBuildingsByLocation('slot');
+            $result['deckRaidTokens'] = $this->raidManager->getDeck();
+            $result['boardRaidTokens'] = $this->raidManager->getBoard();
         }
 
         $result['firstPlayerId'] = $firstPlayerId;

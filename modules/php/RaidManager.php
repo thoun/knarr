@@ -94,9 +94,9 @@ class RaidManager {
         }
 
         foreach ($otherPlayers as $otherPlayerId) {
-            $raidToken = reset($this->raids->getCardsInLocation('player', $otherPlayerId));
+            $raidToken = reset($this->getPlayer('player', $otherPlayerId));
             if ($raidToken !== false) {
-                $this->raids->moveCard($raidToken['id'], 'board');
+                $this->raids->moveCard($raidToken->id, 'board');
             }
         }
     }
@@ -136,5 +136,17 @@ class RaidManager {
 
     public function getAvailableRaidTokens(): int {
         return intval($this->raids->countCardInLocation('board')) + intval($this->raids->countCardInLocation('deck'));
+    }
+
+    public function getPlayer(int $playerId): array {
+        return $this->getRaidsByLocation('player', $playerId);
+    }
+
+    public function getBoard(): array {
+        return $this->getRaidsByLocation('board');
+    }
+
+    public function getDeck(): array {
+        return $this->getRaidsByLocation('deck');
     }
 }

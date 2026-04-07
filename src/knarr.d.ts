@@ -39,6 +39,12 @@ export interface Building {
     fewestRaid: { [type: number]: number };
 }
 
+export interface RaidToken {
+    id: number;
+    location: string;
+    locationArg: number;
+}
+
 export interface KnarrPlayer extends Player {
     playerNo: number;
     reputation: number;
@@ -51,6 +57,7 @@ export interface KnarrPlayer extends Player {
     destinations: Destination[];
     reservedDestinations?: Destination[];
     buildings?: Building[];
+    raidTokens?: RaidToken[];
 }
 
 export interface KnarrGamedatas {
@@ -77,6 +84,8 @@ export interface KnarrGamedatas {
     centerBuildingsDeckTop?: Building;
     centerBuildingsDeckCount?: number;
     centerBuildings?: Building[];
+    deckRaidTokens?: RaidToken[];
+    boardRaidTokens?: RaidToken[];
     boatSideOption: number;
     variantOption: number;
     artifacts?: number[];
@@ -222,6 +231,12 @@ export interface NotifBuildingArgs {
 export interface NotifBuildingArgs {
     playerId: number;
     building: Building;
+}
+
+export interface NotifRemoveTableBuildingsArgs {
+    buildings: Building[];
+    buildingDeckTop?: Building;
+    buildingDeckCount: number;
 }
 
 export interface NotifNewTableBuildingArgs {

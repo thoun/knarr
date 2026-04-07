@@ -165,6 +165,12 @@ export class TableCenter {
         return promise;
     } 
 
+    public removeTableBuildings(buildings: Building[], buildingDeckCount: number, buildingDeckTop?: Building) {
+        const promise = this.buildings.removeCards(buildings);
+        this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
+        return promise;
+    }
+
     public newTableBuilding(building: Building, buildingDeckCount: number, buildingDeckTop?: Building) {
         const promise = this.buildings.addCard(building);
         this.buildingsDeck.setCardNumber(buildingDeckCount, buildingDeckTop);
