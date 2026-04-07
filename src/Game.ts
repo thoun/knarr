@@ -1071,7 +1071,7 @@ export class Game implements KnarrGame {
             if (log && args && !args.processed) {
                 if (args.gains && (typeof args.gains !== 'string' || args.gains[0] !== '<')) {
                     const entries = Object.entries(args.gains);
-                    args.gains = entries.length ? entries.map(entry => `<strong>${entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ') : `<strong>${_('nothing')}</strong>`;
+                    args.gains = entries.length ? entries.map(entry => `<strong>${args.lose ? Math.abs(entry[1] as number) : entry[1]}</strong> <div class="icon" data-type="${entry[0]}"></div>`).join(' ') : `<strong>${_('nothing')}</strong>`;
                 }
 
                 if (args.line_letter && args.line_letter[0] !== '<') {

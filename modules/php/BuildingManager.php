@@ -228,6 +228,20 @@ class BuildingManager {
         );
     }
 
+    private function applyRaidGain(int $playerId, array $effectiveGains, bool $lose) {
+        $message = $lose ?
+            clienttranslate('${player_name} loses ${gains} with the raid') :
+            clienttranslate('${player_name} gains ${gains} with the raid');
+
+        $this->bga->notify->all('trade', $message, [
+            'playerId' => $playerId,
+            'player_name' => $this->game->getPlayerName($playerId),
+            'effectiveGains' => $effectiveGains,
+            'gains' => $effectiveGains, // for logs
+            'lose' => $lose,
+        ]);
+    }
+    
     public function onRaidTriggered(array $playerIdsWithMostRaidTokens, array $playerIdsWithFewestRaidTokens) {
         $gainPerPlayer = [];
         foreach($playerIdsWithMostRaidTokens as $playerId) {
@@ -241,12 +255,16 @@ class BuildingManager {
             $groupGains = $this->groupGains($gains);
             [$effectiveGains, $raidTokens] = $this->game->gainResources($playerId, $groupGains, 'raid');
 
-            $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the raid'), [
-                'playerId' => $playerId,
-                'player_name' => $this->game->getPlayerName($playerId),
-                'effectiveGains' => $effectiveGains,
-                'gains' => $effectiveGains, // for logs
-            ]);
+            $positiveGains = array_filter($effectiveGains, fn($value) => $value > 0);
+            $negativeGains = array_filter($effectiveGains, fn($value) => $value < 0);
+            if (count($positiveGains) > 0 && count($negativeGains) > 0) {
+                $this->applyRaidGain($playerId, $positiveGains, false);
+                $this->applyRaidGain($playerId, $negativeGains, true);
+            } else if (count($negativeGains) > 0) {
+                $this->applyRaidGain($playerId, $effectiveGains, true);
+            } else {
+                $this->applyRaidGain($playerId, $effectiveGains, false);
+            }
 
             $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
             $this->bga->playerStats->inc('assetsCollectedByRaid', $allGains, $playerId, updateTableStat: true);
