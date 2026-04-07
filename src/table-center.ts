@@ -69,6 +69,11 @@ export class TableCenter {
     public destinations: SlotStock<Destination>[] = [];
     // @ts-ignore
     public cards: SlotStock<Card>;
+    // @ts-ignore
+    public deckRaidTokens?: BgaCards.LineStock<RaidToken>;
+    // @ts-ignore
+    public boardRaidTokens?: BgaCards.LineStock<RaidToken>;
+
     private vp = new Map<number, number>();
     private reputation = new Map<number, number>(); 
 
@@ -79,7 +84,7 @@ export class TableCenter {
         const players = Object.values(gamedatas.players);
         let html = `
             ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
-            <div></div> <div id="board">
+            <div id="board-left"></div> <div id="board">
                 ${players.map(player =>
                     `
                     <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
@@ -152,6 +157,13 @@ export class TableCenter {
             });
             this.buildings.addCards(gamedatas.centerBuildings);
             this.buildings.onCardClick = (card: Building) => this.game.onTableBuildingClick(card);
+
+            document.getElementById('board-left')!.insertAdjacentHTML('beforeend', `<div id="deck-raid-tokens"></div>`);
+            document.getElementById('board')!.insertAdjacentHTML('beforeend', `<div id="board-raid-tokens"></div>`);
+            this.deckRaidTokens = new BgaCards.LineStock/*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`deck-raid-tokens`));
+            this.deckRaidTokens.addCards(gamedatas.deckRaidTokens);
+            this.boardRaidTokens = new BgaCards.LineStock/*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`board-raid-tokens`));
+            this.boardRaidTokens.addCards(gamedatas.boardRaidTokens);
         }
     }
     

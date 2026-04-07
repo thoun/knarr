@@ -240,6 +240,7 @@ class PlayerTable {
                 `;
             }
             html += `
+                        <div id="player-table-${this.playerId}-raid-tokens" class="raid-tokens"></div>
                     </div>
                     <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
                 </div>`;
@@ -331,6 +332,8 @@ class PlayerTable {
             this.reservedDestinations.onCardClick = (card) => this.game.onTableDestinationClick(card);
         }
         if (this.game.isSkaliExpansion()) {
+            this.raidTokens = new BgaCards.LineStock /*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`player-table-${this.playerId}-raid-tokens`));
+            this.raidTokens.addCards(player.raidTokens);
             this.buildings = new BgaCards.LineStock /*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
                 center: false,
             });
@@ -444,6 +447,22 @@ class PlayerTable {
     }
 }
 
+class RaidTokenManager extends BgaCards.CardManager {
+    constructor(game) {
+        super(game, {
+            getId: (card) => `raid-token-${card.id}`,
+            setupDiv: (card, div) => {
+                div.classList.add('knarr-raid-token');
+                div.dataset.cardId = '' + card.id;
+            },
+            isCardVisible: () => true,
+            cardWidth: 32,
+            cardHeight: 32,
+        });
+        this.game = game;
+    }
+}
+
 class RenewBuildings {
     constructor(game, bga) {
         this.game = game;
@@ -523,7 +542,7 @@ class TableCenter {
         const players = Object.values(gamedatas.players);
         let html = `
             ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
-            <div></div> <div id="board">
+            <div id="board-left"></div> <div id="board">
                 ${players.map(player => `
                     <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
                     <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
@@ -585,6 +604,12 @@ class TableCenter {
             });
             this.buildings.addCards(gamedatas.centerBuildings);
             this.buildings.onCardClick = (card) => this.game.onTableBuildingClick(card);
+            document.getElementById('board-left').insertAdjacentHTML('beforeend', `<div id="deck-raid-tokens"></div>`);
+            document.getElementById('board').insertAdjacentHTML('beforeend', `<div id="board-raid-tokens"></div>`);
+            this.deckRaidTokens = new BgaCards.LineStock /*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`deck-raid-tokens`));
+            this.deckRaidTokens.addCards(gamedatas.deckRaidTokens);
+            this.boardRaidTokens = new BgaCards.LineStock /*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`board-raid-tokens`));
+            this.boardRaidTokens.addCards(gamedatas.boardRaidTokens);
         }
     }
     newTableCard(card) {
@@ -779,6 +804,7 @@ class Game {
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new BgaAnimations.AnimationManager(this);
         this.buildingsManager = new BuildingsManager(this);
+        this.raidTokenManager = new RaidTokenManager(this);
         new BgaJumpTo.JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
@@ -1158,6 +1184,7 @@ class Game {
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
         if (gamedatas.skaliExpansion) {
             this.setTooltipToClass('coin-counter', _('Coins'));
+            this.setTooltipToClass('raid-counter', _('Raid tokens'));
         }
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     }

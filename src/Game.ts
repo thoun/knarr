@@ -5,6 +5,7 @@ import { DestinationsManager } from './destinations';
 import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifRemoveTableBuildingsArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
+import { RaidTokenManager } from './raid-tokens';
 import { RenewBuildings } from './states/RenewBuildings';
 import { TableCenter } from './table-center';
 
@@ -40,6 +41,7 @@ export class Game implements KnarrGame {
     public destinationsManager: DestinationsManager;
     public artifactsManager: ArtifactsManager;
     public buildingsManager: BuildingsManager;
+    public raidTokenManager: RaidTokenManager;
 
     private zoomManager: InstanceType<typeof BgaZoom.Manager>;
     // @ts-ignore
@@ -118,6 +120,7 @@ export class Game implements KnarrGame {
         this.artifactsManager = new ArtifactsManager(this);
         this.animationManager = new BgaAnimations.AnimationManager(this);  
         this.buildingsManager = new BuildingsManager(this);
+        this.raidTokenManager = new RaidTokenManager(this);
         new BgaJumpTo.JumpToManager(this, {
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
             topEntries: [
@@ -570,6 +573,7 @@ export class Game implements KnarrGame {
         this.setTooltipToClass('bracelet-counter', _('Bracelets'));
         if (gamedatas.skaliExpansion) {
             this.setTooltipToClass('coin-counter', _('Coins'));
+            this.setTooltipToClass('raid-counter', _('Raid tokens'));
         }
         this.setTooltipToClass('crew-counter', _('Cards in the Crew Zone'));
     }

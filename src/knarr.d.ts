@@ -7,6 +7,7 @@ import { BuildingsManager } from "./buildings";
 import { CardsManager } from "./cards";
 import { DestinationsManager } from "./destinations";
 import { PlayerTable } from "./player-table";
+import { RaidTokenManager } from "./raid-tokens";
 import { TableCenter } from "./table-center";
 
 export interface Card {
@@ -101,6 +102,7 @@ export interface KnarrGame {
     destinationsManager: DestinationsManager;
     artifactsManager: ArtifactsManager;
     buildingsManager: BuildingsManager;
+    raidTokenManager: RaidTokenManager;
 
     tableCenter: TableCenter;
 

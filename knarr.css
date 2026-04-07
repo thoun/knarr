@@ -945,6 +945,22 @@ body > .card {
     box-shadow: 0 0 5px 3px rgb(255, 212, 131);
   }
 }
+.knarr-raid-token {
+  display: inline-block;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.knarr-raid-token .card-sides .card-side {
+  border-radius: 50%;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("img/icons.png");
+  background-position: 100% 50%;
+}
+
 #table-center-wrapper {
   display: flex;
   justify-content: center;
@@ -959,6 +975,19 @@ body > .card {
 #table-center #table-buildings .slot {
   width: 124px;
   height: 173px;
+}
+#table-center #deck-raid-tokens {
+  justify-content: right;
+  align-items: center;
+  height: 100%;
+}
+#table-center #board-raid-tokens {
+  align-items: center;
+  position: absolute;
+  left: 80px;
+  top: 80px;
+  bottom: 80px;
+  width: 260px;
 }
 #table-center .table-destinations-deck {
   margin-left: -102px;
@@ -1254,6 +1283,12 @@ body > .card {
 }
 .player-table .skali-row .buildings .knarr-building {
   margin-left: -80px;
+}
+.player-table .skali-row .raid-tokens {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 5px;
 }
 .player-table .skali {
   position: relative;

@@ -17,6 +17,21 @@
     }
   }
 
+  #deck-raid-tokens {
+    justify-content: right;
+    align-items: center;
+    height: 100%;
+  }
+
+  #board-raid-tokens {
+    align-items: center;
+    position: absolute;
+    left: 80px;
+    top: 80px;
+    bottom: 80px;
+    width: 260px;
+  }
+
   .table-destinations-deck {
     margin-left: -102px;
   }

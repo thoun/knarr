@@ -1,4 +1,4 @@
-import { Building, Card, Destination, KnarrGame, KnarrPlayer } from "./knarr.d";
+import { Building, Card, Destination, KnarrGame, KnarrPlayer, RaidToken } from "./knarr.d";
 import { EQUAL, DIFFERENT } from "./Game";
 import { BgaCards } from "./libs";
 
@@ -16,6 +16,8 @@ export class PlayerTable {
     public reservedDestinations?: BgaCards.LineStock<Destination>;
     // @ts-ignore
     public buildings?: BgaCards.LineStock<Building>;
+    // @ts-ignore
+    public raidTokens?: BgaCards.LineStock<RaidToken>;
     public limitSelection: number | null = null;
 
     private currentPlayer: boolean;
@@ -38,6 +40,7 @@ export class PlayerTable {
                 `;
             }
             html += `
+                        <div id="player-table-${this.playerId}-raid-tokens" class="raid-tokens"></div>
                     </div>
                     <div id="player-table-${this.playerId}-buildings" class="buildings"></div>
                 </div>`;
@@ -140,6 +143,9 @@ export class PlayerTable {
         }
 
         if (this.game.isSkaliExpansion()) {
+            this.raidTokens = new BgaCards.LineStock/*<RaidToken>*/(this.game.raidTokenManager, document.getElementById(`player-table-${this.playerId}-raid-tokens`));
+            this.raidTokens.addCards(player.raidTokens);
+
             this.buildings = new BgaCards.LineStock/*<Building>*/(this.game.buildingsManager, document.getElementById(`player-table-${this.playerId}-buildings`), {
                 center: false,
             });
