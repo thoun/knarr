@@ -502,10 +502,11 @@ class Game extends Table {
         return $groupGains;
     }
     
-    function gainResources(int $playerId, array $groupGains, string $phase) {
+    function gainResources(int $playerId, array $groupGains, string $phase): array {
         $player = $this->getPlayer($playerId);
 
         $effectiveGains = [];
+        $raidTokens = [];
 
         foreach ($groupGains as $type => $amount) {
             switch ($type) {
@@ -568,7 +569,7 @@ class Game extends Table {
                 case RAID:
                     $effectiveGains[RAID] = min($amount, $this->raidManager->getAvailableRaidTokens());
                     if ($effectiveGains[RAID] > 0) {
-                        $this->raidManager->gainRaidTokens($playerId, $effectiveGains[COIN]);
+                        $raidTokens = $this->raidManager->gainRaidTokens($playerId, $effectiveGains[RAID]);
                     }
 
                     if ($effectiveGains[RAID] < $amount) {
@@ -578,7 +579,7 @@ class Game extends Table {
             }
         }
 
-        return $effectiveGains;
+        return [$effectiveGains, $raidTokens];
     }
 
     function argChooseNewCard(int $playerId) {

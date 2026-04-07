@@ -259,6 +259,41 @@
             "id": 117,
             "name": "Raid tokens gained by building",
             "type": "int"
+        },
+        "assetsCollectedByRaid": {
+            "id": 120,
+            "name": "Assets gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid1": {
+            "id": 121,
+            "name": "Victory points gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid2": {
+            "id": 122,
+            "name": "Bracelets gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid3": {
+            "id": 123,
+            "name": "Recruits gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid4": {
+            "id": 124,
+            "name": "Reputation gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid5": {
+            "id": 125,
+            "name": "Cards gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid6": {
+            "id": 126,
+            "name": "Coins gained by raid",
+            "type": "int"
         }
     },
     "player": {
@@ -515,6 +550,41 @@
         "assetsCollectedByBuilding7": {
             "id": 117,
             "name": "Raid tokens gained by building",
+            "type": "int"
+        },
+        "assetsCollectedByRaid": {
+            "id": 120,
+            "name": "Assets gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid1": {
+            "id": 121,
+            "name": "Victory points gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid2": {
+            "id": 122,
+            "name": "Bracelets gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid3": {
+            "id": 123,
+            "name": "Recruits gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid4": {
+            "id": 124,
+            "name": "Reputation gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid5": {
+            "id": 125,
+            "name": "Cards gained by raid",
+            "type": "int"
+        },
+        "assetsCollectedByRaid6": {
+            "id": 126,
+            "name": "Coins gained by raid",
             "type": "int"
         }
     }

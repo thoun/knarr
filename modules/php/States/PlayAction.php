@@ -46,7 +46,7 @@ class PlayAction extends GameState
         $cardsOfColor = $this->game->vikingManager->getCardsByLocation('played'.$activePlayerId.'-'.$card->color);
         $gains = array_map(fn($card) => $card->gain, $cardsOfColor);
         $groupGains = $this->game->groupGains($gains);
-        $effectiveGains = $this->game->gainResources($activePlayerId, $groupGains, 'recruit');
+        [$effectiveGains, $raidTokens] = $this->game->gainResources($activePlayerId, $groupGains, 'recruit');
 
         $this->bga->notify->all('playCard', clienttranslate('${player_name} plays a ${card_color} ${card_type} card from their hand and gains ${gains}'), [
             'playerId' => $activePlayerId,
@@ -105,10 +105,6 @@ class PlayAction extends GameState
 
     #[PossibleAction]
     public function actTakeBuilding(int $id, int $activePlayerId, array $args) {
-        if (boolval($this->game->getGameStateValue((string)EXPLORE_DONE))) {
-            throw new UserException("Invalid action");
-        }
-
         /** @var Building */
         $building = \array_find($args['possibleBuildings'], fn($c) => $c->id == $id);
 

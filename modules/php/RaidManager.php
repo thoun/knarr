@@ -62,8 +62,9 @@ class RaidManager {
 
     public function triggerRaid(): void {
         if (intval($this->raids->countCardInLocation('board')) > 0) {
-            return; // no raid triggered if there is raid tokens on the table
+            return; // no raid triggered if there is raid tokens on the board
         }
+        $this->bga->notify->all('log', clienttranslate('There are no raid tokens on the board, a raid is triggered!'));
 
         $playerIds = $this->game->getPlayersIds();
         $raidTokenCounts = array_fill_keys($playerIds, 0);
@@ -93,28 +94,51 @@ class RaidManager {
             $otherPlayers = $playerIdsWithFewestRaidTokens;
         }
 
-        foreach ($otherPlayers as $otherPlayerId) {
-            $raidToken = reset($this->getPlayer('player', $otherPlayerId));
-            if ($raidToken !== false) {
-                $this->raids->moveCard($raidToken->id, 'board');
+        $movedTokens = [];
+        $deckRaidToken = $this->getDeck()[0] ?? null;
+        foreach ($playerIdsWithMostRaidTokens as $playerId) {
+            $raidTokens = $this->getPlayer($playerId);
+            if ($deckRaidToken === null) {
+                $deckRaidToken = array_pop($raidTokens);
+                $this->raids->moveCard($deckRaidToken->id, 'deck');
+                $deckRaidToken->location = 'deck';
+                $movedTokens[] = $deckRaidToken;
+            }
+            $this->raids->moveCards(array_map(fn($token) => $token->id, $raidTokens), 'board');
+            foreach ($raidTokens as $raidToken) {
+                $raidToken->location = 'board';
+                $movedTokens[] = $raidToken;
             }
         }
+
+        foreach ($otherPlayers as $otherPlayerId) {
+            $raidToken = $this->getPlayer($otherPlayerId)[0] ?? null;
+            if ($raidToken !== null) {
+                $this->raids->moveCard($raidToken->id, 'board');
+                $raidToken->location = 'board';
+                $movedTokens[] = $raidToken;
+            }
+        }
+
+        $this->bga->notify->all('resetRaidTokens', clienttranslate('Raid tokens are set back to the board'), ['raidTokens' => $movedTokens]);
     }
 
-    public function gainRaidTokens(int $playerId, int $count) {
+    public function gainRaidTokens(int $playerId, int $count): array {
         if ($count <= 0) {
-            return;
+            return [];
         }
 
         $boardCount = min($count, intval($this->raids->countCardInLocation('board')));
         if ($boardCount > 0) {
-            $this->raids->pickCardsForLocation($boardCount, 'board', 'player', $playerId);
+            $tokens = $this->raids->pickCardsForLocation($boardCount, 'board', 'player', $playerId);
         }
 
         $remainingCount = $count - $boardCount;
         if ($remainingCount > 0) {
-            $this->raids->pickCardsForLocation($remainingCount, 'deck', 'player', $playerId);
+            $tokens = array_merge($tokens, $this->raids->pickCardsForLocation($remainingCount, 'deck', 'player', $playerId));
         }
+
+        return $tokens;
     }
 
     public function returnRaidTokens(int $playerId) {

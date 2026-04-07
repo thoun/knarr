@@ -2,7 +2,7 @@ import { ArtifactsManager } from './artifacts';
 import { BuildingsManager } from './buildings';
 import { CardsManager } from './cards';
 import { DestinationsManager } from './destinations';
-import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifRemoveTableBuildingsArgs, NotifReserveDestinationArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
+import { Building, Card, Destination, EnteringChooseNewCardArgs, EnteringPayDestinationArgs, EnteringPlayActionArgs, EnteringTradeArgs, KnarrGame, KnarrGamedatas, KnarrPlayer, NotifBuildingArgs, NotifCardDeckResetArgs, NotifDiscardCardsArgs, NotifDiscardTableCardArgs, NotifNewCardArgs, NotifNewTableBuildingArgs, NotifNewTableDestinationArgs, NotifPlayCardArgs, NotifRemoveTableBuildingsArgs, NotifReserveDestinationArgs, NotifResetRaidTokensArgs, NotifScoreArgs, NotifTakeDestinationArgs, NotifTradeArgs } from './knarr';
 import { BgaAnimations, BgaJumpTo, BgaHelp, BgaZoom } from "./libs";
 import { PlayerTable } from './player-table';
 import { RaidTokenManager } from './raid-tokens';
@@ -31,6 +31,8 @@ const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
 const COIN = 6;
+const RAID = 7;
+const FLIP_RENEW_TOKEN = 8;
 
 function getVpByReputation(reputation: number) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
@@ -613,6 +615,9 @@ export class Game implements KnarrGame {
                     case COIN:
                         this.setCoins(playerId, this.coinCounters[playerId].getValue() + amount);
                         break;
+                    case RAID:
+                        this.raidCounters[playerId].incValue(amount);
+                        break;
                 }
             }
         });
@@ -639,6 +644,7 @@ export class Game implements KnarrGame {
     }
 
     private setCoins(playerId: number, count: number) {
+        this.coinCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('coins', count);
     }
 
@@ -852,6 +858,7 @@ export class Game implements KnarrGame {
             ['takeBuilding', undefined],
             ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
+            ['resetRaidTokens', undefined],
             ['lastTurn', 1],
         ];
     
@@ -953,6 +960,10 @@ export class Game implements KnarrGame {
         const playerId = args.playerId;
 
         this.updateGains(playerId, args.effectiveGains);
+
+        if (args.raidTokens) {
+            this.getPlayerTable(playerId).gainRaidTokens(args.raidTokens);
+        }
     }
 
     notif_takeDeckCard(args: NotifNewCardArgs) {
@@ -995,6 +1006,11 @@ export class Game implements KnarrGame {
 
     notif_newTableBuilding(args: NotifNewTableBuildingArgs) {
         return this.tableCenter.newTableBuilding(args.building, args.buildingDeckCount, args.buildingDeckTop);        
+    }
+
+    async notif_resetRaidTokens(args: NotifResetRaidTokensArgs) {
+        await this.tableCenter.resetRaidTokens(args.raidTokens); 
+        this.playersTables.forEach(playerTable => this.raidCounters[playerTable.playerId].toValue(playerTable.raidTokens.getCards().length));
     }
     
     /** 

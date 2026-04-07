@@ -1,5 +1,5 @@
 import { ANIMATION_MS } from "./Game";
-import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination, Building } from "./knarr.d";
+import { Card, KnarrGame, KnarrGamedatas, NotifCardDeckResetArgs, Destination, Building, RaidToken } from "./knarr.d";
 import { BgaCards } from "./libs";
 
 const POINT_CASE_SIZE_LEFT = 38.8;
@@ -303,5 +303,12 @@ export class TableCenter {
     
     public discardCards(cards: Card[], newCount: number): Promise<any> {
         return this.cardDeck.discardCards(cards, newCount);
+    }
+    
+    public resetRaidTokens(raidTokens: RaidToken[]) {
+        return Promise.all([
+            this.deckRaidTokens.addCards(raidTokens.filter(raidToken => raidToken.location === 'deck')),
+            this.boardRaidTokens.addCards(raidTokens.filter(raidToken => raidToken.location === 'board')),
+        ]);
     }
 }

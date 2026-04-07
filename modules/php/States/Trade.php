@@ -53,13 +53,14 @@ class Trade extends GameState
 
         $gains = $this->game->getTradeGains($activePlayerId, $number);
         $groupGains = $this->game->groupGains($gains);
-        $effectiveGains = $this->game->gainResources($activePlayerId, $groupGains, 'trade');
+        [$effectiveGains, $raidTokens] = $this->game->gainResources($activePlayerId, $groupGains, 'trade');
 
         $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with traded bracelet(s)'), [
             'playerId' => $activePlayerId,
             'player_name' => $this->game->getPlayerName($activePlayerId),
             'effectiveGains' => $effectiveGains,
             'gains' => $effectiveGains, // for logs
+            'raidTokens' => $raidTokens,
         ]);
 
         $this->bga->playerStats->inc('tradeActions', 1, $activePlayerId, updateTableStat: true);

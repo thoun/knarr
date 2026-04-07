@@ -348,7 +348,7 @@ class PlayerTable {
         });
     }
     updateCounter(type, count) {
-        document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = '' + count;
+        document.getElementById(`player-table-${this.playerId}-${type === 'coins' ? 'skali' : 'boat'}`).dataset[type] = '' + count;
     }
     playCard(card, fromElement) {
         return this.played[card.color].addCard(card, {
@@ -444,6 +444,9 @@ class PlayerTable {
     }
     takeBuilding(building) {
         return this.buildings.addCard(building);
+    }
+    gainRaidTokens(raidTokens) {
+        return this.raidTokens.addCards(raidTokens);
     }
 }
 
@@ -722,6 +725,12 @@ class TableCenter {
     discardCards(cards, newCount) {
         return this.cardDeck.discardCards(cards, newCount);
     }
+    resetRaidTokens(raidTokens) {
+        return Promise.all([
+            this.deckRaidTokens.addCards(raidTokens.filter(raidToken => raidToken.location === 'deck')),
+            this.boardRaidTokens.addCards(raidTokens.filter(raidToken => raidToken.location === 'board')),
+        ]);
+    }
 }
 
 const ANIMATION_MS = 500;
@@ -742,6 +751,8 @@ const RECRUIT = 3;
 const REPUTATION = 4;
 const CARD = 5;
 const COIN = 6;
+const RAID = 7;
+const FLIP_RENEW_TOKEN = 8;
 function getVpByReputation(reputation) {
     return Object.entries(VP_BY_REPUTATION).findLast(entry => reputation >= Number(entry[0]))[1];
 }
@@ -1217,6 +1228,9 @@ class Game {
                     case COIN:
                         this.setCoins(playerId, this.coinCounters[playerId].getValue() + amount);
                         break;
+                    case RAID:
+                        this.raidCounters[playerId].incValue(amount);
+                        break;
                 }
             }
         });
@@ -1238,6 +1252,7 @@ class Game {
         this.getPlayerTable(playerId).updateCounter('bracelets', count);
     }
     setCoins(playerId, count) {
+        this.coinCounters[playerId].toValue(count);
         this.getPlayerTable(playerId).updateCounter('coins', count);
     }
     highlightPlayerTokens(playerId) {
@@ -1428,6 +1443,7 @@ class Game {
             ['takeBuilding', undefined],
             ['removeTableBuildings', undefined],
             ['newTableBuilding', undefined],
+            ['resetRaidTokens', undefined],
             ['lastTurn', 1],
         ];
         notifs.forEach((notif) => {
@@ -1508,6 +1524,9 @@ class Game {
     notif_trade(args) {
         const playerId = args.playerId;
         this.updateGains(playerId, args.effectiveGains);
+        if (args.raidTokens) {
+            this.getPlayerTable(playerId).gainRaidTokens(args.raidTokens);
+        }
     }
     notif_takeDeckCard(args) {
         const playerId = args.playerId;
@@ -1538,6 +1557,10 @@ class Game {
     }
     notif_newTableBuilding(args) {
         return this.tableCenter.newTableBuilding(args.building, args.buildingDeckCount, args.buildingDeckTop);
+    }
+    async notif_resetRaidTokens(args) {
+        await this.tableCenter.resetRaidTokens(args.raidTokens);
+        this.playersTables.forEach(playerTable => this.raidCounters[playerTable.playerId].toValue(playerTable.raidTokens.getCards().length));
     }
     /**
      * Show last turn banner.

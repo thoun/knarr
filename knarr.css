@@ -1279,10 +1279,10 @@ body > .card {
   margin-bottom: 8px;
 }
 .player-table .skali-row .buildings {
-  margin-left: 80px;
+  margin-left: 100px;
 }
 .player-table .skali-row .buildings .knarr-building {
-  margin-left: -80px;
+  margin-left: -100px;
 }
 .player-table .skali-row .raid-tokens {
   position: absolute;

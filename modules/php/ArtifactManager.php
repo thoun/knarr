@@ -129,7 +129,7 @@ class ArtifactManager {
                     $playedCardsColors = $this->game->vikingManager->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] > 3) {
                         $groupGains = [VP => 1];
-                        $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'artifact:silver-coins');
+                        [$effectiveGains, $raidTokens] = $this->game->gainResources($playerId, $groupGains, 'artifact:silver-coins');
 
                         $this->game->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
                             'playerId' => $playerId,
@@ -171,7 +171,7 @@ class ArtifactManager {
                         RECRUIT => 1,
                         REPUTATION => 1,
                     ];
-                    $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'artifact:amulet');
+                    [$effectiveGains, $raidTokens] = $this->game->gainResources($playerId, $groupGains, 'artifact:amulet');
 
                     $this->game->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with artifact ${artifact_name} effect'), [
                         'playerId' => $playerId,

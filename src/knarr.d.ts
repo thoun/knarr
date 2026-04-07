@@ -190,6 +190,7 @@ export interface NotifNewTableDestinationArgs {
 export interface NotifTradeArgs {
     playerId: number;
     effectiveGains: { [type: number]: number };
+    raidTokens?: RaidToken[];
 }
 
 // discardCards
@@ -245,4 +246,8 @@ export interface NotifNewTableBuildingArgs {
     building: Building;
     buildingDeckTop?: Building;
     buildingDeckCount: number;
+}
+
+export interface NotifResetRaidTokensArgs {
+    raidTokens: RaidToken[];
 }

@@ -163,26 +163,35 @@ class BuildingManager {
         return $gains;
     }
 
+    private function groupGains(array $gains) {
+        $groupGains = [];
+
+        foreach ($gains as $gain) {
+            foreach ($gain as $type => $quantity) {
+                if (array_key_exists($type, $groupGains)) {
+                    $groupGains[$type] += $quantity;
+                } else {
+                    $groupGains[$type] = $quantity;
+                }
+            }
+        }
+
+        return $groupGains;
+    }
+
     private function applyRowGain(int $playerId, int $row, array $extraGain) {
         $gains = $this->getRowGains($playerId, $row, $extraGain); 
 
-        $groupGains = [];
-
-        foreach ($gains as $gain => $quantity) {
-            if (array_key_exists($gain, $groupGains)) {
-                $groupGains[$gain] += $quantity;
-            } else {
-                $groupGains[$gain] = $quantity;
-            }
-        }
+        $groupGains = $this->groupGains($gains);
         
-        $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'trade');
+        [$effectiveGains, $raidTokens] = $this->game->gainResources($playerId, $groupGains, 'building');
 
         $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the village'), [
             'playerId' => $playerId,
             'player_name' => $this->game->getPlayerName($playerId),
             'effectiveGains' => $effectiveGains,
             'gains' => $effectiveGains, // for logs
+            'raidTokens' => $raidTokens,
         ]);
 
         $this->bga->playerStats->inc('buildingActions', 1, $playerId, updateTableStat: true);
@@ -229,8 +238,8 @@ class BuildingManager {
         }
 
         foreach ($gainPerPlayer as $playerId => $gains) {
-            $groupGains = $this->game->groupGains($gains);
-            $effectiveGains = $this->game->gainResources($playerId, $groupGains, 'trade');
+            $groupGains = $this->groupGains($gains);
+            [$effectiveGains, $raidTokens] = $this->game->gainResources($playerId, $groupGains, 'raid');
 
             $this->bga->notify->all('trade', clienttranslate('${player_name} gains ${gains} with the raid'), [
                 'playerId' => $playerId,

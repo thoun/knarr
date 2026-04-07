@@ -162,7 +162,7 @@ export class PlayerTable {
     }
 
     public updateCounter(type: 'recruits' | 'bracelets' | 'coins', count: number) {
-        document.getElementById(`player-table-${this.playerId}-boat`).dataset[type] = ''+count;
+        document.getElementById(`player-table-${this.playerId}-${type === 'coins' ? 'skali' : 'boat'}`)!.dataset[type] = ''+count;
     }
 
     public playCard(card: Card, fromElement?: HTMLElement): Promise<boolean> {
@@ -272,5 +272,9 @@ export class PlayerTable {
     
     public takeBuilding(building: Building) {
         return this.buildings.addCard(building);
+    }
+
+    public gainRaidTokens(raidTokens: RaidToken[]) {
+        return this.raidTokens.addCards(raidTokens);
     }
 }
