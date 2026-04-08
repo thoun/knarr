@@ -73,7 +73,7 @@ class DestinationManager {
             109 => new DestinationType([EQUAL => 4], [VP => 4, COIN => 1], [null, RAID, null]),
             110 => new DestinationType([EQUAL => 4], [VP => 4, COIN => 1], [null, RAID, null]),
             111 => new DestinationType([YELLOW => 1, BLUE => 2, PURPLE => 2], [VP => 5, COIN => 1, CARD => 1, REPUTATION => 1], [null, null, RAID]),
-            112 => new DestinationType([RED => 2, YELLOW => 1, GREEN => 2], [VP => 5, COIN => 1, CARD => 1, REPUTATION => 1], [null, null, RAID]),
+            112 => new DestinationType([RED => 2, YELLOW => 1, GREEN => 2], [VP => 5, COIN => 1, RECRUIT => 1, BRACELET => 1], [null, null, RAID]),
             113 => new DestinationType([RED => 1, YELLOW => 1, GREEN => 1, BLUE => 1, PURPLE => 1], [VP => 4, COIN => 2], [null, null, RAID]),
         ];
 

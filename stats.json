@@ -216,7 +216,7 @@
             "type": "int"
         },
         "buildingActions3": {
-            "id": 103,
+            "id": 104,
             "name": "Building action triggered : recruit a viking of a new color",
             "type": "int"
         },
@@ -508,7 +508,7 @@
             "type": "int"
         },
         "buildingActions3": {
-            "id": 103,
+            "id": 104,
             "name": "Building action triggered : recruit a viking of a new color",
             "type": "int"
         },
