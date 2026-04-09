@@ -138,6 +138,7 @@ class RaidManager {
         }
 
         $boardCount = min($count, intval($this->raids->countCardInLocation('board')));
+        $tokens = [];
         if ($boardCount > 0) {
             $tokens = $this->raids->pickCardsForLocation($boardCount, 'board', 'player', $playerId);
         }
