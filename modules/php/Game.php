@@ -716,5 +716,19 @@ class Game extends Table {
             // ! important ! Use DBPREFIX_<table_name> for all tables
             $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_player CHANGE COLUMN `player_fame` `player_reputation` tinyint UNSIGNED NOT NULL DEFAULT 0");
         }*/
+
+        if ($from_version <= 2604081625) {
+            $playerIds = array_map('intval', $this->getPlayersIds());
+            $hasPlayerCountersTable = boolval($this->getUniqueValueFromDB("SHOW TABLES LIKE 'bga_player_counters'"));
+
+            if (!$hasPlayerCountersTable || !boolval($this->getUniqueValueFromDB("SHOW COLUMNS FROM `bga_player_counters` LIKE 'coin'"))) {
+                $this->playerCoin->initDb($playerIds, 0);
+                $hasPlayerCountersTable = true;
+            }
+
+            if (!$hasPlayerCountersTable || !boolval($this->getUniqueValueFromDB("SHOW COLUMNS FROM `bga_player_counters` LIKE 'renewal'"))) {
+                $this->playerRenewal->initDb($playerIds, $this->isSkaliExpansion() && count($playerIds) === 2 ? 1 : 0);
+            }
+        }
     }    
 }
