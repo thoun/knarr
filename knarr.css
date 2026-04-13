@@ -984,10 +984,10 @@ body > .card {
 #table-center #board-raid-tokens {
   align-items: center;
   position: absolute;
-  left: 80px;
+  left: 60px;
   top: 80px;
   bottom: 80px;
-  width: 260px;
+  width: 220px;
 }
 #table-center .table-destinations-deck {
   margin-left: -102px;
@@ -999,16 +999,28 @@ body > .card {
 #table-center #board {
   position: relative;
   width: 690px;
-  height: 256px;
+  height: 243px;
   background: url("img/board.jpg");
 }
 #table-center #board .marker {
   position: absolute;
   top: 0;
   left: 0;
+  transition: transform 0.5s;
+}
+#table-center #board .marker.vp {
   width: 26px;
   height: 26px;
-  transition: transform 0.5s;
+}
+#table-center #board .marker.vp .inner {
+  background-image: url("img/vp-pawns.png");
+}
+#table-center #board .marker.reputation {
+  width: 20px;
+  height: 20px;
+}
+#table-center #board .marker.reputation .inner {
+  background-image: url("img/reputation-pawns.png");
 }
 #table-center #board .marker .inner {
   position: absolute;
@@ -1042,9 +1054,10 @@ body > .card {
   bottom: 0;
   left: 0;
   right: 0;
-  background: orange;
-  border-radius: 50%;
   box-shadow: 0 0 5px 5px orange;
+}
+#table-center #board .marker.vp.highlight::before {
+  border-radius: 50%;
 }
 #table-center #table-cards .slot {
   width: 120px;

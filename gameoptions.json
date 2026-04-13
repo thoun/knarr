@@ -8,8 +8,7 @@
             "1": {
                 "name": "Enabled",
                 "tmdisplay": "Skáli Expansion",
-                "nobeginner": true,
-                "alpha": true
+                "nobeginner": true
             }
         },
         "level": "major",

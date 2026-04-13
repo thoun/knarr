@@ -497,8 +497,8 @@ class RenewBuildings {
     }
 }
 
-const POINT_CASE_SIZE_LEFT = 38.8;
-const POINT_CASE_SIZE_TOP = 37.6;
+const POINT_CASE_SIZE_LEFT = 39.8;
+const POINT_CASE_SIZE_TOP = 38.2;
 function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
 }
@@ -555,8 +555,8 @@ class TableCenter {
             ${['B', 'A'].map(letter => `<div id="table-destinations-${letter}-deck" class="table-destinations-deck"></div> <div id="table-destinations-${letter}"></div>`).join('')}
             <div id="board-left"></div> <div id="board">
                 ${players.map(player => `
-                    <div id="player-${player.id}-vp-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner vp"></div></div>
-                    <div id="player-${player.id}-reputation-marker" class="marker" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner reputation"></div></div>
+                    <div id="player-${player.id}-vp-marker" class="marker vp" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner"></div></div>
+                    <div id="player-${player.id}-reputation-marker" class="marker reputation" data-player-id="${player.id}" data-player-no="${player.playerNo}" data-color="${player.color}"><div class="inner"></div></div>
                     `).join('')}
             </div>
             <div id="card-deck"></div> <div id="table-cards"></div>
@@ -584,7 +584,7 @@ class TableCenter {
         this.cards = new BgaCards.SlotStock /*<Card>*/(game.cardsManager, document.getElementById(`table-cards`), {
             slotsIds: [1, 2, 3, 4, 5],
             mapCardToSlot: card => card.locationArg,
-            gap: '12px',
+            gap: '16px',
         });
         this.cards.onCardClick = card => this.game.onTableCardClick(card);
         this.cards.addCards(gamedatas.centerCards);
@@ -661,7 +661,7 @@ class TableCenter {
         const cases = points % 40;
         const top = cases >= 16 ? (cases > 36 ? (40 - cases) : Math.min(4, cases - 16)) * POINT_CASE_SIZE_TOP : 0;
         const left = cases > 20 ? (36 - Math.min(cases, 36)) * POINT_CASE_SIZE_LEFT : Math.min(16, cases) * POINT_CASE_SIZE_LEFT;
-        return [22 + left, 39 + top];
+        return [14 + left, 34 + top];
     }
     moveVP() {
         this.vp.forEach((points, playerId) => {
@@ -684,27 +684,12 @@ class TableCenter {
         this.vp.set(playerId, points);
         this.moveVP();
     }
-    getReputationCoordinates(points) {
-        const cases = points;
-        const top = cases % 2 ? -14 : 0;
-        const left = cases * 16.9;
-        return [368 + left, 123 + top];
-    }
     moveReputation() {
         this.reputation.forEach((points, playerId) => {
             const markerDiv = document.getElementById(`player-${playerId}-reputation-marker`);
-            const coordinates = this.getReputationCoordinates(points);
-            const left = coordinates[0];
-            const top = coordinates[1];
-            let topShift = 0;
-            let leftShift = 0;
-            this.reputation.forEach((iPoints, iPlayerId) => {
-                if (iPoints === points && iPlayerId < playerId) {
-                    topShift += 5;
-                    //leftShift += 5;
-                }
-            });
-            markerDiv.style.transform = `translateX(${left + leftShift}px) translateY(${top + topShift}px)`;
+            const left = 293 + 23.35 * points;
+            const top = 76 + 24 * (this.game.bga.players.getPlayer(playerId).playerNo - 1);
+            markerDiv.style.transform = `translateX(${left}px) translateY(${top}px)`;
         });
     }
     setReputation(playerId, reputation) {
