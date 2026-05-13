@@ -217,7 +217,7 @@ class BuildingManager {
     public function onRecruitViking(int $playerId, bool $uniqueOfThisColor) {
         $row = $uniqueOfThisColor ? 3 : 2;
 
-        if ($row === 3 && $this->game->getPlayerCount() === 2) {
+        if ($row === 2 && $this->game->getPlayerCount() === 2) {
             $this->game->playerRenewal->set($playerId, 1);
         }
 
