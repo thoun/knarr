@@ -1078,15 +1078,10 @@ body > .card {
   --bga-cards-deck-left: 75%;
 }
 
-.player-board {
-  background-color: white;
+html[data-theme=light] .player-board {
+  --game-bga-player-panel-background: white;
 }
-.player-board.spectator-mode {
-  color: black;
-}
-.player-board.spectator-mode * {
-  background: white !important;
-}
+
 .player-board .icon {
   margin-right: 5px;
 }
@@ -1478,6 +1473,10 @@ body > .card {
   flex: 1;
 }
 
+html[data-theme=dark] #popin_bgaHelpDialog {
+  background: var(--game-palette-bga-gray-244);
+}
+
 /* make space between buttons on touch devices */
 @media (hover: none) {
   #page-title .action-button.bgabutton, #page-title .bgabutton {
@@ -1485,8 +1484,9 @@ body > .card {
     margin-top: 8px;
   }
 }
-html, .mode_3d #game_play_area_background {
-  background: url("img/background.jpg") #b5b4b4;
+html {
+  background-color: #b5b4b4 !important;
+  background-image: url("img/background.jpg");
   background-size: 100% auto;
   background-repeat: no-repeat;
   background-position: top;

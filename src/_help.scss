@@ -46,3 +46,9 @@
         } 
     }
 }
+
+html[data-theme="dark"] {
+    #popin_bgaHelpDialog {
+        background: var(--game-palette-bga-gray-244);
+    }
+}

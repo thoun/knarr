@@ -1,13 +1,10 @@
-.player-board {
-  background-color: white;
-
-  &.spectator-mode {
-    color: black;
-    * {
-      background: white !important;
-    }
+html[data-theme="light"] {
+  .player-board {
+    --game-bga-player-panel-background: white;
   }
+}
 
+.player-board {
   .icon {
     margin-right: 5px;
   }

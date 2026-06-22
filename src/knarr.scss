@@ -21,8 +21,9 @@ $playerColors: '7c5654', 'd6d6d7', 'b79d86', '1e2c36';
   }
 }
 
-html, .mode_3d #game_play_area_background {
-  background: url('img/background.jpg') #b5b4b4;
+html {
+  background-color: #b5b4b4 !important;
+  background-image: url('img/background.jpg');
   background-size: 100% auto;
   background-repeat: no-repeat;
   background-position: top;
