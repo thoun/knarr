@@ -1,9 +1,9 @@
 const BgaZoom = await globalThis.importEsmLib('bga-zoom', '1.0.0');
-const [BgaHelp, BgaAnimations, BgaCards, BgaJumpTo] = await globalThis.importDojoLibs([
+const BgaJumpTo = await globalThis.importEsmLib('bga-jump-to', '1.x');
+const [BgaHelp, BgaAnimations, BgaCards] = await globalThis.importDojoLibs([
     g_gamethemeurl + "modules/js/bga-help.js",
     g_gamethemeurl + "modules/js/bga-animations.js",
     g_gamethemeurl + "modules/js/bga-cards.js",
-    g_gamethemeurl + "modules/js/bga-jump-to.js",
 ]);
 
 class ArtifactsManager extends BgaCards.CardManager {
@@ -808,13 +808,15 @@ class Game {
         this.animationManager = new BgaAnimations.AnimationManager(this);
         this.buildingsManager = new BuildingsManager(this);
         this.raidTokenManager = new RaidTokenManager(this);
-        new BgaJumpTo.JumpToManager(this, {
+        const entries = [
+            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
+        ];
+        entries.push(...BgaJumpTo.BgaPlayerEntries(this.bga, {
+            entrySettings: (playerId) => ({ id: `bga-jump-to_player-table-${playerId}` }),
+        }));
+        new BgaJumpTo.Manager({
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
-            topEntries: [
-                new BgaJumpTo.JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
-            ],
-            entryClasses: 'triangle-point',
-            defaultFolded: true,
+            entries,
         });
         this.tableCenter = new TableCenter(this, gamedatas);
         this.createPlayerPanels(gamedatas);

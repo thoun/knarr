@@ -122,13 +122,16 @@ export class Game implements KnarrGame {
         this.animationManager = new BgaAnimations.AnimationManager(this);  
         this.buildingsManager = new BuildingsManager(this);
         this.raidTokenManager = new RaidTokenManager(this);
-        new BgaJumpTo.JumpToManager(this, {
+        const entries = [
+            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
+        ];
+        entries.push(...BgaJumpTo.BgaPlayerEntries(this.bga, {
+            entrySettings: (playerId) => ({ id: `bga-jump-to_player-table-${playerId}` }),
+        }));
+
+        new BgaJumpTo.Manager({
             localStorageFoldedKey: LOCAL_STORAGE_JUMP_TO_FOLDED_KEY,
-            topEntries: [
-                new BgaJumpTo.JumpToEntry(_('Main board'), 'table-center', { 'color': '#224757' })
-            ],
-            entryClasses: 'triangle-point',
-            defaultFolded: true,
+            entries,
         });
 
         this.tableCenter = new TableCenter(this, gamedatas);
