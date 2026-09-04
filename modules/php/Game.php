@@ -730,5 +730,16 @@ class Game extends Table {
                 $this->playerRenewal->initDb($playerIds, $this->isSkaliExpansion() && count($playerIds) === 2 ? 1 : 0);
             }
         }
+
+        if ($from_version <= 2607291347) {
+            $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_card MODIFY COLUMN `card_location` varchar(32) NOT NULL");
+            $this->applyDbUpgradeToAllDB(
+                "UPDATE DBPREFIX_card c " .
+                "JOIN DBPREFIX_player p " .
+                "ON c.card_location = LEFT(CONCAT('played', p.player_id, '-'), 16) " .
+                "AND CHAR_LENGTH(CONCAT('played', p.player_id, '-', c.card_type)) > 16 " .
+                "SET c.card_location = CONCAT('played', p.player_id, '-', c.card_type)"
+            );
+        }
     }    
 }
