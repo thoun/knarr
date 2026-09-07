@@ -731,7 +731,10 @@ class Game extends Table {
             }
         }
 
-        if ($from_version <= 2607291347) {
+        // This migration was released in 260904-1208. Use that version as the
+        // cutoff so tables already stamped with the previous production
+        // version are upgraded as well.
+        if ($from_version <= 2609041208) {
             $this->applyDbUpgradeToAllDB("ALTER TABLE DBPREFIX_card MODIFY COLUMN `card_location` varchar(32) NOT NULL");
             $this->applyDbUpgradeToAllDB(
                 "UPDATE DBPREFIX_card c " .
