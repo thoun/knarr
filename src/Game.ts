@@ -123,7 +123,7 @@ export class Game implements KnarrGame {
         this.buildingsManager = new BuildingsManager(this);
         this.raidTokenManager = new RaidTokenManager(this);
         const entries = [
-            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
+            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundSize: 'cover', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
         ];
         entries.push(...BgaJumpTo.BgaPlayerEntries(this.bga, {
             entrySettings: (playerId) => ({ id: `bga-jump-to_player-table-${playerId}` }),
@@ -158,7 +158,7 @@ export class Game implements KnarrGame {
         });
 
         if (gamedatas.lastTurn) {
-            this.notif_lastTurn(false);
+            this.notif_lastTurn();
         }
 
         new BgaHelp.HelpManager(this, { 
@@ -1025,10 +1025,8 @@ export class Game implements KnarrGame {
     /** 
      * Show last turn banner.
      */ 
-    notif_lastTurn(animate: boolean = true) {
-        dojo.place(`<div id="last-round">
-            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final round!")}</span>
-        </div>`, 'page-title');
+    notif_lastTurn() {
+        this.bga.gameArea.addLastTurnBanner(_("This is the final round!"));
     }
 
     public getGain(type: number): string {

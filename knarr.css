@@ -1501,29 +1501,3 @@ html {
 .name-marker[data-color="1e2c36"] {
   background-position-x: 100%;
 }
-
-#last-round {
-  margin: 5px -5px -5px;
-  text-align: center;
-  background-color: #900;
-  color: white;
-  text-shadow: 0 0 1px #900, 0 0 5px #900, 0 0 6px #900, 0 0 7px #900;
-}
-#last-round .last-round-text {
-  display: inline-block;
-}
-#last-round .last-round-text.animate {
-  animation: last-round-animation 2s 1 forwards ease-in-out;
-}
-
-@keyframes last-round-animation {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(3);
-  }
-  100% {
-    transform: scale(1);
-  }
-}

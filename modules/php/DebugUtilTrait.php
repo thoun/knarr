@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Bga;
@@ -48,14 +51,6 @@ trait DebugUtilTrait {
         /*$this->debug_Empty();*/
     }
 
-    function debug_SetScore($score) {
-		$this->bga->playerScore->setAll($score);
-    }
-    
-    function debug_SetPlayerScore(int $playerId, int $score) {
-		$this->bga->playerScore->set($playerId, $score);
-    }
-
     function debug_SetReputation(int $score) {
 		$this->DbQuery("UPDATE player SET `player_reputation` = $score");
     }
@@ -63,13 +58,9 @@ trait DebugUtilTrait {
     function debug_SetPlayerReputation(int $playerId, int $score) {
 		$this->DbQuery("UPDATE player SET `player_reputation` = $score WHERE player_id = $playerId");
     }
-    
-    function debug_SetPlayerCoins(int $playerId, int $coins) {
-		$this->playerCoin->set($playerId, $coins);
-    }
 
     function debug_LastTurn() {
-        $this->setGameStateValue(LAST_TURN, 1);
+        $this->setGameStateValue((string)LAST_TURN, 1);
     }
     
     function debug_Empty() {
@@ -77,10 +68,14 @@ trait DebugUtilTrait {
         $this->vikingManager->cards->moveAllCardsInLocation('discard', 'void');
     }
 
-    function debug_AddDestinations($playerId, $letter, $number) {
+    function debug_AddDestinations(int $playerId, string $letter, int $number) {
         for ($i = 0; $i < $number; $i++) {
             $destinationIndex = intval($this->destinationManager->destinations->countCardInLocation('played'.$playerId));
             $this->destinationManager->destinations->pickCardForLocation('deck'.$letter, 'played'.$playerId, $destinationIndex);
         }
+    }
+
+    public function debug_goToState(int $state = 3) {
+        $this->gamestate->jumpToState($state);
     }
 }

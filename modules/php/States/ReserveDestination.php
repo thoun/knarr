@@ -64,6 +64,14 @@ class ReserveDestination extends GameState
     }
 
     function zombie(int $playerId) {
-        return $this->actPass($playerId);
+        $destinations = array_values(array_merge(
+            $this->game->destinationManager->getDestinationsByLocation('slotA'),
+            $this->game->destinationManager->getDestinationsByLocation('slotB'),
+        ));
+        if ($destinations === []) {
+            return $this->actPass($playerId);
+        }
+        $destination = $this->getRandomZombieChoice($destinations);
+        return $this->actReserveDestination($destination->id, $playerId);
     }
 }

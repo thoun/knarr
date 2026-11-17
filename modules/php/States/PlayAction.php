@@ -9,6 +9,7 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\UserException;
 use Bga\Games\Knarr\Game;
+use Bga\Games\Knarr\Models\Building;
 
 class PlayAction extends GameState
 {
@@ -71,7 +72,7 @@ class PlayAction extends GameState
 
         $this->bga->playerStats->inc('playedCards', 1, $activePlayerId, updateTableStat: true);
 
-        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $allGains = array_sum($effectiveGains);
         $this->bga->playerStats->inc('assetsCollectedByPlayedCards', $allGains, $activePlayerId, updateTableStat: true);
         foreach ($effectiveGains as $type => $count) {
             if ($count > 0) {
@@ -159,7 +160,36 @@ class PlayAction extends GameState
         return $endTurn ? NextPlayer::class : PlayAction::class;
     }
 
-    function zombie(int $playerId) {
-        return $this->actEndTurn($playerId);
+    function zombie(int $playerId, array $args) {
+        $choices = [];
+        if ($args['canRecruit']) {
+            foreach ($this->game->vikingManager->getCardsByLocation('hand', $playerId) as $card) {
+                $choices[] = ['action' => 'recruit', 'id' => $card->id];
+            }
+        }
+        foreach ($args['possibleDestinations'] as $destination) {
+            $choices[] = ['action' => 'explore', 'id' => $destination->id];
+        }
+        foreach ($args['possibleBuildings'] as $building) {
+            $choices[] = ['action' => 'build', 'id' => $building->id];
+        }
+        if ($args['canTrade']) {
+            $choices[] = ['action' => 'trade'];
+        }
+        if ($args['canRenewBuildings'] && $this->game->buildingManager->getBuildingsByLocation('slot') !== []) {
+            $choices[] = ['action' => 'renew'];
+        }
+        if ($choices === []) {
+            return $this->actEndTurn($playerId);
+        }
+
+        $choice = $this->getRandomZombieChoice($choices);
+        return match ($choice['action']) {
+            'recruit' => $this->actPlayCard($choice['id'], $playerId),
+            'explore' => $this->actTakeDestination($choice['id'], $args),
+            'build' => $this->actTakeBuilding($choice['id'], $playerId, $args),
+            'trade' => $this->actGoTrade(),
+            'renew' => $this->actGoRenewBuildings(),
+        };
     }
 }

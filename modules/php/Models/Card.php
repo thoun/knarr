@@ -1,18 +1,8 @@
 <?php
 
-require_once(__DIR__.'/../constants.inc.php');
+declare(strict_types=1);
 
-class CardType {
-    public /*int|null*/ $color;
-    public /*int|null*/ $gain;
-    public array $number;
-  
-    public function __construct(int $color, int $gain, array $number) {
-        $this->color = $color;
-        $this->gain = $gain;
-        $this->number = $number;
-    } 
-}
+namespace Bga\Games\Knarr\Models;
 
 class Card extends CardType {
 
@@ -46,5 +36,3 @@ class Card extends CardType {
         return array_map(fn($card) => self::onlyId($card), $cards);
     }
 }
-
-?>

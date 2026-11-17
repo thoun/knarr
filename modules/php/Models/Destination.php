@@ -1,18 +1,8 @@
 <?php
 
-require_once(__DIR__.'/../constants.inc.php');
+declare(strict_types=1);
 
-class DestinationType {
-    public array $cost;
-    public array $immediateGains;
-    public array $gains;
-  
-    public function __construct(array $cost, array $immediateGains, array $gains) {
-        $this->cost = $cost;
-        $this->immediateGains = $immediateGains;
-        $this->gains = $gains;
-    } 
-}
+namespace Bga\Games\Knarr\Models;
 
 class Destination extends DestinationType {
 
@@ -54,5 +44,3 @@ class Destination extends DestinationType {
         return array_map(fn($card) => self::onlyId($card), $cards);
     }
 }
-
-?>

@@ -22,7 +22,10 @@ class EndScore extends \Bga\GameFramework\States\GameState
     }
 
     public function onEnteringState() {
-        $this->game->DbQuery("UPDATE player SET player_score_aux = player_recruit + player_bracelet");
+        $tieBreakers = $this->game->getCollectionFromDB("SELECT player_id, player_recruit + player_bracelet AS tie_breaker FROM player", true);
+        foreach ($tieBreakers as $playerId => $tieBreaker) {
+            $this->bga->playerScoreAux->set((int) $playerId, (int) $tieBreaker, null);
+        }
 
         return ST_END_GAME;
     }

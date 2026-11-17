@@ -67,7 +67,7 @@ class Trade extends GameState
         $this->bga->playerStats->inc('tradeActions'.$number, 1, $activePlayerId, updateTableStat: true);
         $this->bga->playerStats->inc('braceletsUsed', $number, $activePlayerId, updateTableStat: true);
 
-        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $allGains = array_sum($effectiveGains);
         $this->bga->playerStats->inc('assetsCollectedByTrade', $allGains, $activePlayerId, updateTableStat: true);
         foreach ($effectiveGains as $type => $count) {
             if ($count > 0) {

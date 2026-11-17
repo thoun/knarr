@@ -1,20 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
-use Card;
-use CardType;
+use Bga\Games\Knarr\Models\Card;
+use Bga\Games\Knarr\Models\CardType;
 
 require_once(__DIR__.'/constants.inc.php');
-require_once(__DIR__.'/objects/card.php');
 
 class VikingManager {
     public Deck $cards;
     public array $CARDS;
 
     public function __construct(private Game $game) {
-        $this->cards = $this->game->deckFactory->createDeck('card');
+        $this->cards = $this->game->bga->deckFactory->createDeck('card');
         $this->cards->autoreshuffle = true;
         $this->cards->autoreshuffle_trigger = ['obj' => $this->game, 'method' => 'cardDeckAutoReshuffle'];
 

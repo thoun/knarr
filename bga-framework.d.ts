@@ -1,5 +1,7 @@
 type ElementOrId = Element | string;
 
+type BgaLibraryName = 'bga-animations' | 'bga-autofit' | 'bga-cards' | 'bga-dice' | 'bga-jump-to' | 'bga-score-sheet' | 'bga-zoom';
+
 declare const define: Function;
 
 declare const ebg: {
@@ -59,14 +61,14 @@ declare function $(text: ElementOrId): HTMLElement;
  * @param name the name of the lib, usually prefixed by `bga-`
  * @param version the version, either taking the last available version `1.x` or a fixed version `1.0.0`
  */
-declare function getLibUrl(name: string, version: string): string;
+declare function getLibUrl(name: BgaLibraryName, version: string): string;
 
 /**
  * Loads a versionned ESM lib.
  * 
  * Example of usage: `const BgaAnimations = await importEsmLib('bga-animations', '1.x');`
  */
-declare function importEsmLib(name: string, version: string): Promise<any>;
+declare function importEsmLib(name: BgaLibraryName, version: string): Promise<any>;
 
 /**
  * Loads Dojo (UMD) libs.
@@ -89,14 +91,13 @@ interface Gamestate {
 interface Gamedatas<P extends Player = Player> {
   gamestate: Gamestate;
   gamestates: { [gamestateId: number]: Gamestate };
-  playerorder: (string | number)[];
+  playerorder: number[];
   players: { [playerId: number]: P };
 }
 
 interface Player {
   beginner: boolean;
   color: string;
-  color_back: any | null;
   eliminated: number;
   id: string;
   is_ai: string;
@@ -132,6 +133,18 @@ declare class GameNotifQueue {
   setIgnoreNotificationCheck(notif_type: string, predicate: (notif: object) => boolean): void;
 }
 
+interface AddActionButtonParams {
+  color?: 'primary' | 'secondary' | 'alert';
+  id?: string;
+  classes?: string | string[];
+  destination?: HTMLElement;
+  title?: string;
+  disabled?: boolean;
+  tooltip?: string;
+  confirm?: string | (() => string | undefined | null); 
+  autoclick?: boolean | { abortSignal?: AbortSignal, pausable?: boolean };
+}
+
 declare class StatusBar {
   /**
    * Set the title displayed on the status bar. Il will automatically apply styling on `${you}`, `${actplayer}`, or any variable passed in args (for example, entering state args).
@@ -146,7 +159,7 @@ declare class StatusBar {
    * 
    * @param {string} label the button text
    * @param {Function} callback the function to trigger when clicked
-   * @param {Object} params the optional parameters, by default { color: 'primary', id: null, classes: '', destination: document.getElementById('generalactions'), title: undefined, disabled: false, tooltip: undefined, confirm: undefined, autoclick: false }. 
+   * @param {AddActionButtonParams} params the optional parameters, by default { color: 'primary', id: null, classes: '', destination: document.getElementById('generalactions'), title: undefined, disabled: false, tooltip: undefined, confirm: undefined, autoclick: false }. 
    *   `color` can be primary (default) (blue), secondary (gray), alert (red)
    *   `id` is the id to set. If null/undefined, the button will not have an id, but you can still manipulate it by storing the reference to the DOM Element returned by the function
    *   `classes` can be a string or an array, so `'disabled blinking'` and `['disabled', 'blinking']` are both possible.
@@ -159,17 +172,7 @@ declare class StatusBar {
    * 
    * @returns the button DOM element
    */
-  addActionButton(label: string, callback: Function, params?: {
-    color?: 'primary' | 'secondary' | 'alert';
-    id?: string;
-    classes?: string | string[];
-    destination?: HTMLElement;
-    title?: string;
-    disabled?: boolean;
-    tooltip?: string;
-    confirm?: string | (() => string | undefined | null); 
-    autoclick?: boolean | { abortSignal?: AbortSignal, pausable?: boolean };
-  }): HTMLButtonElement;
+  addActionButton(label: string, callback: Function, params?: AddActionButtonParams): HTMLButtonElement;
 
   /**
    * Remove all buttons on the status bar
@@ -275,6 +278,12 @@ declare class Players<P extends Player = Player> {
   getCurrentPlayerId(): number;
 
   /**
+   * Return the no of the player who is looking at the game. The player may not be part of the game (i.e. spectator)
+   * @returns {number | null} the current player no
+   */
+  getCurrentPlayerNo(): number | null;
+
+  /**
    * Return the current player data stored in gamedatas.players.
    * Can be undefined, if the player isn't at this table (spectator).
    * 
@@ -311,6 +320,12 @@ declare class Players<P extends Player = Player> {
   getActivePlayerId(): number | null;
 
   /**
+   * Return the no of the active player, or null if we are not in an ACTIVE_PLAYER type state.
+   * @returns {number | null} the active player no
+   */
+  getActivePlayerNo(): number | null;
+
+  /**
    * Return the active player, or null if we are not in an ACTIVE_PLAYER type state.
    * 
    * @returns {P | null} the active player
@@ -318,12 +333,25 @@ declare class Players<P extends Player = Player> {
   getActivePlayer(): P | null;
 
   /**
+   * @deprecated use getPlayerById.
+   */
+  getPlayer(playerId: number) : P | undefined;
+
+  /**
    * Return the player data stored in gamedatas.players.
    * Can be undefined, if the player isn't at this table (spectator).
    * 
-   * @returns {P | undefined} the player
+   * @returns {Object | undefined} the player
    */
-  getPlayer(playerId: number) : P | undefined;
+  getPlayerById(playerId: number) : P | undefined;
+
+  /**
+   * Return the player data stored in gamedatas.players.
+   * Can be undefined, if the player isn't at this table (spectator).
+   * 
+   * @returns {Object | undefined} the player
+   */
+  getPlayerByNo(playerNo: number) : P | undefined;
 
   /**
    * Return the HTML code for a player name, colored and with optional background.
@@ -351,6 +379,25 @@ declare class Players<P extends Player = Player> {
    * @returns the avatar url
    */
   getPlayerAvatarUrl(playerId: number, size?: number): string;
+
+  /**
+   * Return the no of the player, by id
+   * @returns {number | null} the player no, or null if the player id is not a player on this table
+   */
+  getPlayerNoById(playerId: number): number | null;
+
+  /**
+   * Return the id of the player, by no
+   * @returns {number} the player id
+   */
+  getPlayerIdByNo(playerNo: number): number;
+}
+
+interface PerformActionParams {
+  lock?: boolean;
+  checkAction?: boolean;
+  checkPossibleActions?: boolean; 
+  ignoreDefaultErrorHandler?: boolean;
 }
 
 declare class Actions {
@@ -359,15 +406,10 @@ declare class Actions {
    *
    * @param {string} action the action name
    * @param {Object} args the action arguments
-   * @param {Object} params the call parameters, by default { lock: true, checkAction: true, checkPossibleActions: false, ignoreDefaultErrorHandler: false }. Must be overriden to disable interface lock, or to disable checkAction.
+   * @param {PerformActionParams} params the call parameters, by default { lock: true, checkAction: true, checkPossibleActions: false, ignoreDefaultErrorHandler: false }. Must be overriden to disable interface lock, or to disable checkAction.
    * @returns Promise of the ajax call, or undefined if there is no call (prevented by checkAction/checkPossibleActions)
    */
-  performAction(action: string, args?: any, params?: {
-    lock?: boolean;
-    checkAction?: boolean;
-    checkPossibleActions?: boolean; 
-    ignoreDefaultErrorHandler?: boolean;
-  }): Promise<any>;
+  performAction(action: string, args?: any, params?: PerformActionParams): Promise<any>;
 
   /**
    * Check if player can do the specified action by taking into account:
@@ -419,6 +461,212 @@ declare class Notifications {
     }): void;
 }
 
+interface Display3DViewSettings {
+  minXAxis?: number;
+  maxXAxis?: number;
+  minZAxis?: number;
+  maxZAxis?: number;
+  minXPos?: number;
+  maxXPos?: number;
+  minYPos?: number;
+  maxYPos?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  xAxis?: number;
+  zAxis?: number;
+  xPos?: number;
+  yPos?: number;
+  zoom?: number;
+}
+
+interface Display3DDraggableSettings {
+  enabled?: boolean;
+  multiplier?: number;
+  rotationMultiplier?: number;
+  slideMultiplier?: number;
+}
+
+interface Display3DZoomByWheelSettings {
+  enabled?: boolean;
+  multiplier?: number;
+  zoomMultiplier?: number;
+}
+
+interface Display3DInitSettings {
+  elements?: HTMLElement[];
+  showControls?: boolean;
+  view?: Display3DViewSettings;
+  draggable?: boolean | number | Display3DDraggableSettings;
+  zoomByWheel?: boolean | number | Display3DZoomByWheelSettings;
+}
+
+declare class Display3D {
+        /**
+         * Initializes the 3D display mode.
+         *
+         * @param {Object} [settings]
+         * @param {HTMLElement[]} [settings.elements] Elements transformed by the 3D view.
+         * @param {boolean} [settings.showControls=true] Whether to show the legacy 3D controls.
+         * @param {Object} [settings.view] Initial view values and optional min/max bounds.
+         * @param {boolean|number|Object} [settings.draggable] Enables drag controls, optionally with multipliers.
+         * @param {boolean|number|Object} [settings.zoomByWheel] Enables wheel zoom, optionally with a multiplier.
+         */
+        init3d(settings?: Display3DInitSettings): void;
+
+        /**
+         * Replaces the elements transformed by this 3D view.
+         *
+         * @param {HTMLElement[]} elements
+         */
+        setElements(elements: HTMLElement[]): void;
+
+        /**
+         * Add new elements transformed by this 3D view.
+         *
+         * @param {HTMLElement[]} elements
+         */
+        addElements(elements: HTMLElement[]): void;
+
+        /**
+         * Applies relative changes to the current 3D view.
+         *
+         * @param {number} xaxis Relative X-axis rotation delta.
+         * @param {number} xpos Relative X-position delta.
+         * @param {number} ypos Relative Y-position delta.
+         * @param {number} zaxis Relative Z-axis rotation delta.
+         * @param {number} scale Relative zoom delta.
+         */
+        change3d(xaxis: number, xpos: number, ypos: number, zaxis: number, scale: number): void;
+
+        /**
+         * Resets the 3D view to the neutral position, respecting configured bounds.
+         */
+        resetView(): void;
+
+        /**
+         * Applies a relative rotation to the 3D view.
+         *
+         * @param {number} x Relative X-axis rotation delta.
+         * @param {number} y Relative Z-axis rotation delta.
+         */
+        rotate(x: number, y: number): void;
+
+        /**
+         * Applies a relative translation to the 3D view.
+         *
+         * @param {number} x Relative X-position delta.
+         * @param {number} y Relative Y-position delta.
+         */
+        slide(x: number, y: number): void;
+
+        /**
+         * Applies a relative zoom change to the 3D view.
+         *
+         * @param {number} inc Relative zoom delta.
+         */
+        zoom(inc: number): void;
+
+        /**
+         * Sets the zoom to an absolute value.
+         *
+         * @param {number} value
+         */
+        setZoom(value: number): void;
+
+        /**
+         * Enables or disables right-button rotation and middle-button slide dragging.
+         *
+         * @param {boolean|number|Object} [enabled=true] Enable flag, shared multiplier, or settings object.
+         * @param {Object|number} [settings] Drag multipliers, or a shared multiplier.
+         * @param {boolean} [settings.enabled=true] Enable flag when using object form.
+         * @param {number} [settings.multiplier] Shared rotation and slide multiplier.
+         * @param {number} [settings.rotationMultiplier=0.1] Right-button rotation multiplier.
+         * @param {number} [settings.slideMultiplier=1] Middle-button slide multiplier.
+         */
+        setDraggable(enabled?: boolean | number | Display3DDraggableSettings, settings?: number | Display3DDraggableSettings): void;
+
+        /**
+         * Enables or disables mouse wheel zoom.
+         *
+         * @param {boolean|number|Object} [enabled=true] Enable flag, zoom multiplier, or settings object.
+         * @param {Object|number} [settings] Wheel zoom settings, or a zoom multiplier.
+         * @param {boolean} [settings.enabled=true] Enable flag when using object form.
+         * @param {number} [settings.multiplier=0.1] Wheel zoom multiplier.
+         * @param {number} [settings.zoomMultiplier=0.1] Wheel zoom multiplier alias.
+         */
+        setZoomByWheel(enabled?: boolean | number | Display3DZoomByWheelSettings, settings?: number | Display3DZoomByWheelSettings): void;
+
+        /**
+         * Sets the minimum X-axis rotation, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMinXAxis(value?: number | null): void;
+
+        /**
+         * Sets the maximum X-axis rotation, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMaxXAxis(value?: number | null): void;
+
+        /**
+         * Sets the minimum Z-axis rotation, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMinZAxis(value?: number | null): void;
+
+        /**
+         * Sets the maximum Z-axis rotation, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMaxZAxis(value?: number | null): void;
+
+        /**
+         * Sets the minimum X-position, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMinXPos(value?: number | null): void;
+
+        /**
+         * Sets the maximum X-position, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMaxXPos(value?: number | null): void;
+
+        /**
+         * Sets the minimum Y-position, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMinYPos(value?: number | null): void;
+
+        /**
+         * Sets the maximum Y-position, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMaxYPos(value?: number | null): void;
+
+        /**
+         * Sets the minimum zoom, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMinZoom(value?: number | null): void;
+
+        /**
+         * Sets the maximum zoom, or clears it with null.
+         *
+         * @param {?number} [value=null]
+         */
+        setMaxZoom(value?: number | null): void;
+    }
+
 declare class GameArea {
   /**
    * Return the Game Area div (for all displayed game components).
@@ -459,12 +707,28 @@ declare class PlayerPanels {
   getElement(playerId: number): HTMLDivElement;
 
   /**
+   * Return the div on the player board where the dev can add counters and other game specific indicators.
+   *
+   * @param {number} playerNo the player no
+   * @returns the div element for game specific content on player panels
+   */
+  getElementByNo(playerNo: number): HTMLDivElement;
+
+  /**
    * Return the score counter of a player.
    *
    * @param {number} playerId the player id
    * @returns the score counter
    */
   getScoreCounter(playerId: number): Counter;
+
+  /**
+   * Return the score counter of a player.
+   *
+   * @param {number} playerNo the player no
+   * @returns the score counter
+   */
+  getScoreCounterByNo(playerNo: number): Counter;
 
   /**
    * Add a player panel for an automata.
@@ -480,6 +744,14 @@ declare class PlayerPanels {
   }): void;
 }
 
+interface GenericDialogParams {
+  id?: string;
+  beforeShow?: (dialog: PopinDialog) => void;
+  maxWidth?: number;
+  hideCloseIcon?: boolean;
+  closeOnOverlayClick?: boolean;
+}
+
 declare class Dialogs {
   /**
    * Show an information message during few seconds on page head
@@ -492,6 +764,31 @@ declare class Dialogs {
    * Shows predefined user error that move is unauthorized now.
    */
   showMoveUnauthorized(): void;
+
+  /**
+   * Show a dialog with custom HTML. Translate the title and content.
+   * The promise resolves when the dialog is hidden or destroyed.
+   *
+   * @param {string} title dialog title
+   * @param {string} content dialog HTML
+   * @param {GenericDialogParams} params optional dialog settings
+   * @param {string} params.id unique dialog id (automatically generated if omitted)
+   * @param {Function} params.beforeShow called with the dialog before showing it, for example to populate its content
+   * @param {number} params.maxWidth maximum width in pixels
+   * @param {boolean} params.hideCloseIcon hide the default close icon (default false)
+   * @param {boolean} params.closeOnOverlayClick close when the overlay is clicked (default true; always false when hideCloseIcon is true)
+   * @return {Promise<void>} resolves when the dialog closes
+   */
+  generic(title: string, content: string, params?: GenericDialogParams): Promise<void>;
+
+  /**
+   * Display an information message in a popin.
+   *
+   * @param {string} text message shown to the user, use _() to translate
+   * @param {string} title title of the popin, use _() to translate
+   * @return {Promise<void>} resolves when the user clicks Ok
+   */
+  info(text: string, title: string): Promise<void>;
 
   /**
    * When an important action with a lot of consequences is triggered by the player, you may want to propose a confirmation dialog. 
@@ -511,6 +808,13 @@ declare class Dialogs {
   multipleChoice(text: string, choices: { [value: number]: string }): Promise<string | null>;
 }
 
+interface StateClass<TArgs> {
+  onEnteringState?(args: TArgs, isCurrentPlayerActive: boolean): void;
+  onLeavingState?(args: TArgs, isCurrentPlayerActive: boolean): void;
+  onPlayerActivationChange?(args: TArgs, isCurrentPlayerActive: boolean): void;
+  args?: TArgs;
+}
+
 declare class States {
     /**
      * Set a logger to log entering/leaving state.
@@ -527,17 +831,17 @@ declare class States {
      * The state instance can declare `onEnteringState` / `onLeavingState` / `onPlayerActivationChange` and can access a property called `args` that is automatically filled.
      * 
      * @param {string|number} stateIdOrName the name (or id) of the state
-     * @param {Object} stateClass the instanciated state class
+     * @param {StateClass<any>} stateClass the instanciated state class
      */
-    register(stateIdOrName: string|number, stateClass: Object): void;
+    register(stateIdOrName: string|number, stateClass: StateClass<any>): void;
 
     /**
      * Get a state class by state name
      * 
      * @param {string} stateName state name
-     * @returns {Object} the instanciated state class
+     * @returns {StateClass<any>} the instanciated state class
      */
-    getStateClass(stateName: string): Object;
+    getStateClass(stateName: string): StateClass<any>;
 
     /**
      * Get the current main state name (ignore private states)
@@ -556,21 +860,21 @@ declare class States {
     /**
      * Get the current main state class (ignore private states)
      * 
-     * @returns {Object} the current main state class (instance)
+     * @returns {StateClass<any>} the current main state class (instance)
      */
-    getCurrentMainStateClass(): Object;
+    getCurrentMainStateClass(): StateClass<any>;
 
     /**
      * Get the current player state class (private state if there is one)
      * 
-     * @returns {Object} the current player state class (instance)
+     * @returns {StateClass<any>} the current player state class (instance)
      */
-    getCurrentPlayerStateClass(): Object;
+    getCurrentPlayerStateClass(): StateClass<any>;
 
     /**
-     * @returns {Object[]} the registered state classes (instances)
+     * @returns {StateClass<any>[]} the registered state classes (instances)
      */
-    getStateClasses(): Object[];
+    getStateClasses(): StateClass<any>[];
 
     /**
      * Client state is an override of a real server game state, useful in some situations where several steps  must be done on client side without any server interaction.
@@ -592,11 +896,42 @@ declare class States {
     isOnClientState(): boolean;
 }
 
+declare class TableOptions {
+  /**
+   * Get the value of a table option.
+   *
+   * @param optionId the option id as in the gameoptions.json file
+   */
+  get(optionId: number): number;
+
+  /**
+   * Return true if the table uses turn-based play.
+   */
+  isTurnBased(): boolean;
+
+  /**
+   * Return true if the table uses real-time play.
+   */
+  isRealTime(): boolean;
+
+  /**
+   * Get the table's game version when the game page was loaded.
+   */
+  getGameVersion(): number;
+
+  /**
+   * Get the selected language index from the gameinfos file, or null if the table has no language option.
+   */
+  getGameLanguage(): number | null;
+}
+
 interface Bga<P extends Player = Player, G extends Gamedatas<P> = Gamedatas<P>> {
   gameui: GameGui<P, G>;
+  display3D: Display3D;
   statusBar: StatusBar;
   images: Images;
   sounds: Sounds;
+  tableOptions: TableOptions;
   userPreferences: UserPreferences;
   players: Players<P>;
   actions: Actions;
@@ -971,7 +1306,6 @@ declare class GameGui<P extends Player = Player, G extends Gamedatas<P> = Gameda
    */
   format_string( string: string, args: {[key: string]: string}): string;
 
-
   /**
    * Places mobile_obj on target_obj, set the absolute positions and centers the mobile_obj on target_obj, effect is immediate 
    * This is not really an animation, but placeOnObject is frequently used before starting an animation. 
@@ -1188,6 +1522,24 @@ declare interface Notif<T = any> {
   uid: number; // unique identifier of the notification
 }
 
+interface SetCounterArgs {
+  name: string;
+  value: number;
+  oldValue: number;
+  inc: number;
+  absInc: number;
+}
+
+interface SetPlayerCounterArgs extends SetCounterArgs {
+  playerId: number;
+}
+
+interface SetTableCounterArgs extends SetCounterArgs {
+}
+
+interface CreateCounterSettings { 
+  value?: number | null; tableCounter?: string; playerCounter?: string; playerId?: number; }
+
 declare class Counter {
   constructor();
 
@@ -1195,9 +1547,9 @@ declare class Counter {
    * Associate the counter with an existing HTML element.
    * 
    * @param {HTMLElement | string} target the HTML Element that will display the counter
-   * @param {Object | undefined} settings to set the initial value, define settings.value (null to disable). Set settings.tableCounter to link it to a TableCounter, or settings.playerCounter and settings.playerId to link it to a PlayerCounter.
+   * @param {CreateCounterSettings | undefined} settings to set the initial value, define settings.value (null to disable). Set settings.tableCounter to link it to a TableCounter, or settings.playerCounter and settings.playerId to link it to a PlayerCounter.
    */
-  create(target: ElementOrId, settings?: { value?: number | null; tableCounter?: string; playerCounter?: string; playerId?: number; }): void;
+  create(target: ElementOrId, settings?: CreateCounterSettings): void;
 
   /**
    * Return the current value.

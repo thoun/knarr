@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
-use Building;
-use BuildingType;
+use Bga\Games\Knarr\Models\Building;
+use Bga\Games\Knarr\Models\BuildingType;
 
 require_once(__DIR__.'/constants.inc.php');
-require_once(__DIR__.'/objects/building.php');
 
 class BuildingManager {
     public Deck $buildings;
@@ -16,7 +17,7 @@ class BuildingManager {
 
     public function __construct(private Game $game) {
         $this->bga = $game->bga;
-        $this->buildings = $this->game->deckFactory->createDeck('building');
+        $this->buildings = $this->game->bga->deckFactory->createDeck('building');
         $this->buildings->autoreshuffle = false;
 
         $this->BUILDINGS = [
@@ -197,7 +198,7 @@ class BuildingManager {
         $this->bga->playerStats->inc('buildingActions', 1, $playerId, updateTableStat: true);
         $this->bga->playerStats->inc('buildingActions'.$row, 1, $playerId, updateTableStat: true);
 
-        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $allGains = array_sum($effectiveGains);
         $this->bga->playerStats->inc('assetsCollectedByBuilding', $allGains, $playerId, updateTableStat: true);
         foreach ($effectiveGains as $type => $count) {
             if ($count > 0) {
@@ -266,7 +267,7 @@ class BuildingManager {
                 $this->applyRaidGain($playerId, $effectiveGains, false);
             }
 
-            $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+            $allGains = array_sum($effectiveGains);
             $this->bga->playerStats->inc('assetsCollectedByRaid', $allGains, $playerId, updateTableStat: true);
             foreach ($effectiveGains as $type => $count) {
                 if ($count > 0) {

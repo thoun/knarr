@@ -65,6 +65,11 @@ class DiscardTableCard extends GameState
     }
 
     function zombie(int $playerId) {
-        return $this->actPass($playerId);
+        $cards = array_values($this->game->vikingManager->getCardsByLocation('slot'));
+        if ($cards === []) {
+            return $this->actPass($playerId);
+        }
+        $card = $this->getRandomZombieChoice($cards);
+        return $this->actDiscardTableCard($card->id, $playerId);
     }
 }

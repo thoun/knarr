@@ -1,4 +1,4 @@
-const BgaZoom = await globalThis.importEsmLib('bga-zoom', '1.0.0');
+const BgaZoom = await globalThis.importEsmLib('bga-zoom', '1.x');
 const BgaJumpTo = await globalThis.importEsmLib('bga-jump-to', '1.x');
 const [BgaHelp, BgaAnimations, BgaCards] = await globalThis.importDojoLibs([
     g_gamethemeurl + "modules/js/bga-help.js",
@@ -809,7 +809,7 @@ class Game {
         this.buildingsManager = new BuildingsManager(this);
         this.raidTokenManager = new RaidTokenManager(this);
         const entries = [
-            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
+            new BgaJumpTo.Entry(_('Main board'), 'table-center', { color: '#224757', backgroundSize: 'cover', backgroundImage: `url('${this.bga.images.getImgUrl('board.jpg')}')` }),
         ];
         entries.push(...BgaJumpTo.BgaPlayerEntries(this.bga, {
             entrySettings: (playerId) => ({ id: `bga-jump-to_player-table-${playerId}` }),
@@ -840,7 +840,7 @@ class Game {
             },
         });
         if (gamedatas.lastTurn) {
-            this.notif_lastTurn(false);
+            this.notif_lastTurn();
         }
         new BgaHelp.HelpManager(this, {
             buttons: [
@@ -1568,10 +1568,8 @@ class Game {
     /**
      * Show last turn banner.
      */
-    notif_lastTurn(animate = true) {
-        dojo.place(`<div id="last-round">
-            <span class="last-round-text ${animate ? 'animate' : ''}">${_("This is the final round!")}</span>
-        </div>`, 'page-title');
+    notif_lastTurn() {
+        this.bga.gameArea.addLastTurnBanner(_("This is the final round!"));
     }
     getGain(type) {
         switch (type) {

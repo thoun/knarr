@@ -1,7 +1,7 @@
 import type { BgaZoom as BgaZoomType } from "../bga-zoom";
 import type { BgaJumpTo as BgaJumpToType } from "../bga-jump-to";
 
-const BgaZoom: typeof BgaZoomType = await globalThis.importEsmLib('bga-zoom', '1.0.0');
+const BgaZoom: typeof BgaZoomType = await globalThis.importEsmLib('bga-zoom', '1.x');
 const BgaJumpTo: typeof BgaJumpToType = await globalThis.importEsmLib('bga-jump-to', '1.x');
 
 const [BgaHelp, BgaAnimations, BgaCards] = await globalThis.importDojoLibs([

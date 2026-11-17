@@ -15,22 +15,16 @@
   * In this PHP file, you are going to defines the rules of the game.
   *
   */
-//declare(strict_types=1);
+declare(strict_types=1);
 
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\NotificationMessage;
 use Bga\GameFramework\Table;
-use KnarrPlayer;
+use Bga\Games\Knarr\Models\KnarrPlayer;
 
-require_once('objects/card.php');
-require_once('objects/destination.php');
-require_once('objects/building.php');
-require_once('objects/raid.php');
-require_once('objects/player.php');
-require_once('objects/undo.php');
-require_once('constants.inc.php');
+require_once(__DIR__.'/constants.inc.php');
 
 class Game extends Table {
     use DebugUtilTrait;
@@ -49,8 +43,6 @@ class Game extends Table {
         // Your global variables labels:
         //  Here, you can assign labels to global variables you are using for this game.
         //  You can use any number of global variables with IDs between 10 and 99.
-        //  If your game has options (variants), you also have to associate here a label to
-        //  the corresponding ID in gameoptions.inc.php.
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         $this->playerCoin = $this->bga->counterFactory->createPlayerCounter('coin', 0, 3);
@@ -67,8 +59,6 @@ class Game extends Table {
             PLAYED_CARD_COLOR => PLAYED_CARD_COLOR,
             SELECTED_DESTINATION => SELECTED_DESTINATION,
             COMPLETED_LINES => COMPLETED_LINES,
-
-            BOAT_SIDE_OPTION => BOAT_SIDE_OPTION,
         ]);   
 		
         $this->vikingManager = new VikingManager($this);
@@ -122,22 +112,22 @@ class Game extends Table {
         $this->playerRenewal->initDb($playerIds, $skaliExpansion && count($playerIds) === 2 ? 1 : 0);
 
         if ($this->getBoatSideOption() == 3) {
-            $this->setGameStateValue(BOAT_SIDE_OPTION, bga_rand(1, 2));
+            $this->bga->tableOptions->set(BOAT_SIDE_OPTION, bga_rand(1, 2));
         }
 
         // Init global values with their initial values
-        $this->setGameStateInitialValue(LAST_TURN, 0);
-        $this->setGameStateInitialValue(RECRUIT_DONE, 0);
-        $this->setGameStateInitialValue(EXPLORE_DONE, 0);
-        $this->setGameStateInitialValue(TRADE_DONE, 0);
-        $this->setGameStateInitialValue(DEVELOPING_VILLAGE_DONE, 0);
-        $this->setGameStateInitialValue(PLAYED_CARD_COLOR, 0);
-        $this->setGameStateInitialValue(GO_DISCARD_TABLE_CARD, 0);
-        $this->setGameStateInitialValue(GO_RESERVE, 0);
+        $this->setGameStateInitialValue((string)LAST_TURN, 0);
+        $this->setGameStateInitialValue((string)RECRUIT_DONE, 0);
+        $this->setGameStateInitialValue((string)EXPLORE_DONE, 0);
+        $this->setGameStateInitialValue((string)TRADE_DONE, 0);
+        $this->setGameStateInitialValue((string)DEVELOPING_VILLAGE_DONE, 0);
+        $this->setGameStateInitialValue((string)PLAYED_CARD_COLOR, 0);
+        $this->setGameStateInitialValue((string)GO_DISCARD_TABLE_CARD, 0);
+        $this->setGameStateInitialValue((string)GO_RESERVE, 0);
         
         // Init game statistics
-        $this->tableStats->init('roundNumber', 0);
-        $this->playerStats->init([
+        $this->bga->tableStats->init('roundNumber', 0);
+        $this->bga->playerStats->init([
                 "reputationPoints", 
                 // cards
                 "playedCards", 
@@ -154,13 +144,13 @@ class Game extends Table {
                 "recruitsMissed", "braceletsMissed",
             ], 0, updateTableStat: true);
         if ($variantOption >= 2) {
-            $this->playerStats->init([
+            $this->bga->playerStats->init([
                 // artifacts
                 "activatedArtifacts",
             ], 0, updateTableStat: true);
         }
         if ($skaliExpansion) {
-            $this->playerStats->init(["assetsCollectedByDestination6", "assetsCollectedByTrade6", "assetsCollectedByTrade7", "coinsMissed",], 0, updateTableStat: true);
+            $this->bga->playerStats->init(["assetsCollectedByDestination6", "assetsCollectedByTrade6", "assetsCollectedByTrade7", "coinsMissed",], 0, updateTableStat: true);
         }
 
         // setup the initial game situation here
@@ -269,7 +259,7 @@ class Game extends Table {
         }
 
         $result['firstPlayerId'] = $firstPlayerId;
-        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue(LAST_TURN));
+        $result['lastTurn'] = !$isEndScore && boolval($this->getGameStateValue((string)LAST_TURN));
   
         return $result;
     }
@@ -334,7 +324,7 @@ class Game extends Table {
     }
 
     function isSkaliExpansion(): bool {
-        return $this->bga->tableOptions->get(101) === 1;
+        return ($this->bga->tableOptions->get(101) ?? 0) === 1;
     }
 
     function incPlayerScore(int $playerId, int $amount, $message = '', $args = []) {
@@ -353,8 +343,8 @@ class Game extends Table {
     }
 
     function checkMaxScore(int $playerId) {
-        if (!boolval($this->getGameStateValue(LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
-            $this->setGameStateValue(LAST_TURN, 1);
+        if (!boolval($this->getGameStateValue((string)LAST_TURN)) && $this->getPlayer($playerId)->score >= 40) {
+            $this->setGameStateValue((string)LAST_TURN, 1);
 
             $this->bga->notify->all('lastTurn', clienttranslate('${player_name} reached 40 Victory Points, triggering the end of the game!'), [
                 'playerId' => $playerId,
@@ -400,11 +390,11 @@ class Game extends Table {
     }
 
     function getBoatSideOption(): int {
-        return $this->bga->tableOptions->get(BOAT_SIDE_OPTION);
+        return $this->bga->tableOptions->get(BOAT_SIDE_OPTION) ?? 1;
     }
 
     function getVariantOption(): int {
-        return $this->bga->tableOptions->get(VARIANT_OPTION);
+        return $this->bga->tableOptions->get(VARIANT_OPTION) ?? 1;
     }
 
     function getBoatGain() {
@@ -458,9 +448,9 @@ class Game extends Table {
             $this->artifactManager->checkArtifacts($playerId);
         }
 
-        if (boolval($this->getGameStateValue(GO_RESERVE))) {
-            $this->incGameStateValue(GO_RESERVE, -1);
-            $this->setGameStateValue(PLAYED_CARD_COLOR, 0);
+        if (boolval($this->getGameStateValue((string)GO_RESERVE))) {
+            $this->incGameStateValue((string)GO_RESERVE, -1);
+            $this->setGameStateValue((string)PLAYED_CARD_COLOR, 0);
             $reserved = $this->destinationManager->getDestinationsByLocation('reserved', $playerId);
             if (count($reserved) >= 2) {
                 $this->bga->notify->all('log', clienttranslate('${player_name} cannot reserve a destination because he already has 2'), [
@@ -472,8 +462,8 @@ class Game extends Table {
                 return;
             }
         }
-        if (boolval($this->getGameStateValue(GO_DISCARD_TABLE_CARD))) {
-            $this->incGameStateValue(GO_DISCARD_TABLE_CARD, -1);
+        if (boolval($this->getGameStateValue((string)GO_DISCARD_TABLE_CARD))) {
+            $this->incGameStateValue((string)GO_DISCARD_TABLE_CARD, -1);
             $this->gamestate->nextState('discardTableCard');
             return;
         }
@@ -588,7 +578,7 @@ class Game extends Table {
     function argChooseNewCard(int $playerId) {
         $player = $this->getPlayer($playerId);
 
-        $freeColor = intval($this->getGameStateValue(PLAYED_CARD_COLOR));
+        $freeColor = intval($this->getGameStateValue((string)PLAYED_CARD_COLOR));
         $centerCards = $this->vikingManager->getCardsByLocation('slot');
 
         $allFree = $this->artifactManager->isChooseNewCardAllFree($playerId);
@@ -602,25 +592,27 @@ class Game extends Table {
     }
 
     function getGainName(int $gain) {
-        switch ($gain) {
-            case VP: return clienttranslate("Victory Point");
-            case BRACELET: return clienttranslate("Bracelet");
-            case RECRUIT: return clienttranslate("Recruit");
-            case REPUTATION: return clienttranslate("Reputation");
-            case CARD: return clienttranslate("Card");
-            case COIN: return clienttranslate("Coin");
-            case RAID: return clienttranslate("Raid");
-        }
+        return match ($gain) {
+            VP => clienttranslate("Victory Point"),
+            BRACELET => clienttranslate("Bracelet"),
+            RECRUIT => clienttranslate("Recruit"),
+            REPUTATION => clienttranslate("Reputation"),
+            CARD => clienttranslate("Card"),
+            COIN => clienttranslate("Coin"),
+            RAID => clienttranslate("Raid"),
+            default => null,
+        };
     }
 
     function getColorName(int $color) {
-        switch ($color) {
-            case BLUE: return clienttranslate("Blue");
-            case YELLOW: return clienttranslate("Yellow");
-            case GREEN: return clienttranslate("Green");
-            case RED: return clienttranslate("Red");
-            case PURPLE: return clienttranslate("Purple");
-        }
+        return match ($color) {
+            BLUE => clienttranslate("Blue"),
+            YELLOW => clienttranslate("Yellow"),
+            GREEN => clienttranslate("Green"),
+            RED => clienttranslate("Red"),
+            PURPLE => clienttranslate("Purple"),
+            default => null,
+        };
     }
 
     function powerTakeCard(int $playerId) {
@@ -660,8 +652,8 @@ class Game extends Table {
             'cardDeckCount' => $this->vikingManager->getCardDeckCount() + 1, // to count the new card
         ]);
 
-        $this->setGameStateValue(RECRUIT_DONE, 1);
-        $this->setGameStateValue(EXPLORE_DONE, 1);
+        $this->setGameStateValue((string)RECRUIT_DONE, 1);
+        $this->setGameStateValue((string)EXPLORE_DONE, 1);
 
         $this->redirectAfterAction($playerId, true);
     }    
@@ -679,8 +671,8 @@ class Game extends Table {
             ]);
         }
 
-        $this->setGameStateValue(RECRUIT_DONE, 1);
-        $this->setGameStateValue(EXPLORE_DONE, 1);
+        $this->setGameStateValue((string)RECRUIT_DONE, 1);
+        $this->setGameStateValue((string)EXPLORE_DONE, 1);
 
         $this->artifactManager->handleEndExplore($playerId, $destination, $destinationIndex);
 
@@ -688,7 +680,7 @@ class Game extends Table {
     }    
 
     public function endTrade(int $playerId) {
-        $this->setGameStateValue(TRADE_DONE, 1);
+        $this->setGameStateValue((string)TRADE_DONE, 1);
         $this->redirectAfterAction($playerId, false);
     }
     

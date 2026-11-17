@@ -82,7 +82,14 @@ class ChooseNewCard extends GameState
         return PlayAction::class;
     }
 
-    function zombie(int $playerId) {
-        return $this->actCancel();
+    function zombie(int $playerId, array $args) {
+        $cards = array_values(array_filter($args['centerCards'], fn($card) =>
+            $card->location === 'slot' && ($args['allFree'] || $args['recruits'] > 0 || $card->locationArg == $args['freeColor'])
+        ));
+        if ($cards === []) {
+            return $this->actCancel();
+        }
+        $card = $this->getRandomZombieChoice($cards);
+        return $this->actChooseNewCard($card->id, $playerId, $args);
     }
 }

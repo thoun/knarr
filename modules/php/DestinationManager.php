@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
-use Destination;
-use DestinationType;
+use Bga\Games\Knarr\Models\Destination;
+use Bga\Games\Knarr\Models\DestinationType;
 
 require_once(__DIR__.'/constants.inc.php');
-require_once(__DIR__.'/objects/destination.php');
 
 class DestinationManager {
     public Deck $destinations;
@@ -16,7 +17,7 @@ class DestinationManager {
     public array $ALL_DESTINATIONS;
 
     public function __construct(private Game $game) {
-        $this->destinations = $this->game->deckFactory->createDeck('destination');
+        $this->destinations = $this->game->bga->deckFactory->createDeck('destination');
         $this->destinations->autoreshuffle = false;
 
         $this->DESTINATIONS_BASE_GAME = [

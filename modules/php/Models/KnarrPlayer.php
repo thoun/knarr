@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Bga\Games\Knarr\Models;
+
 class KnarrPlayer {
     public int $id;
     public string $name;
@@ -23,4 +27,3 @@ class KnarrPlayer {
         $this->coin = $coin;
     }
 }
-?>

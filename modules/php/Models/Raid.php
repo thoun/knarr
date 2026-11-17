@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Bga\Games\Knarr\Models;
+
 class Raid {
 
     public int $id;
@@ -12,5 +16,3 @@ class Raid {
         $this->locationArg = intval($dbCard['card_location_arg'] ?? $dbCard['location_arg']);
     }
 }
-
-?>

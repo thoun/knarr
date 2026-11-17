@@ -51,7 +51,7 @@ class PayDestination extends GameState
         
         // will contain only selected cards of player
         $playedCardsByColor = [];
-        $selectedPlayedCardsColors = [];
+        $selectedPlayedCardsColors = array_fill_keys([1, 2, 3, 4, 5], 0);
         $cardsToDiscard = [];
         if (count($ids) > 0) {
             $playedCardsByColor = $this->game->vikingManager->getPlayedCardsByColor($activePlayerId);
@@ -104,7 +104,7 @@ class PayDestination extends GameState
         $this->bga->playerStats->inc('discoveredDestinations', 1, $activePlayerId, updateTableStat: true);
         $this->bga->playerStats->inc('discoveredDestinations'.$destination->type, 1, $activePlayerId, updateTableStat: true);
 
-        $allGains = array_reduce($effectiveGains, fn($a, $b) => $a + $b, 0);
+        $allGains = array_sum($effectiveGains);
         $this->bga->playerStats->inc('assetsCollectedByDestination', $allGains, $activePlayerId, updateTableStat: true);
         foreach ($effectiveGains as $type => $count) {
             if ($count > 0) {
@@ -134,7 +134,58 @@ class PayDestination extends GameState
         return PlayAction::class;
     }
 
-    function zombie(int $playerId) {
-        return $this->actCancel();
+    function zombie(int $playerId, array $args) {
+        $destination = $args['selectedDestination'];
+        $cardsByColor = $this->game->vikingManager->getPlayedCardsByColor($playerId);
+        $colors = [1, 2, 3, 4, 5];
+        $limits = [];
+        if (isset($destination->cost[EQUAL])) {
+            foreach ($colors as $color) {
+                $limits[] = [$color => $destination->cost[EQUAL]];
+            }
+        } elseif (isset($destination->cost[DIFFERENT])) {
+            $limits[] = array_fill_keys($colors, 1);
+        } else {
+            $limits[] = $destination->cost;
+        }
+
+        $payments = [];
+        foreach ($limits as $limit) {
+            $selections = [[]];
+            foreach ($colors as $color) {
+                $nextSelections = [];
+                foreach ($selections as $selection) {
+                    for ($count = 0; $count <= min($limit[$color] ?? 0, count($cardsByColor[$color])); $count++) {
+                        $nextSelections[] = $selection + [$color => $count];
+                    }
+                }
+                $selections = $nextSelections;
+            }
+            foreach ($selections as $selection) {
+                if (isset($destination->cost[DIFFERENT]) && array_sum($selection) > $destination->cost[DIFFERENT]) {
+                    continue;
+                }
+                for ($recruits = 0; $recruits <= $args['recruits']; $recruits++) {
+                    if ($this->game->destinationManager->canTakeDestination($destination, $selection, $recruits, true)) {
+                        $payments[] = ['counts' => $selection, 'recruits' => $recruits];
+                    }
+                }
+            }
+        }
+        if ($payments === []) {
+            return $this->actCancel();
+        }
+
+        $payment = $this->getRandomZombieChoice($payments);
+        $ids = [];
+        foreach ($payment['counts'] as $color => $count) {
+            $cards = array_values($cardsByColor[$color]);
+            for ($i = 0; $i < $count; $i++) {
+                $card = $this->getRandomZombieChoice($cards);
+                $ids[] = $card->id;
+                $cards = array_values(array_filter($cards, fn($other) => $other->id !== $card->id));
+            }
+        }
+        return $this->actPayDestination($ids, $payment['recruits'], $playerId);
     }
 }

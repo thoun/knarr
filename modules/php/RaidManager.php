@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 use Bga\GameFramework\Components\Deck;
-use Raid;
-use RaidType;
+use Bga\Games\Knarr\Models\Raid;
 
 require_once(__DIR__.'/constants.inc.php');
-require_once(__DIR__.'/objects/raid.php');
 
 class RaidManager {
     public Deck $raids;
@@ -15,7 +15,7 @@ class RaidManager {
 
     public function __construct(private Game $game) {
         $this->bga = $game->bga;
-        $this->raids = $this->game->deckFactory->createDeck('raid');
+        $this->raids = $this->game->bga->deckFactory->createDeck('raid');
         $this->raids->autoreshuffle = false;
     }
 
@@ -159,7 +159,7 @@ class RaidManager {
 
         if (intval($this->raids->countCardInLocation('deck')) === 0) {
             $firstRaidToken = reset($raidTokens);
-            $this->raids->moveCard($firstRaidToken['id'], 'deck');
+            $this->raids->moveCard((int)$firstRaidToken['id'], 'deck');
             unset($raidTokens[key($raidTokens)]);
         }
 

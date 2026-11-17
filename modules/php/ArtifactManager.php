@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bga\Games\Knarr;
 
 class ArtifactManager {
@@ -19,15 +21,16 @@ class ArtifactManager {
     }
 
     public function getArtifactName(int $artifact) {
-        switch ($artifact) {
-            case ARTIFACT_MEAD_CUP: return clienttranslate("Mead Cup");
-            case ARTIFACT_SILVER_COIN: return clienttranslate("Silver coin");
-            case ARTIFACT_CAULDRON: return clienttranslate("Cauldron");
-            case ARTIFACT_GOLDEN_BRACELET: return clienttranslate("Golden bracelet");
-            case ARTIFACT_HELMET: return clienttranslate("Helmet");
-            case ARTIFACT_AMULET: return clienttranslate("Amulet");
-            case ARTIFACT_WEATHERVANE: return clienttranslate("Weathervane");
-        }
+        return match ($artifact) {
+            ARTIFACT_MEAD_CUP => clienttranslate("Mead Cup"),
+            ARTIFACT_SILVER_COIN => clienttranslate("Silver coin"),
+            ARTIFACT_CAULDRON => clienttranslate("Cauldron"),
+            ARTIFACT_GOLDEN_BRACELET => clienttranslate("Golden bracelet"),
+            ARTIFACT_HELMET => clienttranslate("Helmet"),
+            ARTIFACT_AMULET => clienttranslate("Amulet"),
+            ARTIFACT_WEATHERVANE => clienttranslate("Weathervane"),
+            default => null,
+        };
     }
 
     public function setupArtifacts(int $option, int $playerCount) {
@@ -50,7 +53,7 @@ class ArtifactManager {
             return false;
         }
 
-        $playedCardColor = intval($this->game->getGameStateValue(PLAYED_CARD_COLOR));
+        $playedCardColor = intval($this->game->getGameStateValue((string)PLAYED_CARD_COLOR));
         if ($playedCardColor <= 0) {
             return false;
         }
@@ -99,7 +102,7 @@ class ArtifactManager {
         if (in_array(ARTIFACT_HELMET, $artifacts) && $destinationIndex > 0 && $destination->type == 2) {
             $previousDestination = $this->game->destinationManager->getDestinationsByLocation('played'.$playerId)[$destinationIndex - 1];
             if ($previousDestination->type == 1) {
-                $this->game->setGameStateValue(RECRUIT_DONE, 0);
+                $this->game->setGameStateValue((string)RECRUIT_DONE, 0);
                 $this->game->bga->notify->all('log', clienttranslate('${player_name} can do the recruit action thanks to ${artifact_name} effect'), [
                     'player_name' => $this->game->getPlayerName($playerId),
                     'artifact_name' => $this->getArtifactName(ARTIFACT_HELMET),
@@ -111,20 +114,20 @@ class ArtifactManager {
         }
 
         if (in_array(ARTIFACT_MEAD_CUP, $artifacts)) {
-            $this->game->setGameStateValue(GO_DISCARD_TABLE_CARD, 1);
+            $this->game->setGameStateValue((string)GO_DISCARD_TABLE_CARD, 1);
             $this->game->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
         }
     }
 
     private function completedAPlayedLine(int $playerId): bool {
-        $completedLines = intval($this->game->getGameStateValue(COMPLETED_LINES));
+        $completedLines = intval($this->game->getGameStateValue((string)COMPLETED_LINES));
         return $this->game->vikingManager->getCompletedLines($playerId) > $completedLines;
     }
 
     private function checkArtifact(int $playerId, int $artifact): void {
         switch ($artifact) {
             case ARTIFACT_SILVER_COIN:
-                $playedCardColor = intval($this->game->getGameStateValue(PLAYED_CARD_COLOR));
+                $playedCardColor = intval($this->game->getGameStateValue((string)PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->game->vikingManager->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] > 3) {
@@ -145,11 +148,11 @@ class ArtifactManager {
                 }
                 break;
             case ARTIFACT_GOLDEN_BRACELET:
-                $playedCardColor = intval($this->game->getGameStateValue(PLAYED_CARD_COLOR));
+                $playedCardColor = intval($this->game->getGameStateValue((string)PLAYED_CARD_COLOR));
                 if ($playedCardColor > 0) {
                     $playedCardsColors = $this->game->vikingManager->getPlayedCardsColor($playerId);
                     if ($playedCardsColors[$playedCardColor] == 3) {
-                        $this->game->setGameStateValue(GO_RESERVE, 1);
+                        $this->game->setGameStateValue((string)GO_RESERVE, 1);
                         $this->game->bga->playerStats->inc('activatedArtifacts', 1, $playerId, updateTableStat: true);
                     }
                 }
@@ -165,7 +168,7 @@ class ArtifactManager {
         switch ($artifact) {
             case ARTIFACT_AMULET:
                 if ($this->completedAPlayedLine($playerId)) {
-                    $this->game->setGameStateValue(COMPLETED_LINES, $this->game->vikingManager->getCompletedLines($playerId));
+                    $this->game->setGameStateValue((string)COMPLETED_LINES, $this->game->vikingManager->getCompletedLines($playerId));
                     $groupGains = [
                         BRACELET => 1,
                         RECRUIT => 1,
@@ -187,8 +190,8 @@ class ArtifactManager {
                 break;
             case ARTIFACT_WEATHERVANE:
                 if ($this->completedAPlayedLine($playerId)) {
-                    $this->game->setGameStateValue(EXPLORE_DONE, 0);
-                    $this->game->setGameStateValue(COMPLETED_LINES, $this->game->vikingManager->getCompletedLines($playerId));
+                    $this->game->setGameStateValue((string)EXPLORE_DONE, 0);
+                    $this->game->setGameStateValue((string)COMPLETED_LINES, $this->game->vikingManager->getCompletedLines($playerId));
 
                     $this->game->bga->notify->all('log', clienttranslate('${player_name} can explore with artifact ${artifact_name} effect'), [
                         'playerId' => $playerId,

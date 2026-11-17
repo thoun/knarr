@@ -1,11 +1,8 @@
 <?php
 
-require_once(__DIR__.'/../constants.inc.php');
+declare(strict_types=1);
 
-class BuildingType {
-    public function __construct(public array $cost = [], public array $gains = [], public ?array $mostRaid = null, public ?array $fewestRaid = null) {
-    }
-}
+namespace Bga\Games\Knarr\Models;
 
 class Building extends BuildingType {
 
@@ -45,5 +42,3 @@ class Building extends BuildingType {
         return array_map(fn($card) => self::onlyId($card), $cards);
     }
 }
-
-?>

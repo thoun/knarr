@@ -79,6 +79,17 @@ class RenewBuildings extends GameState
     }
 
     function zombie(int $playerId, array $args) {
-        return $this->actCancel();
+        $buildings = array_values($this->game->buildingManager->getBuildingsByLocation('slot'));
+        if ($buildings === []) {
+            return $this->actCancel();
+        }
+        $count = $this->getRandomZombieChoice(range(1, min(2, count($buildings))));
+        $ids = [];
+        for ($i = 0; $i < $count; $i++) {
+            $building = $this->getRandomZombieChoice($buildings);
+            $ids[] = $building->id;
+            $buildings = array_values(array_filter($buildings, fn($other) => $other->id !== $building->id));
+        }
+        return $this->actRenewBuildings($ids, $playerId);
     }
 }
